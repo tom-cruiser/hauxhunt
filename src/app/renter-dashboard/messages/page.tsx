@@ -34,6 +34,22 @@ import {
 import patrickManagerPortrait from "@/assets/images/flatmate-patrick.png";
 import jeanOwnerPortrait from "@/assets/images/flatmate-joseph.jpg";
 import hauxhuntWhiteLogo from "@/assets/images/HauxHunt_white.png";
+import { resolveAnyPropertyTitle } from "@/lib/professional-properties";
+import { OWNER } from "@/lib/owner-data";
+import { getProfessionalByName } from "@/lib/team-data";
+import {
+  OWNER_PARTICIPANT_ID,
+  RENTER_PARTICIPANT_ID,
+  getConversationsFor as getSharedConversationsFor,
+  getOrCreateConversation as getOrCreateSharedConversation,
+  getParticipant,
+  hasUnreadFor,
+  markConversationReadFor,
+  sendMessageAs,
+  subscribeToMessages,
+  type Conversation as SharedConversation,
+  type ConversationContextType as SharedContextType,
+} from "@/lib/messages-data";
 
 type Attachment = {
   kind: "image" | "document";
@@ -78,6 +94,12 @@ type Conversation = {
     areas: string;
     situation: string;
   };
+  // Renter Messages Integration phase (Phase 5.5) -- Section 39: explicit
+  // discriminant so send/read logic knows which store owns this thread.
+  // Absent (undefined) means "legacy", exactly like every Conversation
+  // literal already in this file before this phase -- none of them needed
+  // to change. Only adaptSharedConversation() below ever sets "shared".
+  source?: "shared";
 };
 
 const COUNTRY_CALLING_CODES: Record<string, string> = {
@@ -133,6 +155,81 @@ function bucketForContext(type: ConversationContextType): ConversationType {
   if (type === "support") return "support";
   if (type === "property-enquiry") return "manager";
   return "landlord";
+}
+
+// Renter Messages Integration phase (Phase 5.5) -- Section 12/39: the one
+// place a messages-data.ts Conversation becomes this page's own row shape,
+// so every existing list/search/sort/thread/composer/context-card function
+// below keeps working unmodified on the result. The shared Conversation
+// itself is never mutated or converted back into a name-keyed record --
+// this only ever produces a read-oriented view of it.
+function toLocalContextType(type: SharedContextType | undefined): ConversationContextType {
+  switch (type) {
+    case "application":
+      return "application";
+    case "rental":
+      return "active-rental";
+    case "rental-setup":
+      return "rental-setup";
+    case "maintenance":
+      return "maintenance";
+    default:
+      return "property-enquiry";
+  }
+}
+
+// No real epoch-to-"2:40 PM"-style display string exists on a fresh shared
+// message beyond its own `ts` -- this mirrors the exact style
+// (Today/Yesterday/relative) the rest of this file's demo data already
+// uses, computed once here rather than inventing a second time-formatting
+// convention.
+function relativeTimestamp(ts: number): string {
+  const diff = Date.now() - ts;
+  const HOUR = 3_600_000;
+  const DAY = 24 * HOUR;
+  if (diff < HOUR) return "Just now";
+  if (diff < DAY) return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (diff < 2 * DAY) return "Yesterday";
+  return `${Math.floor(diff / DAY)} days ago`;
+}
+
+function adaptSharedConversation(conversation: SharedConversation): Conversation {
+  const other = getParticipant(conversation.participantIds.find((id) => id !== RENTER_PARTICIPANT_ID) ?? "");
+  const name = other?.name ?? "Unknown";
+  const role = other?.role ?? "";
+  const localType = toLocalContextType(conversation.context?.type);
+  const propertyName = conversation.context?.propertyId ? resolveAnyPropertyTitle(conversation.context.propertyId) : undefined;
+  const context: ConversationContext = {
+    type: localType,
+    propertyName,
+    propertyId: conversation.context?.propertyId,
+    refId: conversation.context?.applicationId ?? conversation.context?.rentalId ?? conversation.context?.maintenanceRequestId,
+  };
+  const headline = propertyName ?? conversation.context?.label;
+  return {
+    id: conversation.id,
+    name,
+    avatar: other?.avatar,
+    role,
+    verified: other?.verified,
+    // No phone number exists on a shared Participant (Section 38) -- never
+    // fabricated, the call action just doesn't render for these rows.
+    showPhone: false,
+    type: bucketForContext(localType),
+    subtitle: headline ? `${headline} · ${role}` : role,
+    metaContext: conversation.context?.label ?? role,
+    context,
+    unreadCount: hasUnreadFor(conversation, RENTER_PARTICIPANT_ID) ? 1 : 0,
+    phone: "",
+    messages: conversation.messages.map((m) => ({
+      sender: m.senderId === RENTER_PARTICIPANT_ID ? "user" : "them",
+      text: m.text,
+      timestamp: relativeTimestamp(m.ts),
+      ts: m.ts,
+      kind: "chat",
+    })),
+    source: "shared",
+  };
 }
 
 // The one contextual action a conversation offers — at most one primary CTA,
@@ -374,6 +471,15 @@ export default function RenterDashboardMessagesPage() {
         // Create mock conversations
         const chats: Conversation[] = [];
 
+        // Renter Messages Integration phase (Phase 5.5) -- Section 8/9/45:
+        // a professional who already has a real shared conversation
+        // (messages-data.ts) is never ALSO shown via the hardcoded entries
+        // below -- checked by real participant id, not display name.
+        const sharedConversationsForRenter = getSharedConversationsFor(RENTER_PARTICIPANT_ID);
+        const sharedProfessionalIds = new Set(
+          sharedConversationsForRenter.flatMap((c) => c.participantIds).filter((id) => id !== RENTER_PARTICIPANT_ID),
+        );
+
         // 1. Add matched flatmates first
         matchedProfiles.forEach((flatmate, index) => {
           chats.push({
@@ -409,73 +515,83 @@ export default function RenterDashboardMessagesPage() {
         // 2. Patrick — a plain, unverified listing enquiry: no history beyond
         // the initial contact, deliberately kept simple as a contrast to
         // Jean's evolved relationship below.
-        chats.push({
-          id: "patrick-manager",
-          name: "Patrick",
-          avatar: patrickManagerPortrait,
-          role: "Property Manager",
-          verified: false,
-          showPhone: true,
-          type: "manager",
-          subtitle: "Modern Family Home · Property Manager",
-          metaContext: "Listing Enquiry",
-          context: {
-            type: "property-enquiry",
-            propertyName: "Modern Family Home",
-            propertyId: "kibagabaga-modern-family-home",
-          },
-          unreadCount: isThreadRead("patrick-manager") ? 0 : SEED_THREAD_UNREAD_COUNTS["patrick-manager"],
-          phone: demoPhoneNumber("patrick-manager", "+250"),
-          messages: [
-            {
-              sender: "them",
-              text: "Hello Julien, your viewing request for Saturday at 10:00 AM has been confirmed. See you there!",
-              timestamp: "Yesterday",
-              ts: now - DAY
-            }
-          ]
-        });
+        // Phase 5.5: skipped once conv-patrick-julien exists in the shared
+        // store (Patrick's real professionalId is "patrick") -- that thread
+        // carries this exact same content now.
+        if (!sharedProfessionalIds.has("patrick")) {
+          chats.push({
+            id: "patrick-manager",
+            name: "Patrick",
+            avatar: patrickManagerPortrait,
+            role: "Property Manager",
+            verified: false,
+            showPhone: true,
+            type: "manager",
+            subtitle: "Modern Family Home · Property Manager",
+            metaContext: "Listing Enquiry",
+            context: {
+              type: "property-enquiry",
+              propertyName: "Modern Family Home",
+              propertyId: "kibagabaga-modern-family-home",
+            },
+            unreadCount: isThreadRead("patrick-manager") ? 0 : SEED_THREAD_UNREAD_COUNTS["patrick-manager"],
+            phone: demoPhoneNumber("patrick-manager", "+250"),
+            messages: [
+              {
+                sender: "them",
+                text: "Hello Julien, your viewing request for Saturday at 10:00 AM has been confirmed. See you there!",
+                timestamp: "Yesterday",
+                ts: now - DAY
+              }
+            ]
+          });
+        }
 
         // Jean Mugisha is the property manager for Kacyiru Residence — the
         // same character referenced across My Rentals, Payments, Maintenance
         // and Rental Setup. This ONE thread carries the whole relationship,
         // evolving from enquiry through to an active tenancy, mixing system
         // lifecycle events with the odd real message from Jean.
-        chats.push({
-          id: "kacyiru-owner",
-          name: "Jean Mugisha",
-          avatar: jeanOwnerPortrait,
-          role: "Property Manager",
-          verified: true,
-          showPhone: true,
-          type: "landlord",
-          subtitle: "Kacyiru Residence · Property Manager",
-          metaContext: "Active Rental",
-          context: {
-            type: "active-rental",
-            propertyName: "Kacyiru Residence",
-            propertyId: "kacyiru-2br",
-            refId: "HH-RENT-104",
-            status: "Active",
-            detail: "RWF 850,000 / month",
-          },
-          unreadCount: isThreadRead("kacyiru-owner") ? 0 : SEED_THREAD_UNREAD_COUNTS["kacyiru-owner"],
-          phone: demoPhoneNumber("kacyiru-owner", "+250"),
-          messages: [
-            {
-              sender: "them",
-              text: "Hi Julien, thanks for submitting your application. We are currently verifying references and will get back to you by Friday.",
-              timestamp: "15 days ago",
-              ts: now - 15 * DAY,
+        // Phase 5.5: skipped once conv-jean-julien exists in the shared
+        // store -- Phase 5 already consolidated this exact relationship
+        // (plus Jean's Remera-payment thread) into it.
+        if (!sharedProfessionalIds.has("jean-mugisha")) {
+          chats.push({
+            id: "kacyiru-owner",
+            name: "Jean Mugisha",
+            avatar: jeanOwnerPortrait,
+            role: "Property Manager",
+            verified: true,
+            showPhone: true,
+            type: "landlord",
+            subtitle: "Kacyiru Residence · Property Manager",
+            metaContext: "Active Rental",
+            context: {
+              type: "active-rental",
+              propertyName: "Kacyiru Residence",
+              propertyId: "kacyiru-2br",
+              refId: "HH-RENT-104",
+              status: "Active",
+              detail: "RWF 850,000 / month",
             },
-            {
-              sender: "them",
-              text: "Just a reminder that rent for Kacyiru Residence is due on the 1st. Let me know if you have any questions about your payment.",
-              timestamp: "Yesterday",
-              ts: now - DAY + 2 * HOUR
-            }
-          ]
-        });
+            unreadCount: isThreadRead("kacyiru-owner") ? 0 : SEED_THREAD_UNREAD_COUNTS["kacyiru-owner"],
+            phone: demoPhoneNumber("kacyiru-owner", "+250"),
+            messages: [
+              {
+                sender: "them",
+                text: "Hi Julien, thanks for submitting your application. We are currently verifying references and will get back to you by Friday.",
+                timestamp: "15 days ago",
+                ts: now - 15 * DAY,
+              },
+              {
+                sender: "them",
+                text: "Just a reminder that rent for Kacyiru Residence is due on the 1st. Let me know if you have any questions about your payment.",
+                timestamp: "Yesterday",
+                ts: now - DAY + 2 * HOUR
+              }
+            ]
+          });
+        }
 
         // 3. Maintenance updates come from the technician assigned to the
         // ticket, not the property manager — matches the scheduledVisit
@@ -513,31 +629,37 @@ export default function RenterDashboardMessagesPage() {
 
         // 4. A verified Agent — a distinct role from "Property Manager", so
         // the role system has more than one example to show.
-        chats.push({
-          id: "kevin-agent",
-          name: "Kevin Nshuti",
-          role: "Agent",
-          verified: true,
-          showPhone: true,
-          type: "manager",
-          subtitle: "Nyarutarama Garden Apartment · Agent",
-          metaContext: "Listing Enquiry",
-          context: {
-            type: "property-enquiry",
-            propertyName: "Nyarutarama Garden Apartment",
-            propertyId: "nyarutarama-2br",
-          },
-          unreadCount: isThreadRead("kevin-agent") ? 0 : SEED_THREAD_UNREAD_COUNTS["kevin-agent"],
-          phone: demoPhoneNumber("kevin-agent", "+250"),
-          messages: [
-            {
-              sender: "them",
-              text: "Hi Julien, thanks for your interest in Nyarutarama Garden Apartment — it's still available. Would you like to schedule a viewing?",
-              timestamp: "2 days ago",
-              ts: now - 2 * DAY,
-            }
-          ]
-        });
+        // Phase 5.5: skipped once conv-kevin-julien exists in the shared
+        // store -- Kevin's real relationship with Julien (an independent
+        // property, not Nyarutarama) is the one Phase 5 migrated; this
+        // hardcoded entry's property reference was never actually his.
+        if (!sharedProfessionalIds.has("kevin-nshuti")) {
+          chats.push({
+            id: "kevin-agent",
+            name: "Kevin Nshuti",
+            role: "Agent",
+            verified: true,
+            showPhone: true,
+            type: "manager",
+            subtitle: "Nyarutarama Garden Apartment · Agent",
+            metaContext: "Listing Enquiry",
+            context: {
+              type: "property-enquiry",
+              propertyName: "Nyarutarama Garden Apartment",
+              propertyId: "nyarutarama-2br",
+            },
+            unreadCount: isThreadRead("kevin-agent") ? 0 : SEED_THREAD_UNREAD_COUNTS["kevin-agent"],
+            phone: demoPhoneNumber("kevin-agent", "+250"),
+            messages: [
+              {
+                sender: "them",
+                text: "Hi Julien, thanks for your interest in Nyarutarama Garden Apartment — it's still available. Would you like to schedule a viewing?",
+                timestamp: "2 days ago",
+                ts: now - 2 * DAY,
+              }
+            ]
+          });
+        }
 
         // 5. The HauxHunt concierge follows up on open "Property search"
         // support requests (see renter-dashboard/requests) — kept simple,
@@ -585,18 +707,33 @@ export default function RenterDashboardMessagesPage() {
           }
         });
 
+        // 7. Shared professional conversations (Owner/PM/Agent,
+        // messages-data.ts) -- adapted into this page's own Conversation
+        // shape (adaptSharedConversation) so every function above and below
+        // this effect keeps working unmodified. Never converted back into a
+        // name-keyed record; sending/reading these still goes straight
+        // through messages-data.ts (see handleSendMessage/selectChat).
+        sharedConversationsForRenter.forEach((c) => {
+          chats.push(adaptSharedConversation(c));
+        });
+
         // Resolve which chat to open from the URL, and build a
         // ConversationContext from whatever the linking page passed in
         // (`ctx`, `status`, `detail`, `refId`, …) instead of discarding it.
-        // `?chat=<id>` (flatmate links) takes priority; `?host=` (every
-        // "Message Property Manager" / "Message Technician" link across
-        // rentals, payments, maintenance, applications, visits and rental
-        // setup) opens the matching thread by name — updating its context
-        // to the newest stage if found, so one relationship (e.g. Jean
-        // Mugisha on Kacyiru Residence) evolves in place instead of
-        // spawning a new thread per lifecycle stage.
+        // `?chat=<id>` (flatmate links) / `?open=<id>` (shared professional
+        // conversations, Section 23 -- an alias for the same lookup) takes
+        // priority; `?host=` (every "Message Property Manager" / "Message
+        // Technician" link across rentals, payments, maintenance,
+        // applications, visits and rental setup) opens the matching thread
+        // by name -- and since step 7 already pushed the deduplicated
+        // shared conversations into `chats` under their real participant's
+        // name, this same lookup now finds the SHARED conversation first
+        // whenever one exists (Section 24), with zero change to the lookup
+        // itself. Updates context to the newest stage if found, so one
+        // relationship evolves in place instead of spawning a new thread
+        // per lifecycle stage.
         const urlParams = new URLSearchParams(window.location.search);
-        const chatParam = urlParams.get("chat");
+        const chatParam = urlParams.get("chat") || urlParams.get("open");
         const hostParam = urlParams.get("host");
         const propertyParam = urlParams.get("property");
         const roleParam = urlParams.get("role");
@@ -636,29 +773,52 @@ export default function RenterDashboardMessagesPage() {
               if (headline) existing.subtitle = `${headline} · ${existing.role}`;
             }
           } else {
-            const id = `landlord-${slugify(hostParam)}`;
-            const context: ConversationContext = incomingContext ?? {
-              type: "property-enquiry",
-              propertyName: propertyParam || undefined,
-              propertyId: propertyIdParam,
-            };
-            const role = roleParam || "Property Manager";
-            const headline = context.title ?? context.propertyName;
-            chats.push({
-              id,
-              name: hostParam,
-              role,
-              verified: verifiedParam,
-              showPhone: true,
-              type: bucketForContext(context.type),
-              subtitle: headline ? `${headline} · ${role}` : role,
-              metaContext: CONTEXT_BADGE[context.type],
-              context,
-              unreadCount: 0,
-              phone: demoPhoneNumber(id, "+250"),
-              messages: [],
-            });
-            initialId = id;
+            // Phase 5.5 -- Section 24/49: hostParam matched no existing
+            // row (shared or legacy). Before falling back to a throwaway
+            // local record, check whether it's actually a real, resolvable
+            // HauxHunt participant (a registered professional, or the
+            // Owner) who simply doesn't have a shared conversation yet --
+            // if so, create the real shared one instead of a name-keyed
+            // local duplicate.
+            const resolvedParticipantId =
+              hostParam === OWNER.name ? OWNER_PARTICIPANT_ID : getProfessionalByName(hostParam)?.id;
+            if (resolvedParticipantId) {
+              const shared = getOrCreateSharedConversation(RENTER_PARTICIPANT_ID, resolvedParticipantId, {
+                type: "property",
+                propertyId: propertyIdParam,
+                label: incomingContext?.title ?? "Property Enquiry",
+              });
+              if (shared) {
+                const adapted = adaptSharedConversation(shared);
+                chats.push(adapted);
+                initialId = adapted.id;
+              }
+            }
+            if (!initialId) {
+              const id = `landlord-${slugify(hostParam)}`;
+              const context: ConversationContext = incomingContext ?? {
+                type: "property-enquiry",
+                propertyName: propertyParam || undefined,
+                propertyId: propertyIdParam,
+              };
+              const role = roleParam || "Property Manager";
+              const headline = context.title ?? context.propertyName;
+              chats.push({
+                id,
+                name: hostParam,
+                role,
+                verified: verifiedParam,
+                showPhone: true,
+                type: bucketForContext(context.type),
+                subtitle: headline ? `${headline} · ${role}` : role,
+                metaContext: CONTEXT_BADGE[context.type],
+                context,
+                unreadCount: 0,
+                phone: demoPhoneNumber(id, "+250"),
+                messages: [],
+              });
+              initialId = id;
+            }
           }
         } else if (propertyParam) {
           const id = `landlord-${slugify(propertyParam)}`;
@@ -693,8 +853,18 @@ export default function RenterDashboardMessagesPage() {
           initialId = "";
         }
 
-        // The chat we're opening on load starts out read.
-        if (initialId) markThreadRead(initialId);
+        // The chat we're opening on load starts out read. Section 19/41: a
+        // shared conversation's read state belongs entirely to
+        // messages-data.ts -- markThreadRead (the legacy renter-local
+        // mechanism) is only ever called for a legacy row, never both.
+        if (initialId) {
+          const openedChat = chats.find((c) => c.id === initialId);
+          if (openedChat?.source === "shared") {
+            markConversationReadFor(initialId, RENTER_PARTICIPANT_ID);
+          } else {
+            markThreadRead(initialId);
+          }
+        }
         const chatsWithInitialRead = chats.map(c =>
           c.id === initialId ? { ...c, unreadCount: 0 } : c
         );
@@ -706,6 +876,25 @@ export default function RenterDashboardMessagesPage() {
         console.error(e);
       }
     }
+  }, []);
+
+  // Renter Messages Integration phase (Phase 5.5) -- Section 55: live
+  // updates for shared professional conversations only (Jean/Sarah/Owner
+  // can send from an entirely different dashboard at any time). Legacy
+  // conversations don't need this -- message-threads.ts has no cross-tab
+  // writer, and this page's own sends already update local state directly.
+  // Replaces only the previously-adapted "shared" rows in place; every
+  // legacy row (including ones deduplicated away at mount and therefore
+  // never present) is left untouched.
+  useEffect(() => {
+    return subscribeToMessages(() => {
+      setConversations((prev) => {
+        const freshShared = getSharedConversationsFor(RENTER_PARTICIPANT_ID).map(adaptSharedConversation);
+        const freshSharedIds = new Set(freshShared.map((c) => c.id));
+        const legacyOnly = prev.filter((c) => c.source !== "shared" && !freshSharedIds.has(c.id));
+        return [...legacyOnly, ...freshShared];
+      });
+    });
   }, []);
 
   // Close the "More..." dropdown on outside click
@@ -749,7 +938,13 @@ export default function RenterDashboardMessagesPage() {
     setThreadSearchQuery("");
     setChatMenuOpen(false);
     setMobileView("thread");
-    markThreadRead(id);
+    // Section 19/41: shared read state goes through messages-data.ts only.
+    const chat = conversations.find((c) => c.id === id);
+    if (chat?.source === "shared") {
+      markConversationReadFor(id, RENTER_PARTICIPANT_ID);
+    } else {
+      markThreadRead(id);
+    }
     setConversations(prev => prev.map(c => (c.id === id ? { ...c, unreadCount: 0 } : c)));
   };
 
@@ -871,6 +1066,16 @@ export default function RenterDashboardMessagesPage() {
     e.preventDefault();
     if (!newMessage.trim() || !activeChat) return;
     const text = newMessage.trim();
+    // Section 17/40: a shared conversation writes into messages-data.ts
+    // ONLY -- the live-subscription effect above refreshes this row from
+    // the canonical store, so appendMessage/recordSentMessage (the legacy
+    // local-echo + outbound log) never also run for it. One click, one
+    // shared Message, never a second local copy.
+    if (activeChat.source === "shared") {
+      sendMessageAs(activeChat.id, RENTER_PARTICIPANT_ID, text);
+      setNewMessage("");
+      return;
+    }
     appendMessage(activeChat.id, { sender: "user", text });
     recordSentMessage(
       {
@@ -893,7 +1098,11 @@ export default function RenterDashboardMessagesPage() {
     (kind: Attachment["kind"]) => (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       e.target.value = "";
-      if (!file || !activeChat) return;
+      // Section 37: the shared Message model is text-only in this phase --
+      // never silently swallow an attachment send on a shared thread. The
+      // attach control itself is also hidden for shared threads (see the
+      // composer render below), so this is a defensive no-op only.
+      if (!file || !activeChat || activeChat.source === "shared") return;
       appendMessage(activeChat.id, {
         sender: "user",
         text: "",
@@ -1376,6 +1585,11 @@ export default function RenterDashboardMessagesPage() {
                 className="hidden"
                 onChange={handleFileSelected("document")}
               />
+              {/* Section 37: the shared Message model is text-only in this
+                  phase -- the attach control never renders for a shared
+                  professional conversation, rather than offering an action
+                  that would silently fail to persist anywhere. */}
+              {activeChat?.source !== "shared" && (
               <div ref={attachMenuRef} className="relative shrink-0">
                 <button
                   type="button"
@@ -1421,6 +1635,7 @@ export default function RenterDashboardMessagesPage() {
                   </div>
                 )}
               </div>
+              )}
               <div className="flex h-11 flex-1 items-center gap-2 rounded-full border border-black/15 bg-white px-4 transition-colors focus-within:border-black">
                 <input
                   type="text"

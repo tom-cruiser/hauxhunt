@@ -499,6 +499,7 @@ export function CataloguePage({
             {mapMode ? (
               <RenterMapCatalogue
                 filtersUnderTopBar
+                backHref={audience === "renter" ? "/renter-dashboard" : undefined}
                 requestCard={
                   <div className="listing-request-glass relative mt-8 flex flex-col gap-7 overflow-hidden rounded-2xl p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between lg:p-10">
                     <svg

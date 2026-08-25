@@ -13,6 +13,7 @@ import {
   Eye,
   EyeOff,
   Home,
+  KeyRound,
   UserRound,
 } from "lucide-react";
 
@@ -28,6 +29,12 @@ const ACCOUNT_TYPES = [
     label: "Renter",
     description: "Search, save, and request houses.",
     icon: Home,
+  },
+  {
+    value: "owner",
+    label: "Property Owner",
+    description: "Own properties and delegate to a manager or agent.",
+    icon: KeyRound,
   },
   {
     value: "property_manager",
@@ -133,6 +140,12 @@ export function AuthenticationForm({
         return;
       }
 
+      if (email === "owner@gmail.com") {
+        window.sessionStorage.setItem("hauxhunt-authenticated-role", "owner");
+        router.replace(returnTo?.startsWith("/") ? returnTo : "/owner-dashboard");
+        return;
+      }
+
       setError("Wrong email or password.");
       return;
     }
@@ -143,6 +156,8 @@ export function AuthenticationForm({
         finishPendingRenterSave();
         return;
       }
+    } else if (accountType === "owner") {
+      window.sessionStorage.setItem("hauxhunt-authenticated-role", "owner");
     } else if (accountType === "property_manager") {
       window.sessionStorage.setItem(
         "hauxhunt-authenticated-role",
@@ -163,7 +178,11 @@ export function AuthenticationForm({
         router.replace(returnTo);
       } else {
         router.push(
-          accountType === "renter" ? "/renter-dashboard" : "/partner-dashboard",
+          accountType === "renter"
+            ? "/renter-dashboard"
+            : accountType === "owner"
+              ? "/owner-dashboard"
+              : "/partner-dashboard",
         );
       }
     };

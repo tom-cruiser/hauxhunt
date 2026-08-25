@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import {
   BookOpen,
+  ChevronLeft,
   CreditCard,
   Home,
   LifeBuoy,
@@ -28,6 +29,7 @@ import messageImage from "@/assets/images/chat.png";
 import supportImage from "@/assets/images/support.png";
 import { VoiceInputButton } from "@/components/listings/voice-input-button";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
+import { Wordmark } from "@/components/layout/wordmark";
 
 const CATEGORIES: { slug: string; icon: LucideIcon; title: string; description: string; articles: number; image?: string }[] = [
   {
@@ -102,8 +104,51 @@ const CATEGORIES: { slug: string; icon: LucideIcon; title: string; description: 
   },
 ] ;
 
+// Owner Account Polish phase -- Section 24/27: this hub page is the one
+// shared Help Center (reused as-is, not duplicated, per the audit -- its
+// category/article content is a real, substantial dataset that a second
+// Owner-only copy would have needlessly forked). The only adjustment is
+// this header: a Renter session keeps the exact catalogue top bar it
+// always had; any other authenticated role (Owner today) gets a minimal,
+// role-neutral header that returns to their own dashboard instead of
+// showing renter-shopping navigation that doesn't apply to them. The
+// category cards, search, and every /help/{slug} article underneath are
+// completely unchanged for every viewer.
+function roleDashboardHome(role: string | null): string {
+  if (role === "owner") return "/owner-dashboard";
+  if (role === "agent" || role === "property_manager") return "/partner-dashboard";
+  return "/renter-dashboard";
+}
+
+function MinimalHelpTopBar({ backHref }: { backHref: string }) {
+  return (
+    <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-black/10 bg-white px-5 sm:px-6 lg:px-11">
+      <Link href={backHref} aria-label="HauxHunt home">
+        <Wordmark height={28} />
+      </Link>
+      <Link href={backHref} className="text-carbon-600 inline-flex items-center gap-1 text-sm font-medium hover:text-black">
+        <ChevronLeft aria-hidden="true" className="size-4" />
+        Back to Dashboard
+      </Link>
+    </header>
+  );
+}
+
+// Hydration-safe: before mount, server and client agree there's no role
+// yet (so a Renter's own experience never flickers -- see the render logic
+// below), matching this codebase's established useDemoProfessional pattern.
+function useMounted(): boolean {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+}
+
 export default function HelpCenterPage() {
   const [query, setQuery] = useState("");
+  const mounted = useMounted();
+  const role = mounted ? window.sessionStorage.getItem("hauxhunt-authenticated-role") : null;
 
   const filtered = query.trim()
     ? CATEGORIES.filter(
@@ -113,9 +158,11 @@ export default function HelpCenterPage() {
       )
     : CATEGORIES;
 
+  const audienceLabel = role === "owner" ? "For Property Owners" : role === "agent" ? "For Agents" : role === "property_manager" ? "For Property Managers" : "For Renters";
+
   return (
     <>
-      <RenterCatalogueTopBar />
+      {role === "renter" || role === null ? <RenterCatalogueTopBar /> : <MinimalHelpTopBar backHref={roleDashboardHome(role)} />}
       <main className="min-h-svh bg-[#f5f5f5] pt-16 text-black">
         {/* Search hero */}
         <section className="px-5 pt-14 pb-16 text-center sm:pt-16 sm:pb-20">
@@ -155,7 +202,7 @@ export default function HelpCenterPage() {
         {/* Category grid */}
         <section className="mx-auto max-w-[1100px] px-5 pb-20 sm:px-8">
           <h2 className="font-bricolage mb-8 text-center text-2xl font-bold tracking-[-0.03em]">
-            For Renters
+            {audienceLabel}
           </h2>
 
           {filtered.length ? (
@@ -164,7 +211,7 @@ export default function HelpCenterPage() {
                 <Link
                   key={slug}
                   href={`/renter-dashboard/help/${slug}`}
-                  className="flex flex-col rounded-xl border border-black/10 bg-white p-8 transition-shadow hover:shadow-md"
+                  className="flex flex-col rounded-2xl bg-white p-8 shadow-[0_8px_24px_rgba(0,0,0,0.035)] transition-shadow hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)]"
                 >
                   {/* Large icon */}
                   {slug === "maintenance" ? (

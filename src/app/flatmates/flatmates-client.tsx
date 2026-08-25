@@ -366,6 +366,26 @@ export function FlatmatesPageClient({
 
         <section className="bg-carbon-50 px-5 py-8 sm:px-6 lg:px-11 xl:px-[52px]">
           <div className="mx-auto max-w-[1562px]">
+            {suggestedFlatmates.length > 0 && (
+              <div className="mb-10">
+                <ScrollRow
+                  title="Flatmates Who Match What You're Looking For"
+                  viewMoreHref={`/flatmates${renterView ? "?from=renter" : ""}`}
+                  viewMoreLabel="View more"
+                >
+                  {suggestedFlatmates.map((flatmate) => (
+                    <div key={flatmate.id} className="w-[calc((100vw-10rem)/4-0.5rem)] min-w-[300px] shrink-0 h-[460px]">
+                      <FlatmateCard
+                        flatmate={flatmate}
+                        priority={false}
+                        renterView={renterView}
+                        matchScore={computeMatchScore(flatmate)}
+                      />
+                    </div>
+                  ))}
+                </ScrollRow>
+              </div>
+            )}
             {finalFlatmates.length ? (
               <>
                 {showAllProfiles ? (
@@ -460,28 +480,6 @@ export function FlatmatesPageClient({
           </div>
         </section>
 
-        {suggestedFlatmates.length > 0 && (
-          <section className="bg-carbon-50 px-5 pb-10 sm:px-6 lg:px-11 xl:px-[52px]">
-            <div className="mx-auto max-w-[1562px]">
-              <ScrollRow
-                title="Flatmates Who Match What You're Looking For"
-                viewMoreHref={`/flatmates${renterView ? "?from=renter" : ""}`}
-                viewMoreLabel="View more"
-              >
-                {suggestedFlatmates.map((flatmate) => (
-                  <div key={flatmate.id} className="w-[calc((100vw-10rem)/4-0.5rem)] min-w-[300px] shrink-0 h-[460px]">
-                    <FlatmateCard
-                      flatmate={flatmate}
-                      priority={false}
-                      renterView={renterView}
-                      matchScore={computeMatchScore(flatmate)}
-                    />
-                  </div>
-                ))}
-              </ScrollRow>
-            </div>
-          </section>
-        )}
 
         <FlatmateBanner initialRenterView={renterView} />
       </main>

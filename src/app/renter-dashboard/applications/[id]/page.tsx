@@ -17,6 +17,8 @@ import { Suspense } from "react";
 
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
 import { RENTER_APPLICATIONS } from "@/data/renter-applications";
+import { OWNER } from "@/lib/owner-data";
+import { getCurrentReviewerFor } from "@/lib/professional-work";
 
 export default function ApplicationDetailPage() {
   return (
@@ -45,6 +47,19 @@ function ApplicationDetailPageInner() {
     progress: 42,
     message: "Your application has been received.",
   };
+  const assignedReviewer = getCurrentReviewerFor(application.propertyId);
+  const reviewer =
+    assignedReviewer ??
+    (application.role.includes("Property Manager")
+      ? {
+          name: application.representative,
+          roleLabel: "Property Manager",
+        }
+      : { name: OWNER.name, roleLabel: OWNER.role });
+  const reviewerVerified =
+    Boolean(assignedReviewer) ||
+    (reviewer.name === application.representative &&
+      application.role.startsWith("Verified"));
   const [requestComplete, setRequestComplete] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<File | null>(null);
   const [selectedDocumentType, setSelectedDocumentType] =
@@ -442,14 +457,17 @@ function ApplicationDetailPageInner() {
               <h2 className="font-bricolage text-xl font-medium">
                 Reviewed by
               </h2>
-              <p className="mt-5 font-medium">{application.representative}</p>
-              <p className="text-carbon-500 mt-1 flex items-center gap-1 text-sm">
-                <BadgeCheck className="size-4" />
-                {application.role}
+              <p className="mt-5 flex items-center gap-1.5 font-medium">
+                <span>{reviewer.name}</span>
+                {reviewerVerified ? (
+                  <BadgeCheck className="size-4 shrink-0" />
+                ) : null}
               </p>
-              <p className="text-carbon-500 mt-1 text-xs">Member since 2026</p>
+              <p className="text-carbon-500 mt-1 text-sm">
+                {reviewer.roleLabel}
+              </p>
               <Link
-                href={`/renter-dashboard/messages?host=${encodeURIComponent(application.representative)}&role=${encodeURIComponent(application.role.replace(/^Verified /, ""))}&verified=${application.role.startsWith("Verified") ? "1" : "0"}&ctx=application&property=${encodeURIComponent(application.title)}&propertyId=${encodeURIComponent(application.propertyId)}&status=${encodeURIComponent(application.status)}&refId=${encodeURIComponent(application.id)}`}
+                href={`/renter-dashboard/messages?host=${encodeURIComponent(reviewer.name)}&role=${encodeURIComponent(reviewer.roleLabel)}&verified=${reviewerVerified ? "1" : "0"}&ctx=application&property=${encodeURIComponent(application.title)}&propertyId=${encodeURIComponent(application.propertyId)}&status=${encodeURIComponent(application.status)}&refId=${encodeURIComponent(application.id)}`}
                 className="mt-5 inline-flex h-10 items-center rounded-full bg-black px-5 text-sm text-white"
               >
                 Message

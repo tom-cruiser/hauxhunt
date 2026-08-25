@@ -10,7 +10,7 @@ import {
   FileText,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useReducer, useState, useSyncExternalStore } from "react";
 import house1 from "@/assets/images/house1.jpg";
 import house2 from "@/assets/images/house2.jpg";
 import house3 from "@/assets/images/house3.jpg";
@@ -20,17 +20,85 @@ import alineAvatar from "@/assets/images/flatmate-aline.png";
 import sarahAvatar from "@/assets/images/flatmate-grace.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
 import { RENTER_RENTALS } from "@/data/renter-rentals";
+import { withSharedRentals } from "@/app/renter-dashboard/rentals/page";
+import {
+  getOwnerProperty,
+  RENTER_DEMO_NAME,
+  subscribeToOwnerRentals,
+} from "@/lib/owner-data";
+import { pushOwnerNotification } from "@/lib/owner-notifications";
+import { subscribeToPmWork } from "@/lib/pm-work";
+import {
+  getAuthorizationForProperty,
+  getIndependentProperty,
+} from "@/lib/professional-properties";
+import { pushProfessionalNotification } from "@/lib/professional-work";
+import { getProfessional } from "@/lib/team-data";
 const images = [house1, house2, house3, house4];
+const subscribeToHydration = () => () => {};
 export default function RentalDetail() {
   const { id } = useParams<{ id: string }>();
-  const r = RENTER_RENTALS.find((x) => x.id === id) ?? RENTER_RENTALS[0];
+  // Cross-Role Lifecycle Synchronization phase -- Section 19: resolves from
+  // the SAME shared rentals list as My Rentals, not a second static lookup.
+  const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
+  const hydrated = useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false,
+  );
+  useEffect(() => subscribeToOwnerRentals(forceUpdate), []);
+  useEffect(() => subscribeToPmWork(forceUpdate), []);
+  const sharedRentals = hydrated
+    ? withSharedRentals(RENTER_RENTALS)
+    : RENTER_RENTALS;
+  const r = sharedRentals.find((x) => x.id === id) ?? sharedRentals[0];
+  const rentAmount = r.rent.replace(/\s*\/\s*month\s*$/i, "");
   const ended = r.status === "Ended";
   const endingSoon = r.status === "Ending Soon";
   const [viewedDocument, setViewedDocument] = useState<string | null>(null);
   const [renewalRequested, setRenewalRequested] = useState(false);
   const [renewalToast, setRenewalToast] = useState(false);
+  const property = getOwnerProperty(r.propertyId);
+  const independentAuthorization = getIndependentProperty(r.propertyId)
+    ? getAuthorizationForProperty(r.propertyId)
+    : undefined;
+  const independentManager = independentAuthorization
+    ? getProfessional(independentAuthorization.professionalId)
+    : undefined;
+  const renewalRecipient =
+    property?.propertyManager?.name ??
+    independentManager?.name ??
+    "the property owner";
 
   function requestRenewal() {
+    const notification = {
+      title: "Rental renewal requested",
+      body: `${RENTER_DEMO_NAME} requested a renewal for ${r.title}. The current agreement ends on ${r.end}.`,
+      actionLabel: "View Rental",
+    };
+
+    if (property?.propertyManager) {
+      pushProfessionalNotification({
+        ...notification,
+        professionalId: property.propertyManager.professionalId,
+        category: "rental",
+        actionHref: `/partner-dashboard/rentals/${r.id}`,
+      });
+    } else if (independentAuthorization && independentManager) {
+      pushProfessionalNotification({
+        ...notification,
+        professionalId: independentAuthorization.professionalId,
+        category: "rental",
+        actionHref: `/partner-dashboard/rentals/${r.id}`,
+      });
+    } else {
+      pushOwnerNotification({
+        ...notification,
+        category: "rental",
+        actionHref: `/owner-dashboard/rentals?open=${encodeURIComponent(r.id)}`,
+      });
+    }
+
     setRenewalRequested(true);
     setRenewalToast(true);
     window.setTimeout(() => setRenewalToast(false), 3500);
@@ -74,7 +142,7 @@ export default function RentalDetail() {
                 </div>
                 <div className="mt-5 flex gap-3">
                   <Link
-                    href={`/renter-dashboard/messages?host=${encodeURIComponent(r.manager)}&role=${encodeURIComponent(r.role.replace(/^Verified /, ""))}&verified=${r.role.startsWith("Verified") ? "1" : "0"}&ctx=active-rental&property=${encodeURIComponent(r.title)}&propertyId=${encodeURIComponent(r.propertyId)}&status=${encodeURIComponent(r.status)}&detail=${encodeURIComponent(`${r.rent} / month`)}&refId=${encodeURIComponent(r.id)}`}
+                    href={`/renter-dashboard/messages?host=${encodeURIComponent(r.manager)}&role=${encodeURIComponent(r.role.replace(/^Verified /, ""))}&verified=${r.role.startsWith("Verified") ? "1" : "0"}&ctx=active-rental&property=${encodeURIComponent(r.title)}&propertyId=${encodeURIComponent(r.propertyId)}&status=${encodeURIComponent(r.status)}&detail=${encodeURIComponent(`${rentAmount} / month`)}&refId=${encodeURIComponent(r.id)}`}
                     className="inline-flex h-10 items-center rounded-full bg-black px-4 text-sm text-white"
                   >
                     Message Manager
@@ -90,14 +158,14 @@ export default function RentalDetail() {
               <Section title="Rental overview">
                 <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
                   {[
-                    ["Monthly Rent", r.rent],
+                    ["Monthly Rent", rentAmount],
                     [
                       "Next Payment",
                       endingSoon ? "Pending renewal" : r.nextPayment,
                     ],
                     ["Rental Start", r.start],
                     ["Rental End", r.end],
-                    ["Deposit", r.rent],
+                    ["Deposit", rentAmount],
                     ["Occupants", "2"],
                   ].map(([a, b]) => (
                     <div key={a}>
@@ -195,7 +263,7 @@ export default function RentalDetail() {
               ) : null}
               <div className="grid gap-6 sm:grid-cols-2">
                 <Section title="Payments">
-                  <p className="font-medium">{r.rent} / month</p>
+                  <p className="font-medium">{rentAmount} / month</p>
                   <p className="text-carbon-500 mt-2 text-sm">
                     {endingSoon
                       ? "No payment is due after the current agreement ends. A new schedule will appear if renewal is confirmed."
@@ -229,7 +297,11 @@ export default function RentalDetail() {
                   </p>
                   <div className="mt-5 flex flex-wrap gap-3">
                     <Link
-                      href="/renter-dashboard/maintenance"
+                      href={
+                        ended
+                          ? "/renter-dashboard/maintenance"
+                          : "/renter-dashboard/maintenance/HH-MNT-1042"
+                      }
                       className="inline-flex h-10 items-center gap-2 rounded-full border border-black/15 px-4 text-sm font-medium transition-colors hover:border-black/35 hover:bg-black/[0.04]"
                     >
                       View Maintenance
@@ -300,22 +372,31 @@ export default function RentalDetail() {
               <Section title="Managed by">
                 <div className="flex items-center gap-3">
                   <Image
-                    src={r.manager === "Aline Uwase" ? alineAvatar : r.manager === "Sarah Uwase" ? sarahAvatar : managerAvatar}
-                    alt={r.manager}
+                    src={
+                      r.manager === "Aline Uwase"
+                        ? alineAvatar
+                        : r.manager === "Sarah Uwase"
+                          ? sarahAvatar
+                          : managerAvatar
+                    }
+                    alt=""
                     className="size-12 rounded-full object-cover"
                   />
                   <div>
-                    <p className="font-medium">{r.manager}</p>
-                    <p className="text-carbon-500 mt-1 flex items-center gap-1 text-sm">
-                      <BadgeCheck className="size-4" />
-                      {r.role}
+                    <p className="flex items-center gap-1.5 font-medium">
+                      <span>{r.manager}</span>
+                      <BadgeCheck className="size-4 shrink-0" />
+                    </p>
+                    <p className="text-carbon-500 mt-1 text-sm">
+                      {r.role.replace(/^Verified\s+/i, "")}
                     </p>
                   </div>
                 </div>
               </Section>
               <Section title="Property">
                 <p className="text-sm">
-                  {r.beds} bedrooms · {r.baths} bathrooms
+                  {r.beds ? `${r.beds} bedrooms` : "Bedroom details pending"}
+                  {r.baths ? ` · ${r.baths} bathrooms` : ""}
                 </p>
                 <p className="text-carbon-500 mt-2 text-sm">
                   {r.furnishing} · Residential home
@@ -334,7 +415,7 @@ export default function RentalDetail() {
       </main>
       {renewalToast ? (
         <div role="status" className="feedback-toast">
-          Renewal request sent to {r.manager}.
+          Renewal request sent to {renewalRecipient}.
         </div>
       ) : null}
       {viewedDocument ? (

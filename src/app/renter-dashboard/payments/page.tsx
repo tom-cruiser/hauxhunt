@@ -19,6 +19,57 @@ import bankMethodImage from "@/assets/images/bank.png";
 import cardMethodImage from "@/assets/images/card.png";
 import mobileMethodImage from "@/assets/images/mobile.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
+import { getOwnerPayments, updateOwnerPayment } from "@/lib/owner-data";
+import { REGISTERED_PROFESSIONALS } from "@/lib/team-data";
+import { pushProfessionalNotification } from "@/lib/professional-work";
+import { pushOwnerNotification } from "@/lib/owner-notifications";
+
+// Cross-Role Lifecycle Synchronization phase -- Section 20-24/54: this page
+// is otherwise untouched (a large, self-contained mock payment-state
+// machine -- Section 47/48 caution against a broader rebuild here). One
+// targeted connection: paying a property that has a real, matching
+// OwnerPayment record also marks that SAME record Paid, so PM/Owner see it
+// -- covering the manual test's Kacyiru/Remera scenarios without touching
+// visual design or the rest of the flow.
+const PROPERTY_TO_ID: Record<string, string> = {
+  "Kacyiru Residence": "kacyiru-2br",
+  "Nyarutarama Garden Apartment": "nyarutarama-2br",
+  "Remera Family House": "remera-3br",
+};
+
+function markSharedPaymentPaid(propertyName: string) {
+  const propertyId = PROPERTY_TO_ID[propertyName];
+  if (!propertyId) return;
+  const due = getOwnerPayments().find(
+    (p) =>
+      p.propertyId === propertyId &&
+      (p.status === "Due" || p.status === "Overdue" || p.status === "Pending"),
+  );
+  if (!due) return;
+  updateOwnerPayment(due.id, { status: "Paid", date: "Just now" });
+
+  // Section 45: "Renter pays -> PM: Payment received -> Owner: Payment received."
+  const manager = due.managedBy
+    ? REGISTERED_PROFESSIONALS.find((p) => p.name === due.managedBy)
+    : undefined;
+  if (manager) {
+    pushProfessionalNotification({
+      professionalId: manager.id,
+      category: "payment",
+      title: "Payment received",
+      body: `${due.renter} paid ${due.purpose} for ${propertyName}.`,
+      actionLabel: "View Payment",
+      actionHref: `/partner-dashboard/payments?propertyId=${encodeURIComponent(propertyId)}`,
+    });
+  }
+  pushOwnerNotification({
+    category: "payment",
+    title: "Payment received",
+    body: `${due.renter} paid ${due.purpose} for ${propertyName}.`,
+    actionLabel: "View Payments",
+    actionHref: "/owner-dashboard/payments",
+  });
+}
 
 type PageState = "active" | "due" | "overdue";
 type PaymentAccess = "disabled" | "invited" | "enabled";
@@ -113,8 +164,8 @@ const history = [
     amount: "RWF 850,000",
     method: "Mobile Money",
     reference: "HH-PAY-19204",
-    property: "Nyarutarama Garden Apartment",
-    manager: "Aline Uwase",
+    property: "Kacyiru Residence",
+    manager: "Jean Mugisha",
   },
   {
     date: "1 Jul 2026",
@@ -536,6 +587,9 @@ function ActivePayments({
               <Status>Paid</Status>
               <span className="text-carbon-500 text-xs">28 July 2026</span>
             </div>
+            <p className="text-carbon-500 mt-3 text-sm leading-6">
+              Paid during rental setup after the agreement was signed.
+            </p>
             <button
               onClick={() => openReceipt(history[1])}
               className="mt-5 text-sm font-medium underline underline-offset-4"
@@ -835,6 +889,7 @@ function PaymentModal({
           <div className="mt-7 flex flex-wrap gap-3">
             <button
               onClick={() => {
+                markSharedPaymentPaid(payment.property);
                 setReceipt({
                   date: "16 Aug 2026",
                   description: payment.purpose,

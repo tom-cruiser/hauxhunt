@@ -1,33 +1,11 @@
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { DashboardShell } from "@/components/partner/dashboard-shell";
-import { ListPropertyForm } from "@/components/properties/list-property-form";
-
-export const metadata: Metadata = {
-  title: "Add property | Partner dashboard | HauxHunt",
-  description: "Create a property listing from the HauxHunt partner dashboard.",
-};
-
-export default function NewPartnerListingPage() {
-  return (
-    <DashboardShell initialSection="listings">
-      <section className="px-5 pt-8 pb-24 sm:px-6 lg:px-10 lg:pt-10 xl:px-12">
-        <div className="mx-auto max-w-[1360px]">
-          <header className="mx-auto max-w-[980px] border-b border-black/10 pb-8">
-            <h1 className="dashboard-page-title text-carbon-900">
-              List a property
-            </h1>
-            <p className="text-carbon-600 mt-5 max-w-2xl text-base leading-7 sm:text-lg">
-              Add the property details, pricing, availability, and photos. You
-              can review everything before submitting the listing.
-            </p>
-          </header>
-
-          <div className="mx-auto mt-8 max-w-[980px]">
-            <ListPropertyForm authenticatedPartner />
-          </div>
-        </div>
-      </section>
-    </DashboardShell>
-  );
+// Foundation Cleanup phase -- listing creation is no longer a free-floating
+// entry point that can invent property identity out of nothing (Section
+// 24). Every listing must now belong to a property the professional
+// actually has Team Assignment or Independent Authorization access to.
+// Redirect to Properties with a small guidance banner rather than dropping
+// straight into a form with no property behind it.
+export default function LegacyPartnerNewListingPage() {
+  redirect("/partner-dashboard/properties?guidance=create-listing");
 }

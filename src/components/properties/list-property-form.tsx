@@ -14,6 +14,25 @@ import {
   UserRound,
 } from "lucide-react";
 
+// Foundation Cleanup phase: this form is shared by the Owner's own "Add a
+// property" flow (owner-dashboard/properties/new -- untouched, still calls
+// it with no propertyId) and the professional's property-bound Create/Edit
+// Listing flow (partner-dashboard/properties/[id]/listing/new). The new
+// props below are all optional and additive -- when omitted, behavior is
+// byte-for-byte what it always was (local-only "submitted"/"draftSaved" UI
+// state, no persistence, redirect to /partner-dashboard/listings). When
+// propertyId + onSaved are supplied, the caller owns persistence (via
+// professional-properties.ts's saveListingForProperty) and navigation,
+// because this component has no business knowing about the professional
+// property model -- it stays a generic listing form either way.
+type ListingFieldValues = {
+  title: string;
+  description: string;
+  rent: string;
+  availableFrom: string;
+  amenities: string[];
+};
+
 const STEPS = [
   { label: "About you", icon: UserRound },
   { label: "Property", icon: Building2 },
@@ -111,8 +130,40 @@ export const PROPERTY_AMENITIES = AMENITY_GROUPS.flatMap(
 
 export function ListPropertyForm({
   authenticatedPartner = false,
+  propertyContext,
+  initialValues,
+  onSaved,
+  onDone,
 }: {
   authenticatedPartner?: boolean;
+  // Rendered above the stepper so the professional always knows which
+  // property they're advertising (Section 26) -- never present when this
+  // form is creating a brand-new property (Owner's flow, or the legacy
+  // unauthenticated public flow).
+  propertyContext?: { title: string; location: string; badge: string };
+  // Prefills known property facts (Section 27) so the professional never
+  // re-types what HauxHunt already knows. Only the fields present are
+  // prefilled; everything else (pricing, availability, photos) stays
+  // listing-specific and blank.
+  initialValues?: {
+    title?: string;
+    propertyType?: string;
+    country?: string;
+    city?: string;
+    neighbourhood?: string;
+    streetAddress?: string;
+    bedrooms?: string;
+    bathrooms?: string;
+    area?: string;
+    furnishing?: string;
+    amenities?: string[];
+  };
+  onSaved?: (values: ListingFieldValues, status: "Draft" | "In Review") => void;
+  // Replaces the post-submit screen's "List another property" reset action
+  // -- for a property-bound listing, resetting the whole form to create a
+  // second, unrelated one makes no sense; the caller decides where "done"
+  // goes instead (Property Detail).
+  onDone?: () => void;
 }) {
   const router = useRouter();
   const firstStep = authenticatedPartner ? 1 : 0;
@@ -120,7 +171,7 @@ export function ListPropertyForm({
   const today = new Date().toISOString().slice(0, 10);
   const [step, setStep] = useState(firstStep);
   const [photoNames, setPhotoNames] = useState<string[]>([]);
-  const [amenities, setAmenities] = useState<string[]>([]);
+  const [amenities, setAmenities] = useState<string[]>(initialValues?.amenities ?? []);
   const [submitted, setSubmitted] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -144,18 +195,42 @@ export function ListPropertyForm({
     setStep((current) => Math.min(current + 1, STEPS.length - 1));
   }
 
+  // Reads what was actually typed -- the fields still use native
+  // uncontrolled inputs (defaultValue-based prefill, validated via
+  // checkValidity), so this is the one place values get collected, rather
+  // than converting every field to controlled React state.
+  function collectListingValues(): ListingFieldValues {
+    const data = new FormData(formRef.current ?? undefined);
+    const price = data.get("price");
+    const period = data.get("paymentPeriod");
+    const currency = data.get("currency");
+    return {
+      title: String(data.get("title") ?? ""),
+      description: String(data.get("description") ?? ""),
+      rent: price ? `${currency ?? "USD"} ${price}${period ? ` / ${String(period).toLowerCase().replace("per ", "")}` : ""}` : "",
+      availableFrom: String(data.get("availableFrom") ?? ""),
+      amenities,
+    };
+  }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!formRef.current?.checkValidity()) {
       formRef.current?.reportValidity();
       return;
     }
+    onSaved?.(collectListingValues(), "In Review");
     setSubmitted(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function saveDraft() {
     setDraftSaved(true);
+    if (onSaved) {
+      onSaved(collectListingValues(), "Draft");
+      window.setTimeout(() => (onDone ? onDone() : router.push("/partner-dashboard/listings")), 900);
+      return;
+    }
     window.setTimeout(() => router.push("/partner-dashboard/listings"), 900);
   }
 
@@ -166,7 +241,7 @@ export function ListPropertyForm({
           <Check aria-hidden="true" className="size-7" />
         </span>
         <h2 className="font-bricolage text-carbon-900 mt-7 text-4xl font-medium tracking-[-0.04em]">
-          Your property is under review
+          {propertyContext ? "Your listing is under review" : "Your property is under review"}
         </h2>
         <p className="text-carbon-600 mx-auto mt-4 max-w-xl leading-7">
           Your listing has been submitted to the HauxHunt team and is now under
@@ -176,6 +251,10 @@ export function ListPropertyForm({
         <button
           type="button"
           onClick={() => {
+            if (onDone) {
+              onDone();
+              return;
+            }
             setSubmitted(false);
             setStep(firstStep);
             setPhotoNames([]);
@@ -185,7 +264,7 @@ export function ListPropertyForm({
           }}
           className="font-bricolage mt-8 h-12 rounded-full bg-black px-7 font-medium text-white transition-colors hover:bg-black/80"
         >
-          List another property
+          {onDone ? "Back to Property" : "List another property"}
         </button>
       </div>
     );
@@ -193,6 +272,15 @@ export function ListPropertyForm({
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} noValidate>
+      {propertyContext ? (
+        <div className="mb-6 flex items-center gap-4 rounded-2xl bg-black/3 p-4">
+          <span className="bg-black/4.5 rounded-full px-3 py-1 text-xs font-medium whitespace-nowrap">{propertyContext.badge}</span>
+          <div className="min-w-0">
+            <p className="truncate font-medium">{propertyContext.title}</p>
+            <p className="text-carbon-500 truncate text-sm">{propertyContext.location}</p>
+          </div>
+        </div>
+      ) : null}
       <ol
         aria-label="Listing progress"
         className="mb-6 grid gap-2"
@@ -275,22 +363,25 @@ export function ListPropertyForm({
               name="title"
               placeholder="Modern 3-bedroom family home"
               className="sm:col-span-2"
+              defaultValue={initialValues?.title}
               required
             />
-            <PropertyTypeField />
+            <PropertyTypeField defaultValue={initialValues?.propertyType} />
             <SelectField
               label="Country"
               name="country"
               options={["Rwanda", "Nigeria", "Kenya"]}
+              defaultValue={initialValues?.country}
               required
             />
-            <Field label="City" name="city" required />
-            <Field label="Neighbourhood" name="neighbourhood" required />
+            <Field label="City" name="city" defaultValue={initialValues?.city} required />
+            <Field label="Neighbourhood" name="neighbourhood" defaultValue={initialValues?.neighbourhood} required />
             <Field
               label="Exact street address"
               name="streetAddress"
               placeholder="Street, building or house number"
               className="sm:col-span-2"
+              defaultValue={initialValues?.streetAddress}
               required
             />
             <Field
@@ -322,6 +413,7 @@ export function ListPropertyForm({
               name="bedrooms"
               type="number"
               min="0"
+              defaultValue={initialValues?.bedrooms}
               required
             />
             <Field
@@ -329,13 +421,15 @@ export function ListPropertyForm({
               name="bathrooms"
               type="number"
               min="1"
+              defaultValue={initialValues?.bathrooms}
               required
             />
-            <Field label="Floor area (m²)" name="area" type="number" min="1" />
+            <Field label="Floor area (m²)" name="area" type="number" min="1" defaultValue={initialValues?.area} />
             <SelectField
               label="Furnishing"
               name="furnishing"
               options={["Furnished", "Unfurnished", "Partly furnished"]}
+              defaultValue={initialValues?.furnishing}
               required
             />
             <div
@@ -650,6 +744,7 @@ type FieldProps = {
   min?: string;
   max?: string;
   step?: string;
+  defaultValue?: string;
 };
 
 function Field({
@@ -663,6 +758,7 @@ function Field({
   min,
   max,
   step,
+  defaultValue,
 }: FieldProps) {
   return (
     <label className={className}>
@@ -677,6 +773,7 @@ function Field({
         min={min}
         max={max}
         step={step}
+        defaultValue={defaultValue}
         className="h-12 w-full rounded-xl border-0 bg-black/[0.035] px-4 ring-0 transition-colors outline-none focus:bg-black/[0.055] focus:ring-0"
       />
       {hint && (
@@ -691,9 +788,10 @@ type SelectFieldProps = {
   name: string;
   options: string[];
   required?: boolean;
+  defaultValue?: string;
 };
 
-function SelectField({ label, name, options, required }: SelectFieldProps) {
+function SelectField({ label, name, options, required, defaultValue }: SelectFieldProps) {
   return (
     <label>
       <span className="text-carbon-900 mb-2 block text-sm font-medium">
@@ -703,7 +801,7 @@ function SelectField({ label, name, options, required }: SelectFieldProps) {
         <select
           name={name}
           required={required}
-          defaultValue=""
+          defaultValue={defaultValue ?? ""}
           className="h-12 w-full appearance-none rounded-xl border-0 bg-black/[0.035] pr-11 pl-4 ring-0 transition-colors outline-none focus:bg-black/[0.055] focus:ring-0"
         >
           <option value="" disabled>
@@ -722,8 +820,8 @@ function SelectField({ label, name, options, required }: SelectFieldProps) {
   );
 }
 
-function PropertyTypeField() {
-  const [propertyType, setPropertyType] = useState("");
+function PropertyTypeField({ defaultValue }: { defaultValue?: string }) {
+  const [propertyType, setPropertyType] = useState(defaultValue ?? "");
 
   return (
     <div className={propertyType === "Other" ? "sm:col-span-2" : undefined}>

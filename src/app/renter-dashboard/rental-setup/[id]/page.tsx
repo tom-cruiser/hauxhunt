@@ -1,11 +1,40 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { Check, ChevronLeft, ChevronRight, FileText, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useReducer, useState, useSyncExternalStore } from "react";
 import agreedIllustration from "@/assets/images/agreed.png";
 import managerAvatar from "@/assets/images/julien.jpg";
+import emptyIllustration from "@/assets/images/empty.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
+import { RENTER_APPLICATIONS } from "@/data/renter-applications";
+import { DEMO_LISTINGS } from "@/data/hero-search-demo";
+import {
+  resolveAnyPropertyLocation,
+  resolveAnyPropertyTitle,
+} from "@/lib/professional-properties";
+import { getPaymentsForRentalId } from "@/lib/owner-data";
+import {
+  completeRentalSetup,
+  declineRentalSetup,
+  getRentalSetupByAnyId,
+  markInitialSetupPaymentPaid,
+  saveRentalSetupDraft,
+  sendRentalSetup,
+  startRentalSetup,
+  subscribeToPmWork,
+  type RentalSetupDraft,
+} from "@/lib/pm-work";
+
+// Cross-Role Lifecycle Synchronization phase -- Section 12-19. Previously a
+// fully hardcoded, single-scenario ("Nyarutarama Garden Apartment") page
+// that didn't even read its own [id] param. Now resolves a REAL, shared
+// Rental Setup (pm-work.ts's RentalSetupDraft, the exact record PM's
+// "Send Rental Setup" produced) by either applicationId or rentalId --
+// same identity, viewed from the renter's side. The step UI/visual design
+// is otherwise preserved exactly as it was.
+
 const steps = [
   "Rental Details",
   "Rental Agreement",
@@ -15,7 +44,18 @@ const steps = [
 ];
 type Modal =
   "question" | "agreement" | "sign" | "payment" | "receipt" | "decline" | null;
+const subscribeToHydration = () => () => {};
+
 export default function RentalSetupPage() {
+  const params = useParams<{ id: string }>();
+  const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
+  const hydrated = useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false,
+  );
+  useEffect(() => subscribeToPmWork(forceUpdate), []);
+
   const [step, setStep] = useState(0);
   const [reviewed, setReviewed] = useState(false);
   const [read, setRead] = useState(false);
@@ -26,18 +66,114 @@ export default function RentalSetupPage() {
   const [modal, setModal] = useState<Modal>(null);
   const [signature, setSignature] = useState("");
   const [declined, setDeclined] = useState(false);
+
+  const draft = hydrated ? getRentalSetupByAnyId(params.id) : undefined;
+  const approvedApplication = RENTER_APPLICATIONS.find(
+    (application) =>
+      application.id === params.id && application.status === "Approved",
+  );
+
+  useEffect(() => {
+    if (!hydrated || draft || !approvedApplication) return;
+
+    const listing = DEMO_LISTINGS.find(
+      (item) => item.id === approvedApplication.propertyId,
+    );
+    const monthlyRent = listing
+      ? `${listing.currency} ${listing.price.toLocaleString()} / month`
+      : "Rent to be confirmed";
+
+    startRentalSetup({
+      applicationId: approvedApplication.id,
+      propertyId: approvedApplication.propertyId,
+      renterName: "Julien Mugisha",
+      monthlyRent,
+      moveIn: "1 September 2026",
+      initiatedBy: approvedApplication.representative,
+      initiatedByRole: approvedApplication.role.replace(/^Verified\s+/i, ""),
+    });
+    saveRentalSetupDraft(approvedApplication.id, {
+      endDate: "31 August 2027",
+      agreementAttached: true,
+    });
+    sendRentalSetup(approvedApplication.id, approvedApplication.title);
+  }, [approvedApplication, draft, hydrated]);
+
   function save(next = step) {
     setStep(next);
   }
+
   if (declined)
     return (
       <State
         title="Invitation declined"
-        text="You chose not to continue the rental setup for Nyarutarama Garden Apartment."
+        text={`You chose not to continue the rental setup${draft ? ` for ${resolveAnyPropertyTitle(draft.propertyId)}` : ""}.`}
         href="/renter-dashboard/applications"
         action="View Application"
       />
     );
+
+  if (!draft && approvedApplication) {
+    return (
+      <>
+        <RenterCatalogueTopBar />
+        <main className="bg-carbon-50 flex min-h-svh items-center justify-center px-5 pt-16 text-center">
+          <p className="text-carbon-500 text-sm">
+            Preparing your rental setup…
+          </p>
+        </main>
+      </>
+    );
+  }
+
+  if (!draft || draft.status === "Draft") {
+    return (
+      <>
+        <RenterCatalogueTopBar />
+        <main className="bg-carbon-50 flex min-h-svh flex-col items-center justify-center px-5 pt-16 text-center">
+          <Image
+            src={emptyIllustration}
+            alt=""
+            className="h-40 w-auto object-contain"
+          />
+          <h1 className="font-bricolage mt-5 text-3xl font-medium">
+            Rental setup not ready yet
+          </h1>
+          <p className="text-carbon-500 mt-3 max-w-md text-sm leading-6">
+            Your application was approved, but your property manager hasn&apos;t
+            sent your rental setup yet. Check back soon.
+          </p>
+          <Link
+            href="/renter-dashboard/applications"
+            className="mt-6 inline-flex rounded-full bg-black px-5 py-3 text-sm text-white"
+          >
+            Back to Applications
+          </Link>
+        </main>
+      </>
+    );
+  }
+
+  const propertyTitle =
+    approvedApplication?.title ?? resolveAnyPropertyTitle(draft.propertyId);
+  const propertyLocation =
+    approvedApplication?.location ??
+    resolveAnyPropertyLocation(draft.propertyId);
+  // Owner Rental Setup Continuity phase -- previously resolved via
+  // getProfessional(draft.professionalId), which only exists for a
+  // PM-initiated draft and also hardcoded "Property Manager" as the
+  // fallback role label. initiatedBy/initiatedByRole is the one generic
+  // identity every draft carries regardless of who sent it (Property
+  // Manager or Property Owner), so this now works for both without a
+  // professional lookup at all.
+  const managerName = draft.initiatedBy;
+  const managerRoleLabel = draft.initiatedByRole;
+  const payments = draft.rentalId ? getPaymentsForRentalId(draft.rentalId) : [];
+  const setupPayment = payments.find(
+    (p) => p.purpose === "Rental Setup — Deposit & First Month",
+  );
+  const isCompleted = draft.status === "Completed";
+
   return (
     <>
       <RenterCatalogueTopBar />
@@ -54,31 +190,35 @@ export default function RentalSetupPage() {
             <div className="mt-5 flex flex-wrap items-start justify-between gap-5">
               <div>
                 <h1 className="font-bricolage text-3xl font-medium">
-                  Nyarutarama Garden Apartment
+                  {propertyTitle}
                 </h1>
-                <p className="text-carbon-500 mt-1">Nyarutarama, Kigali</p>
+                <p className="text-carbon-500 mt-1">{propertyLocation}</p>
               </div>
               <span className="rounded-full bg-black px-3 py-1.5 text-xs text-white">
-                {step === 4 ? "Ready for Move-in" : "Setup in progress"}
+                {step === 4 || isCompleted
+                  ? "Ready for Move-in"
+                  : "Setup in progress"}
               </span>
             </div>
             <div className="mt-5 flex items-center gap-3">
               <Image
                 src={managerAvatar}
-                alt="Jean Mugisha"
+                alt={managerName}
                 className="size-9 rounded-full object-cover"
               />
               <p className="text-sm">
                 <span className="text-carbon-500">Invited by </span>
-                <strong>Jean Mugisha</strong> · Verified Property Manager
+                <strong>{managerName}</strong> · Verified {managerRoleLabel}
               </p>
-              <button
-                type="button"
-                onClick={() => setModal("decline")}
-                className="ml-auto text-xs text-black/55 underline underline-offset-4"
-              >
-                Decline Invitation
-              </button>
+              {!isCompleted ? (
+                <button
+                  type="button"
+                  onClick={() => setModal("decline")}
+                  className="ml-auto text-xs text-black/55 underline underline-offset-4"
+                >
+                  Decline Invitation
+                </button>
+              ) : null}
             </div>
           </div>
         </header>
@@ -112,6 +252,9 @@ export default function RentalSetupPage() {
             <section className="bg-white p-6 shadow-[0_3px_14px_rgba(0,0,0,.03)] sm:p-8">
               {step === 0 ? (
                 <Details
+                  draft={draft}
+                  propertyTitle={propertyTitle}
+                  managerName={managerName}
                   reviewed={reviewed}
                   setReviewed={setReviewed}
                   question={() => setModal("question")}
@@ -120,6 +263,9 @@ export default function RentalSetupPage() {
               ) : null}
               {step === 1 ? (
                 <Agreement
+                  draft={draft}
+                  propertyTitle={propertyTitle}
+                  managerName={managerName}
                   read={read}
                   understood={understood}
                   setRead={setRead}
@@ -133,14 +279,32 @@ export default function RentalSetupPage() {
               ) : null}
               {step === 2 ? (
                 <Payments
-                  paid={paid}
+                  draft={draft}
+                  setupPayment={setupPayment}
+                  paid={paid || setupPayment?.status === "Paid"}
                   pay={() => setModal("payment")}
                   receipt={() => setModal("receipt")}
                   next={() => save(3)}
                 />
               ) : null}
-              {step === 3 ? <MoveIn next={() => save(4)} /> : null}
-              {step === 4 ? <Complete /> : null}
+              {step === 3 ? (
+                <MoveIn
+                  draft={draft}
+                  managerName={managerName}
+                  next={() => save(4)}
+                />
+              ) : null}
+              {step === 4 ? (
+                <Complete
+                  draft={draft}
+                  propertyTitle={propertyTitle}
+                  managerName={managerName}
+                  onComplete={() => {
+                    if (draft.rentalId)
+                      completeRentalSetup(draft.applicationId);
+                  }}
+                />
+              ) : null}
             </section>
           </div>
         </div>
@@ -148,6 +312,10 @@ export default function RentalSetupPage() {
       {modal ? (
         <SetupModal
           type={modal}
+          draft={draft}
+          propertyTitle={propertyTitle}
+          managerName={managerName}
+          setupPayment={setupPayment}
           close={() => setModal(null)}
           signature={signature}
           setSignature={setSignature}
@@ -159,8 +327,10 @@ export default function RentalSetupPage() {
             }
             if (modal === "payment") {
               setPaid(true);
+              if (draft.rentalId) markInitialSetupPaymentPaid(draft.rentalId);
             }
             if (modal === "decline") {
+              declineRentalSetup(draft.applicationId);
               setDeclined(true);
             }
             setModal(null);
@@ -184,12 +354,28 @@ function formatSignedDate(value: string) {
     year: "numeric",
   }).format(new Date(value));
 }
+function oneTimeAmount(value: string) {
+  return value.replace(/\s*\/\s*month\s*$/i, "");
+}
+function setupPaymentTotal(draft: RentalSetupDraft) {
+  const currency = draft.monthlyRent.match(/^[A-Z]{3}/)?.[0] ?? "RWF";
+  const monthlyValue = Number(draft.monthlyRent.replace(/[^0-9]/g, "")) || 0;
+  const depositValue =
+    Number(draft.securityDeposit.replace(/[^0-9]/g, "")) || 0;
+  return `${currency} ${(monthlyValue + depositValue).toLocaleString("en-US")}`;
+}
 function Details({
+  draft,
+  propertyTitle,
+  managerName,
   reviewed,
   setReviewed,
   question,
   next,
 }: {
+  draft: RentalSetupDraft;
+  propertyTitle: string;
+  managerName: string;
   reviewed: boolean;
   setReviewed: (v: boolean) => void;
   question: () => void;
@@ -202,26 +388,24 @@ function Details({
         Review the terms provided by the verified property representative.
       </p>
       <div className="mt-6 grid gap-x-7 sm:grid-cols-2">
-        <Row a="Property" b="Nyarutarama Garden Apartment" />
-        <Row a="Monthly Rent" b="RWF 850,000" />
-        <Row a="Security Deposit" b="RWF 850,000" />
-        <Row a="Rental Start" b="1 September 2026" />
-        <Row a="Rental End" b="31 August 2027" />
-        <Row a="Rental Term" b="12 months" />
+        <Row a="Property" b={propertyTitle} />
+        <Row a="Monthly Rent" b={draft.monthlyRent} />
+        <Row a="Security Deposit" b={oneTimeAmount(draft.securityDeposit)} />
+        <Row a="Rental Start" b={draft.startDate} />
+        <Row a="Rental End" b={draft.endDate || "To be confirmed"} />
         <Row a="Payment Frequency" b="Monthly" />
-        <Row a="Rent Due" b="1st of every month" />
-        <Row a="Occupants" b="2 occupants" />
-        <Row a="Managed By" b="Jean Mugisha" />
+        <Row a="Rent Due" b={draft.paymentDueDay} />
+        <Row a="Managed By" b={managerName} />
       </div>
       <div className="mt-6 flex gap-3">
         <Link
-          href="/properties/nyarutarama-2br?from=renter"
+          href={`/properties/${draft.propertyId}?from=renter`}
           className="rounded-full border border-black/15 px-4 py-2.5 text-sm"
         >
           View Property
         </Link>
         <Link
-          href="/renter-dashboard/messages?host=Jean%20Mugisha&role=Property%20Manager&verified=1&ctx=rental-setup&property=Nyarutarama%20Garden%20Apartment&propertyId=nyarutarama-2br&status=Agreement%20Awaiting%20Signature"
+          href={`/renter-dashboard/messages?host=${encodeURIComponent(managerName)}&ctx=rental-setup&propertyId=${encodeURIComponent(draft.propertyId)}`}
           className="rounded-full border border-black/15 px-4 py-2.5 text-sm"
         >
           Message Manager
@@ -247,6 +431,9 @@ function Details({
   );
 }
 function Agreement({
+  draft,
+  propertyTitle,
+  managerName,
   read,
   understood,
   setRead,
@@ -257,6 +444,9 @@ function Agreement({
   sign,
   next,
 }: {
+  draft: RentalSetupDraft;
+  propertyTitle: string;
+  managerName: string;
   read: boolean;
   understood: boolean;
   setRead: (v: boolean) => void;
@@ -276,11 +466,12 @@ function Agreement({
       <div className="mt-6 border border-black/10 p-5">
         <p className="flex items-center gap-2 font-medium">
           <FileText className="size-5" />
-          Nyarutarama Garden Apartment Rental Agreement
+          {propertyTitle} Rental Agreement
         </p>
         <p className="text-carbon-500 mt-3 text-sm leading-6">
-          Pacifique Harerimana and Jean Mugisha
-          <br />1 Sep 2026 – 31 Aug 2027
+          {managerName}
+          <br />
+          {draft.startDate} – {draft.endDate || "end date to be confirmed"}
         </p>
         <button onClick={preview} className="mt-4 text-sm underline">
           View Full Agreement
@@ -288,10 +479,10 @@ function Agreement({
       </div>
       <h3 className="font-bricolage mt-7 text-xl font-medium">Key Terms</h3>
       <div className="grid gap-x-8 sm:grid-cols-2">
-        <Row a="Monthly rent" b="RWF 850,000" />
-        <Row a="Deposit" b="RWF 850,000" />
+        <Row a="Monthly rent" b={draft.monthlyRent} />
+        <Row a="Deposit" b={oneTimeAmount(draft.securityDeposit)} />
         <Row a="Notice period" b="30 days" />
-        <Row a="Rent due" b="1st monthly" />
+        <Row a="Rent due" b={draft.paymentDueDay} />
       </div>
       {!signed ? (
         <div className="mt-6 space-y-3">
@@ -332,26 +523,36 @@ function Agreement({
   );
 }
 function Payments({
+  draft,
+  setupPayment,
   paid,
   pay,
   receipt,
   next,
 }: {
+  draft: RentalSetupDraft;
+  setupPayment: ReturnType<typeof getPaymentsForRentalId>[number] | undefined;
   paid: boolean;
   pay: () => void;
   receipt: () => void;
   next: () => void;
 }) {
+  const totalDue = setupPaymentTotal(draft);
   return (
     <>
       <h2 className="font-bricolage text-3xl font-medium">Required Payments</h2>
       <div className="mt-6">
-        <Row a="Security Deposit" b={paid ? "Paid" : "RWF 850,000 · Pending"} />
+        <Row
+          a="Security Deposit"
+          b={
+            paid ? "Paid" : `${oneTimeAmount(draft.securityDeposit)} · Pending`
+          }
+        />
         <Row
           a="First Month's Rent"
-          b={paid ? "Paid" : "RWF 850,000 · Pending"}
+          b={paid ? "Paid" : `${draft.monthlyRent} · Pending`}
         />
-        <Row a="Total Due Now" b={paid ? "RWF 0" : "RWF 1,700,000"} />
+        <Row a="Total Due Now" b={paid ? "0" : totalDue} />
       </div>
       {paid ? (
         <div className="mt-6">
@@ -360,7 +561,7 @@ function Payments({
             Payment Successful
           </p>
           <p className="text-carbon-500 mt-2 text-sm">
-            Reference HH-PAY-20481 · 28 August 2026
+            Reference {setupPayment?.reference ?? "—"}
           </p>
           <button onClick={receipt} className="mt-3 text-sm underline">
             View Receipt
@@ -371,27 +572,35 @@ function Payments({
           onClick={pay}
           className="mt-6 h-11 rounded-full bg-black px-5 text-sm text-white"
         >
-          Make Payment
+          Pay Deposit &amp; First Month
         </button>
       )}
       <Footer next={next} disabled={!paid} nextLabel="Continue to Move-in" />
     </>
   );
 }
-function MoveIn({ next }: { next: () => void }) {
+function MoveIn({
+  draft,
+  managerName,
+  next,
+}: {
+  draft: RentalSetupDraft;
+  managerName: string;
+  next: () => void;
+}) {
   return (
     <>
       <h2 className="font-bricolage text-3xl font-medium">Move-in Details</h2>
       <div className="mt-6">
-        <Row a="Move-in Date" b="1 September 2026" />
+        <Row a="Move-in Date" b={draft.startDate} />
         <Row a="Key Handover" b="At the property · 10:00 AM" />
-        <Row a="Contact" b="Jean Mugisha" />
+        <Row a="Contact" b={managerName} />
         <Row a="Move-in Inspection" b="Not Started" />
       </div>
       <h3 className="font-bricolage mt-7 text-xl font-medium">Instructions</h3>
       <ul className="text-carbon-500 mt-3 list-disc space-y-2 pl-5 text-sm">
         <li>Bring identification.</li>
-        <li>Meet Jean at the property.</li>
+        <li>Meet {managerName} at the property.</li>
         <li>Complete the inspection before accepting keys.</li>
       </ul>
       <div className="mt-7 space-y-2">
@@ -412,7 +621,21 @@ function MoveIn({ next }: { next: () => void }) {
     </>
   );
 }
-function Complete() {
+function Complete({
+  draft,
+  propertyTitle,
+  managerName,
+  onComplete,
+}: {
+  draft: RentalSetupDraft;
+  propertyTitle: string;
+  managerName: string;
+  onComplete: () => void;
+}) {
+  useEffect(() => {
+    onComplete();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <div className="py-8 text-center">
       <Image
@@ -425,12 +648,12 @@ function Complete() {
         Your Rental Is Ready
       </h2>
       <p className="text-carbon-500 mt-3">
-        Your setup for Nyarutarama Garden Apartment is complete. Your rental
-        begins 1 September 2026.
+        Your setup for {propertyTitle} is complete. Your rental begins{" "}
+        {draft.startDate}.
       </p>
       <div className="mt-7 flex justify-center gap-3">
         <Link
-          href="/renter-dashboard/messages?host=Jean%20Mugisha&role=Property%20Manager&verified=1&ctx=rental-setup&property=Nyarutarama%20Garden%20Apartment&propertyId=nyarutarama-2br&status=Ready%20for%20Move-in"
+          href={`/renter-dashboard/messages?host=${encodeURIComponent(managerName)}&ctx=rental-setup&propertyId=${encodeURIComponent(draft.propertyId)}`}
           className="rounded-full border border-black/15 px-5 py-3 text-sm"
         >
           Message Manager
@@ -480,12 +703,20 @@ function Footer({
 }
 function SetupModal({
   type,
+  draft,
+  propertyTitle,
+  managerName,
+  setupPayment,
   close,
   signature,
   setSignature,
   confirm,
 }: {
   type: Exclude<Modal, null>;
+  draft: RentalSetupDraft;
+  propertyTitle: string;
+  managerName: string;
+  setupPayment: ReturnType<typeof getPaymentsForRentalId>[number] | undefined;
   close: () => void;
   signature: string;
   setSignature: (v: string) => void;
@@ -493,15 +724,15 @@ function SetupModal({
 }) {
   const title = {
     question: "Question these rental details?",
-    agreement: "Nyarutarama Garden Apartment Rental Agreement",
+    agreement: `${propertyTitle} Rental Agreement`,
     sign: "Sign Rental Agreement",
-    payment: "Make Required Payment",
+    payment: "Pay Security Deposit & First Month",
     receipt: "Payment Receipt",
     decline: "Decline this rental invitation?",
   }[type];
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-5"
+      className="fixed inset-0 z-200 flex items-center justify-center bg-black/40 p-5"
       onMouseDown={close}
     >
       <div
@@ -517,15 +748,19 @@ function SetupModal({
         </button>
         <h2 className="font-bricolage text-2xl font-medium">{title}</h2>
         {type === "agreement" ? (
-          <AgreementDocument />
+          <AgreementDocument
+            draft={draft}
+            propertyTitle={propertyTitle}
+            managerName={managerName}
+          />
         ) : (
           <p className="text-carbon-500 mt-3 text-sm leading-6">
             {type === "question"
               ? "Contact the property representative before continuing if the rent, dates, deposit, or terms are incorrect."
               : type === "payment"
-                ? "Payment of RWF 1,700,000 using Mobile Money, Card, or Bank Transfer. No real payment will be processed."
+                ? `Payment of ${setupPaymentTotal(draft)} covers your security deposit and first month's rent. Choose Mobile Money, Card, or Bank Transfer. No real payment will be processed.`
                 : type === "receipt"
-                  ? "RWF 1,700,000 · Rental setup · HH-PAY-20481 · 28 August 2026 · Pacifique Harerimana"
+                  ? `${setupPaymentTotal(draft)} · Security deposit & first month's rent · ${setupPayment?.reference ?? "—"}`
                   : "Type your full name to confirm your signature."}
           </p>
         )}
@@ -533,7 +768,7 @@ function SetupModal({
           <input
             value={signature}
             onChange={(e) => setSignature(e.target.value)}
-            placeholder="Pacifique Harerimana"
+            placeholder={draft.renterName}
             className="mt-5 h-11 w-full border-b border-black/20 outline-none"
           />
         ) : null}
@@ -561,52 +796,63 @@ function SetupModal({
     </div>
   );
 }
-function AgreementDocument() {
+function AgreementDocument({
+  draft,
+  propertyTitle,
+  managerName,
+}: {
+  draft: RentalSetupDraft;
+  propertyTitle: string;
+  managerName: string;
+}) {
   return (
     <div className="mt-5 bg-black/[0.035] p-4 sm:p-6">
       <div className="mx-auto max-w-2xl bg-white px-6 py-8 shadow-sm sm:px-10">
         <div className="border-b border-black/15 pb-5 text-center">
           <p className="text-carbon-500 text-xs tracking-[0.12em] uppercase">
-            Uploaded by Jean Mugisha · 27 August 2026
+            Uploaded by {managerName}
           </p>
           <h3 className="font-bricolage mt-3 text-2xl font-medium">
             Residential Rental Agreement
           </h3>
           <p className="text-carbon-500 mt-2 text-sm">
-            Nyarutarama Garden Apartment · Nyarutarama, Kigali
+            {propertyTitle} · {resolveAnyPropertyLocation(draft.propertyId)}
           </p>
         </div>
         <div className="mt-6 grid gap-5 text-sm sm:grid-cols-2">
           <div>
             <p className="text-carbon-500 text-xs">Renter</p>
-            <p className="mt-1 font-medium">Pacifique Harerimana</p>
+            <p className="mt-1 font-medium">{draft.renterName}</p>
           </div>
           <div>
             <p className="text-carbon-500 text-xs">Property Representative</p>
-            <p className="mt-1 font-medium">Jean Mugisha</p>
+            <p className="mt-1 font-medium">{managerName}</p>
           </div>
           <div>
             <p className="text-carbon-500 text-xs">Rental period</p>
-            <p className="mt-1 font-medium">1 Sep 2026 – 31 Aug 2027</p>
+            <p className="mt-1 font-medium">
+              {draft.startDate} – {draft.endDate || "To be confirmed"}
+            </p>
           </div>
           <div>
             <p className="text-carbon-500 text-xs">Monthly rent</p>
-            <p className="mt-1 font-medium">RWF 850,000</p>
+            <p className="mt-1 font-medium">{draft.monthlyRent}</p>
           </div>
         </div>
         <div className="mt-7 space-y-6 text-sm leading-6">
           <section>
             <h4 className="font-medium">1. Rental term</h4>
             <p className="text-carbon-600 mt-2">
-              The property is rented for twelve months beginning 1 September
-              2026 and ending 31 August 2027.
+              The property is rented beginning {draft.startDate}
+              {draft.endDate ? ` and ending ${draft.endDate}` : ""}.
             </p>
           </section>
           <section>
             <h4 className="font-medium">2. Rent and deposit</h4>
             <p className="text-carbon-600 mt-2">
-              Monthly rent of RWF 850,000 is due on the first day of each month.
-              A security deposit of RWF 850,000 is required before move-in.
+              Monthly rent of {draft.monthlyRent} is due{" "}
+              {draft.paymentDueDay.toLowerCase()}. A security deposit of{" "}
+              {oneTimeAmount(draft.securityDeposit)} is required before move-in.
             </p>
           </section>
           <section>
@@ -634,7 +880,7 @@ function AgreementDocument() {
           <div>
             <p className="text-carbon-500 text-xs">Property representative</p>
             <p className="mt-3 border-b border-black/30 pb-2">
-              Jean Mugisha · Signed
+              {managerName} · Signed
             </p>
           </div>
         </div>

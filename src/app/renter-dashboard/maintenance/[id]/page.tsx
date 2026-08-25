@@ -11,7 +11,7 @@ import {
   MoreHorizontal,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 
 import cancelIllustration from "@/assets/images/cancel.png";
 import house1 from "@/assets/images/house1.jpg";
@@ -19,7 +19,9 @@ import house2 from "@/assets/images/house2.jpg";
 import scheduleIllustration from "@/assets/images/schedule.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
 import {
-  MAINTENANCE_REQUESTS,
+  getMaintenanceRequest,
+  subscribeToMaintenance,
+  updateMaintenanceRequest,
   type MaintenanceRequest,
   type MaintenanceStatus,
 } from "@/lib/maintenance-data";
@@ -28,6 +30,10 @@ type Dialog = "reschedule" | "information" | "reopen" | "cancel" | null;
 
 export default function MaintenanceDetailPage() {
   const params = useParams<{ id: string }>();
+  // Cross-Role Lifecycle Synchronization phase -- reads the SAME canonical
+  // record PM's Maintenance detail reads, live (Section 26/30).
+  const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
+  useEffect(() => subscribeToMaintenance(forceUpdate), []);
   const fallback: MaintenanceRequest = {
     id: params.id,
     title: "Leaking kitchen tap",
@@ -42,9 +48,10 @@ export default function MaintenanceDetailPage() {
     description:
       "The kitchen tap has been leaking continuously since yesterday.",
     latestUpdate: "Request received by the property manager",
+    reportedBy: "You",
+    managedBy: null,
   };
-  const request =
-    MAINTENANCE_REQUESTS.find((item) => item.id === params.id) ?? fallback;
+  const request = getMaintenanceRequest(params.id) ?? fallback;
   const [status, setStatus] = useState<MaintenanceStatus>(request.status);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [closed, setClosed] = useState(false);
@@ -311,10 +318,12 @@ export default function MaintenanceDetailPage() {
               showToast("Information sent");
             } else if (dialog === "reopen") {
               setStatus("Under Review");
+              updateMaintenanceRequest(request.id, { status: "Under Review" });
               setClosed(false);
               showToast("Maintenance request reopened");
             } else if (dialog === "cancel") {
               setStatus("Cancelled");
+              updateMaintenanceRequest(request.id, { status: "Cancelled" });
               showToast("Maintenance request cancelled");
             } else {
               showToast("New time requested");

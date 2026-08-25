@@ -30,6 +30,52 @@ import {
   type ApplicationStatus,
   type RenterApplication,
 } from "@/data/renter-applications";
+import { getOwnerApplications, subscribeToOwnerApplications, type OwnerApplication } from "@/lib/owner-data";
+
+// Cross-Role Lifecycle Synchronization phase -- Section 8: renter-side
+// application statuses now reflect the SAME shared Application Agent/PM/
+// Owner see, for every application that has a real owner-data.ts
+// counterpart (matched by id -- HH-APP-0241 etc. already share ids by
+// convention). Drafts and renter-only historical entries with no shared
+// counterpart are left exactly as they were; nothing here rebuilds the
+// existing drafts/withdraw/delete UX.
+function messageForSharedStatus(status: OwnerApplication["status"]): string {
+  switch (status) {
+    case "Submitted":
+      return "Your application has been received.";
+    case "Under Review":
+      return "Your application is currently being reviewed.";
+    case "Action Required":
+      return "Additional information is needed to continue your application.";
+    case "Decision Pending":
+      return "Your review is complete. A decision is pending.";
+    case "Approved":
+      return "Congratulations — your application has been approved.";
+    case "Not Selected":
+      return "This application was not selected for this property.";
+    default:
+      return "";
+  }
+}
+
+function withSharedStatus(base: RenterApplication[]): RenterApplication[] {
+  const shared = getOwnerApplications();
+  return base.map((item) => {
+    // "Withdrawn" and "Draft" are renter-only states with no shared
+    // Application equivalent -- never overwritten back from the shared
+    // source once set locally.
+    if (item.status === "Withdrawn" || item.status === "Draft") return item;
+    const match = shared.find((a) => a.id === item.id);
+    if (!match) return item;
+    return {
+      ...item,
+      status: match.status,
+      representative: match.handledBy,
+      role: `Verified ${match.handledByRole}`,
+      message: messageForSharedStatus(match.status),
+    };
+  });
+}
 
 type Tab = "active" | "drafts" | "past";
 type StatusFilter = "all" | ApplicationStatus;
@@ -72,13 +118,14 @@ function ApplicationsPageInner() {
   const [tab, setTab] = useState<Tab>(() =>
     params.get("tab") === "drafts" ? "drafts" : "active",
   );
-  const [applications, setApplications] = useState(RENTER_APPLICATIONS);
+  const [applications, setApplications] = useState(() => withSharedStatus(RENTER_APPLICATIONS));
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [propertySearch, setPropertySearch] = useState("");
   const [confirm, setConfirm] = useState<{
     type: "withdraw" | "delete";
     application: RenterApplication;
   } | null>(null);
+  useEffect(() => subscribeToOwnerApplications(() => setApplications((current) => withSharedStatus(current))), []);
   useEffect(() => {
     const savedDrafts: RenterApplication[] = [];
     for (let index = 0; index < localStorage.length; index += 1) {

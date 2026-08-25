@@ -229,6 +229,23 @@ export function NotificationsDrawer({
           ) : null}
         </div>
 
+        {/* Final Presentation Readiness Cleanup -- the drawer stays the quick-
+            glance surface; this is the one link out to the full, already-built
+            /renter-dashboard/notifications workspace (filters, full history),
+            which previously had no entry point anywhere in the product. */}
+        {notifications.length > 0 ? (
+          <div className="shrink-0 px-8 pb-3 sm:px-10">
+            <Link
+              href="/renter-dashboard/notifications"
+              onClick={onClose}
+              className="text-carbon-500 inline-flex items-center gap-1 text-xs font-medium hover:text-black"
+            >
+              View all notifications
+              <ArrowUpRight className="size-3.5" />
+            </Link>
+          </div>
+        ) : null}
+
         {/* Feed */}
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-8 pb-8 sm:px-10">
           {grouped.length > 0 ? (

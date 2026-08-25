@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RequestPropertyButton } from "@/components/properties/request-property-button";
-import { List, LocateFixed, Map } from "lucide-react";
+import { ChevronLeft, List, LocateFixed, Map } from "lucide-react";
+import { HistoryBackButton } from "@/components/navigation/history-back-button";
 import type { Map as LeafletMap, Marker } from "leaflet";
 import {
   Children,
@@ -57,6 +58,11 @@ type RenterMapCatalogueProps = {
   initiallyVisible?: boolean;
   filtersUnderTopBar?: boolean;
   context?: ReactNode;
+  // Renter Listings back button -- only the renter-dashboard usage of this
+  // catalogue passes this (see catalogue-page.tsx); the guest /properties
+  // and /rent?map=1 usages leave it unset, since "back to the renter
+  // dashboard" wouldn't make sense for a signed-out visitor.
+  backHref?: string;
 };
 
 export function RenterMapCatalogue({
@@ -80,6 +86,7 @@ export function RenterMapCatalogue({
   initiallyVisible = true,
   filtersUnderTopBar = false,
   context,
+  backHref,
 }: RenterMapCatalogueProps) {
   const router = useRouter();
   const currency = useDisplayCurrency();
@@ -311,6 +318,15 @@ export function RenterMapCatalogue({
       {filtersUnderTopBar ? (
         <div className="bg-carbon-50 shrink-0 px-5 py-3 sm:px-6 lg:px-11 xl:px-[52px]">
           <div className="mx-auto max-w-[1562px]">
+            {backHref ? (
+              <HistoryBackButton
+                fallbackHref={backHref}
+                className="text-carbon-600 hover:text-carbon-900 mb-2 inline-flex h-8 items-center gap-1 text-sm font-medium"
+              >
+                <ChevronLeft aria-hidden="true" className="size-4" />
+                Back
+              </HistoryBackButton>
+            ) : null}
             {context}
             <div className="flex items-center gap-3">
               <div className="min-w-0 flex-1">{filters}</div>

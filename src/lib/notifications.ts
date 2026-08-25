@@ -267,6 +267,40 @@ export function clearAllNotifications() {
 }
 
 // ---------------------------------------------------------------------------
+// Cross-Role Lifecycle Synchronization phase -- Section 45: cross-role
+// events (PM sends Rental Setup, renter pays, etc.) need to actually
+// produce a renter-side notification, not just a PM/Owner one. Mirrors
+// professional-work.ts's pushProfessionalNotification: session-only
+// additions, merged into getNotifications() below. No UI/design change.
+// ---------------------------------------------------------------------------
+
+const SESSION_KEY = "hauxhunt-renter-session-notifications";
+
+function getSessionNotifications(): Notification[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.sessionStorage.getItem(SESSION_KEY);
+    const parsed = raw ? (JSON.parse(raw) as Notification[]) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function pushNotification(notification: Omit<Notification, "id" | "timestamp" | "read">) {
+  if (typeof window === "undefined") return;
+  const list = getSessionNotifications();
+  list.unshift({ ...notification, id: `session-${Date.now().toString(36)}-${Math.round(Math.random() * 1e4).toString(36)}`, timestamp: Date.now(), read: false });
+  try {
+    window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(list));
+  } catch {
+    // Storage full/unavailable -- change still applies for this render via the dispatched event below.
+  }
+  invalidateCache();
+  window.dispatchEvent(new Event("hauxhunt-notifications-changed"));
+}
+
+// ---------------------------------------------------------------------------
 // Cached snapshots -- useSyncExternalStore requires getSnapshot to return the
 // same reference between store changes, otherwise React loops infinitely.
 // ---------------------------------------------------------------------------
@@ -287,12 +321,16 @@ export function getNotifications(): Notification[] {
   if (cachedNotifications) return cachedNotifications;
   const readIds = getReadIds();
   const clearedIds = getClearedIds();
-  cachedNotifications = MOCK_NOTIFICATIONS
+  const live = getSessionNotifications()
+    .filter((n) => !clearedIds.has(n.id))
+    .map((n) => ({ ...n, read: n.read || readIds.has(n.id) }));
+  const seeded = MOCK_NOTIFICATIONS
     .filter((n) => !clearedIds.has(n.id))
     .map((n) => ({
       ...n,
       read: n.read || readIds.has(n.id),
     }));
+  cachedNotifications = [...live, ...seeded];
   return cachedNotifications;
 }
 

@@ -3,8 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Camera, Check, ChevronDown, ClipboardX, MessageSquare, ClipboardList, Plus, X } from "lucide-react";
-import { useMemo, useState, Suspense } from "react";
+import {
+  Camera,
+  Check,
+  ChevronDown,
+  ClipboardX,
+  MessageSquare,
+  ClipboardList,
+  Plus,
+  X,
+} from "lucide-react";
+import { useEffect, useReducer, useState, Suspense } from "react";
 
 import emptyIllustration from "@/assets/images/empty.png";
 import maintenanceIllustration from "@/assets/images/maintenance.png";
@@ -12,10 +21,44 @@ import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-
 import {
   ACTIVE_RENTALS,
   ISSUE_CATEGORIES,
-  MAINTENANCE_REQUESTS,
   PROPERTY_AREAS,
+  createMaintenanceRequest,
+  getMaintenanceRequests,
+  subscribeToMaintenance,
   type MaintenanceRequest,
 } from "@/lib/maintenance-data";
+import { getActiveAssignmentsForProperty } from "@/lib/team-data";
+import { pushProfessionalNotification } from "@/lib/professional-work";
+import { pushOwnerNotification } from "@/lib/owner-notifications";
+
+// Cross-Role Lifecycle Synchronization phase -- Section 29/45: a new
+// renter-submitted request notifies whichever PM holds "Handle
+// maintenance" for that property (resolved from the real
+// PropertyAssignment, not stored on the request itself), plus the Owner.
+function notifyOnNewMaintenanceRequest(request: MaintenanceRequest) {
+  const assignment = getActiveAssignmentsForProperty(request.propertyId).find(
+    (a) =>
+      a.role === "property_manager" &&
+      a.responsibilities.includes("Handle maintenance"),
+  );
+  if (assignment) {
+    pushProfessionalNotification({
+      professionalId: assignment.professionalId,
+      category: "maintenance",
+      title: "New maintenance request",
+      body: `${request.title} reported at ${request.property}.`,
+      actionLabel: "View Request",
+      actionHref: `/partner-dashboard/maintenance?open=${request.id}`,
+    });
+  }
+  pushOwnerNotification({
+    category: "maintenance",
+    title: "Maintenance request submitted",
+    body: `${request.title} reported at ${request.property}.`,
+    actionLabel: "View Maintenance",
+    actionHref: "/owner-dashboard/maintenance",
+  });
+}
 
 type Tab = "open" | "resolved" | "all";
 type ReportStep = "form" | "review" | "success";
@@ -40,9 +83,13 @@ function MaintenancePageInner() {
   const searchParams = useSearchParams();
   const demoState = searchParams.get("state");
   const hasActiveRental = demoState !== "no-rental";
-  const [requests, setRequests] = useState(
-    demoState === "empty" ? [] : MAINTENANCE_REQUESTS,
-  );
+  // Cross-Role Lifecycle Synchronization phase -- reads the SAME canonical
+  // MaintenanceRequest store PM's Maintenance page reads (Section 26/29),
+  // instead of a one-time local snapshot, so a PM status change is visible
+  // here live.
+  const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
+  useEffect(() => subscribeToMaintenance(forceUpdate), []);
+  const requests = demoState === "empty" ? [] : getMaintenanceRequests();
   const [tab, setTab] = useState<Tab>("all");
   const [rentalFilter, setRentalFilter] = useState("all");
   const [reportOpen, setReportOpen] = useState(
@@ -50,17 +97,13 @@ function MaintenancePageInner() {
   );
   const [toast, setToast] = useState("");
 
-  const shownRequests = useMemo(
-    () =>
-      requests.filter(
-        (request) =>
-          (tab === "all" ||
-            (tab === "open" && OPEN_STATUSES.includes(request.status)) ||
-            (tab === "resolved" &&
-              ["Resolved", "Cancelled"].includes(request.status))) &&
-          (rentalFilter === "all" || request.propertyId === rentalFilter),
-      ),
-    [rentalFilter, requests, tab],
+  const shownRequests = requests.filter(
+    (request) =>
+      (tab === "all" ||
+        (tab === "open" && OPEN_STATUSES.includes(request.status)) ||
+        (tab === "resolved" &&
+          ["Resolved", "Cancelled"].includes(request.status))) &&
+      (rentalFilter === "all" || request.propertyId === rentalFilter),
   );
 
   function showToast(message: string) {
@@ -177,7 +220,8 @@ function MaintenancePageInner() {
         <ReportIssueDialog
           close={() => setReportOpen(false)}
           submit={(request) => {
-            setRequests((current) => [request, ...current]);
+            createMaintenanceRequest(request);
+            notifyOnNewMaintenanceRequest(request);
             setTab("open");
           }}
           showToast={showToast}
@@ -192,7 +236,7 @@ function RequestCard({ request }: { request: MaintenanceRequest }) {
   const quiet = ["Resolved", "Cancelled"].includes(request.status);
   return (
     <article
-      className={`maintenance-card rounded-2xl border border-transparent p-5 shadow-[0_10px_30px_rgba(0,0,0,0.08)] ring-1 ring-white/70 backdrop-blur-xl ${quiet ? "bg-white/55" : "bg-white/70"}`}
+      className={`maintenance-card rounded-2xl border border-transparent p-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] ring-1 ring-white/70 backdrop-blur-xl ${quiet ? "bg-white/55" : "bg-white/70"}`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -212,19 +256,18 @@ function RequestCard({ request }: { request: MaintenanceRequest }) {
           <Status status={request.status} />
         </div>
       </div>
-      <div className="mt-5 grid grid-cols-3 gap-3 border-t border-black/10 pt-4 text-sm">
+      <div className="mt-4 grid grid-cols-2 gap-3 border-t border-black/10 pt-3 text-sm">
         <Meta label="Category" value={request.category} />
         <Meta
           label={request.completed ? "Completed" : "Submitted"}
           value={request.completed ?? request.submitted}
         />
-        <Meta label="Request" value={request.id} />
       </div>
-      <div className="mt-4 rounded-xl bg-black/[0.07] p-3.5 text-black">
+      <div className="mt-3 rounded-xl bg-black/[0.07] p-3 text-black">
         <p className="text-xs font-medium text-black/50">Latest update</p>
         <p className="mt-1 text-sm">{request.latestUpdate}</p>
       </div>
-      <div className="mt-5 flex flex-wrap justify-end gap-2">
+      <div className="mt-4 flex flex-wrap justify-end gap-2">
         {!quiet ? (
           <Link
             href={`/renter-dashboard/messages?host=${encodeURIComponent(request.scheduledVisit?.contact ?? "Jean Mugisha")}&role=${encodeURIComponent(request.scheduledVisit?.role ?? "Property Manager")}&verified=${request.scheduledVisit ? "0" : "1"}&ctx=maintenance&title=${encodeURIComponent(request.title)}&property=${encodeURIComponent(request.property)}&propertyId=${encodeURIComponent(request.propertyId)}&status=${encodeURIComponent(request.status)}&refId=${encodeURIComponent(request.id)}${request.scheduledVisit ? `&detail=${encodeURIComponent(`${request.scheduledVisit.date} · ${request.scheduledVisit.time}`)}` : ""}`}
@@ -282,6 +325,8 @@ function ReportIssueDialog({
       submitted: "16 August 2026",
       description: description.trim(),
       latestUpdate: "Request received by the property manager",
+      reportedBy: "You",
+      managedBy: null,
     });
     setStep("success");
     showToast("Maintenance request submitted");
@@ -646,27 +691,43 @@ function MaintenanceEmptyState({ onReport }: { onReport: () => void }) {
   return (
     <div className="flex min-h-[520px] flex-col items-center justify-center text-center">
       <Image src={maintenanceIllustration} alt="" className="h-36 w-auto" />
-      <h2 className="font-bricolage mt-6 text-2xl font-medium">Get Maintenance Help Fast</h2>
-      <div className="mt-8 flex flex-col gap-6 text-left max-w-sm w-full">
-        <div className="flex gap-4 items-start">
-          <ClipboardX className="size-6 shrink-0 text-black mt-0.5" />
+      <h2 className="font-bricolage mt-6 text-2xl font-medium">
+        Get Maintenance Help Fast
+      </h2>
+      <div className="mt-8 flex w-full max-w-sm flex-col gap-6 text-left">
+        <div className="flex items-start gap-4">
+          <ClipboardX className="mt-0.5 size-6 shrink-0 text-black" />
           <div>
-            <p className="font-semibold text-sm text-neutral-900">Create and Send Repair Requests</p>
-            <p className="text-carbon-500 text-sm mt-0.5">Send your landlord requests for maintenance as soon as issues arise.</p>
+            <p className="text-sm font-semibold text-neutral-900">
+              Create and Send Repair Requests
+            </p>
+            <p className="text-carbon-500 mt-0.5 text-sm">
+              Send your landlord requests for maintenance as soon as issues
+              arise.
+            </p>
           </div>
         </div>
-        <div className="flex gap-4 items-start">
-          <MessageSquare className="size-6 shrink-0 text-black mt-0.5" />
+        <div className="flex items-start gap-4">
+          <MessageSquare className="mt-0.5 size-6 shrink-0 text-black" />
           <div>
-            <p className="font-semibold text-sm text-neutral-900">Clear Communication</p>
-            <p className="text-carbon-500 text-sm mt-0.5">Get quick feedback on maintenance requests without having to play the waiting game.</p>
+            <p className="text-sm font-semibold text-neutral-900">
+              Clear Communication
+            </p>
+            <p className="text-carbon-500 mt-0.5 text-sm">
+              Get quick feedback on maintenance requests without having to play
+              the waiting game.
+            </p>
           </div>
         </div>
-        <div className="flex gap-4 items-start">
-          <ClipboardList className="size-6 shrink-0 text-black mt-0.5" />
+        <div className="flex items-start gap-4">
+          <ClipboardList className="mt-0.5 size-6 shrink-0 text-black" />
           <div>
-            <p className="font-semibold text-sm text-neutral-900">Track Progress</p>
-            <p className="text-carbon-500 text-sm mt-0.5">Get updates about your repair progress from start to finish.</p>
+            <p className="text-sm font-semibold text-neutral-900">
+              Track Progress
+            </p>
+            <p className="text-carbon-500 mt-0.5 text-sm">
+              Get updates about your repair progress from start to finish.
+            </p>
           </div>
         </div>
       </div>
