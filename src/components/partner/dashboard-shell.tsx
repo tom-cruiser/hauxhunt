@@ -30,6 +30,7 @@ import { Wordmark } from "@/components/layout/wordmark";
 import { VoiceInputButton } from "@/components/listings/voice-input-button";
 import appIllustration from "@/assets/images/illustrated-black-man-using-mobile-phone.png";
 import { usePartnerRole, setPartnerRole } from "@/components/partner/use-partner-role";
+import { clearTier } from "@/hooks/use-tier";
 import {
   REGISTERED_PROFESSIONALS,
   clearPreviewProfessional,
@@ -518,6 +519,7 @@ function ProfileMenuContent({
           role="menuitem"
           onClick={() => {
             window.sessionStorage.removeItem("hauxhunt-authenticated-role");
+            clearTier();
           }}
           className="flex h-12 items-center justify-between rounded-xl px-3 font-medium transition-colors hover:bg-black/[0.045]"
         >

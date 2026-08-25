@@ -3,8 +3,7 @@
 import { motion } from "framer-motion";
 
 import { heroContainer, heroRise } from "./hero-motion";
-
-const HEADLINE_LINES = ["Find a home that fits", "the way you live."];
+import { useTranslation } from "@/components/language/use-translation";
 
 /**
  * The editorial type stack: eyebrow, two-line statement, one supporting
@@ -18,6 +17,12 @@ const HEADLINE_LINES = ["Find a home that fits", "the way you live."];
  * deterministic at every width, and each one carries its own reveal.
  */
 export function HeroStatement() {
+  const { t } = useTranslation();
+  const headlineLines = [
+    t("hero.statement.line1"),
+    t("hero.statement.line2"),
+  ];
+
   return (
     <motion.div
       initial="hidden"
@@ -26,8 +31,8 @@ export function HeroStatement() {
       className="mx-auto flex flex-col items-center"
     >
       <h1 className="font-bricolage text-fg max-w-[16ch] text-[clamp(3rem,5.4vw,5rem)] leading-[0.98] font-normal tracking-[-0.045em] text-balance">
-        {HEADLINE_LINES.map((line) => (
-          <motion.span key={line} variants={heroRise} className="block">
+        {headlineLines.map((line, index) => (
+          <motion.span key={index} variants={heroRise} className="block">
             {/* The second line carries the resolution, so it gets the lighter
                 weight — the eye lands on the promise, then settles. */}
             <span>{line}</span>

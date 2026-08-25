@@ -1,14 +1,66 @@
 "use client";
 
 import Image from "next/image";
-import { Building2, CheckCircle2, ShieldCheck } from "lucide-react";
+import { Bell, Building2, CheckCircle2, ShieldCheck } from "lucide-react";
+import { useReducer } from "react";
 
 import { PartnerDetailsFields } from "@/components/partner/partner-details-fields";
 import { SaveSettingsButton } from "@/components/partner/save-settings-button";
 import { usePartnerRole } from "@/components/partner/use-partner-role";
 import { StatusPill } from "@/components/owner/status-pill";
-import { useDemoProfessional } from "@/components/partner/use-demo-professional";
+import { useDemoProfessional, useMounted } from "@/components/partner/use-demo-professional";
 import julienProfile from "@/assets/images/julien.jpg";
+import { PlanToggleCard } from "@/components/tier/plan-toggle-card";
+import { LockedFeature } from "@/components/tier/locked-feature";
+import {
+  DEFAULT_PAYOUT_DETAILS,
+  PayoutDetailsForm,
+  type PayoutDetails,
+} from "@/components/tier/payout-details-form";
+import { isPaidTier, useTier } from "@/hooks/use-tier";
+
+// Agent and Property Manager get identical tier rules (the free/paid matrix
+// is silent on Property Manager, so it follows Agent's rules rather than
+// staying ungated) -- everything below is shared by both roles.
+const PARTNER_PLAN_FEATURES = [
+  { label: "Verified listing badge", free: "Locked", paid: "Included" },
+  { label: "Number of listings", free: "Unlimited", paid: "Unlimited" },
+  { label: "Viewing fee collection", free: "Off-platform", paid: "In-app bank attachment" },
+  { label: "Property boost", free: "Locked", paid: "Included" },
+  { label: "WhatsApp alerts", free: "Locked", paid: "Included" },
+] as const;
+
+const PAYOUT_KEY = "hauxhunt-partner-payout-details";
+
+function readPayoutDetails(): PayoutDetails {
+  if (typeof window === "undefined") return DEFAULT_PAYOUT_DETAILS;
+  try {
+    const raw = window.sessionStorage.getItem(PAYOUT_KEY);
+    return raw
+      ? { ...DEFAULT_PAYOUT_DETAILS, ...(JSON.parse(raw) as Partial<PayoutDetails>) }
+      : DEFAULT_PAYOUT_DETAILS;
+  } catch {
+    return DEFAULT_PAYOUT_DETAILS;
+  }
+}
+function writePayoutDetails(details: PayoutDetails) {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(PAYOUT_KEY, JSON.stringify(details));
+  } catch {
+    // Storage full/unavailable -- change still applies for this render.
+  }
+}
+
+const WHATSAPP_KEY = "hauxhunt-partner-whatsapp-alerts";
+function readWhatsappEnabled(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.sessionStorage.getItem(WHATSAPP_KEY) === "true";
+}
+function writeWhatsappEnabled(enabled: boolean) {
+  if (typeof window === "undefined") return;
+  window.sessionStorage.setItem(WHATSAPP_KEY, String(enabled));
+}
 
 // Agent Dashboard Redesign phase -- Section 47/48. A light, in-scope
 // improvement: the top card becomes a real Professional Profile for the
@@ -25,6 +77,22 @@ export function PartnerSettingsContent() {
   // result is picked conditionally.
   const agentIdentity = useDemoProfessional("agent");
   const professional = isAgent ? agentIdentity : undefined;
+
+  const tier = useTier();
+  const mounted = useMounted();
+  const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
+  const payoutDetails = mounted ? readPayoutDetails() : DEFAULT_PAYOUT_DETAILS;
+  const whatsappEnabled = mounted ? readWhatsappEnabled() : false;
+
+  function savePayoutDetails(next: PayoutDetails) {
+    writePayoutDetails(next);
+    forceUpdate();
+  }
+
+  function toggleWhatsapp() {
+    writeWhatsappEnabled(!whatsappEnabled);
+    forceUpdate();
+  }
 
   return (
     <form className="mt-8 space-y-6">
@@ -89,6 +157,42 @@ export function PartnerSettingsContent() {
           <span className="rounded-full bg-black px-3 py-1.5 text-xs font-medium text-white">In progress</span>
         </div>
       </SettingsCard>
+
+      <SettingsCard icon={Building2} title="Bank attachment" description="For collecting viewing fees directly in-app instead of off-platform.">
+        {isPaidTier(tier) ? (
+          <PayoutDetailsForm details={payoutDetails} onSave={savePayoutDetails} />
+        ) : (
+          <LockedFeature feature="agent.bankAttachment" variant="row" />
+        )}
+      </SettingsCard>
+
+      <SettingsCard icon={Bell} title="Notifications" description="Choose how HauxHunt reaches you.">
+        {isPaidTier(tier) ? (
+          <label className="flex items-center justify-between gap-4 rounded-xl border border-black/10 p-3.5">
+            <div className="min-w-0">
+              <p className="text-sm font-medium">WhatsApp alerts</p>
+              <p className="text-carbon-500 mt-0.5 text-xs">
+                Enquiry, viewing, and application alerts on WhatsApp.
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              checked={whatsappEnabled}
+              onChange={toggleWhatsapp}
+              className="size-4 shrink-0 accent-black"
+              aria-label="WhatsApp alerts"
+            />
+          </label>
+        ) : (
+          <LockedFeature
+            feature="agent.whatsappAlerts"
+            label="WhatsApp alerts"
+            className="flex w-full items-center justify-between gap-4 rounded-xl border border-black/10 p-3.5 text-left transition-colors hover:bg-black/[0.02]"
+          />
+        )}
+      </SettingsCard>
+
+      <PlanToggleCard features={PARTNER_PLAN_FEATURES} />
 
       <div className="flex justify-end">
         <SaveSettingsButton />

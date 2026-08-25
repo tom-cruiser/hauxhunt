@@ -3,11 +3,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, Clock3, X } from "lucide-react";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import scheduleIllustration from "@/assets/images/schedule.png";
 import loginIllustration from "@/assets/images/login.png";
 import { addViewingRequest } from "@/hooks/use-viewing-requests";
+import {
+  applyViewingFeeCap,
+  PAID_TENANT_VIEWING_FEE_CAP_RWF,
+} from "@/lib/access-control";
+import { isPaidTier, useTier } from "@/hooks/use-tier";
 
 function subscribe(callback: () => void) {
   window.addEventListener("storage", callback);
@@ -15,6 +20,21 @@ function subscribe(callback: () => void) {
 }
 
 const TIMES = ["09:00 AM", "10:30 AM", "1:00 PM", "3:30 PM"];
+
+/**
+ * Stand-in for a real per-listing viewing fee, which doesn't exist in the
+ * data model yet (no `ViewingRequest`/property field carries one — see
+ * `src/hooks/use-viewing-requests.ts`). Deterministic on `propertyId` only
+ * so the same property always quotes the same "market rate" rather than a
+ * different number every render.
+ */
+function demoMarketFeeRwf(propertyId: string): number {
+  let hash = 0;
+  for (const char of propertyId) {
+    hash = (hash * 31 + (char.codePointAt(0) ?? 0)) % 6000;
+  }
+  return 3000 + hash;
+}
 
 export function RequestViewingButton({
   propertyId,
@@ -49,6 +69,10 @@ export function RequestViewingButton({
   const returnTo = mounted && typeof window !== "undefined"
     ? encodeURIComponent(window.location.pathname + window.location.search)
     : "";
+  const tier = useTier();
+  const marketFeeRwf = useMemo(() => demoMarketFeeRwf(propertyId), [propertyId]);
+  const viewingFeeRwf = applyViewingFeeCap(marketFeeRwf, tier);
+  const feeIsCapped = viewingFeeRwf < marketFeeRwf;
 
   function submit() {
     const result = addViewingRequest({
@@ -172,6 +196,34 @@ export function RequestViewingButton({
                   {!sent ? (
                     <p className="text-carbon-500 mt-2 text-sm">
                       {title} · {location}
+                    </p>
+                  ) : null}
+                  {!sent ? (
+                    <p className="mt-3 text-sm">
+                      <span className="font-medium">
+                        Viewing fee: {viewingFeeRwf.toLocaleString()} RWF
+                      </span>
+                      {feeIsCapped ? (
+                        <span className="text-carbon-500">
+                          {" "}
+                          (capped for Paid members — market rate is{" "}
+                          {marketFeeRwf.toLocaleString()} RWF)
+                        </span>
+                      ) : isPaidTier(tier) ? (
+                        <span className="text-carbon-500">
+                          {" "}
+                          — already under your Paid cap of{" "}
+                          {PAID_TENANT_VIEWING_FEE_CAP_RWF.toLocaleString()}{" "}
+                          RWF.
+                        </span>
+                      ) : (
+                        <span className="text-carbon-500">
+                          {" "}
+                          — market rate. Paid members never pay more than{" "}
+                          {PAID_TENANT_VIEWING_FEE_CAP_RWF.toLocaleString()}{" "}
+                          RWF.
+                        </span>
+                      )}
                     </p>
                   ) : null}
                 </div>

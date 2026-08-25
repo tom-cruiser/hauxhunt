@@ -9,6 +9,8 @@ import { Wordmark } from "./wordmark";
 import { useScrolled } from "@/hooks/use-scrolled";
 import { authConfig, navConfig } from "@/config/site";
 import { CurrencySelector } from "@/components/currency/currency-selector";
+import { LanguageSwitcher } from "@/components/language/language-switcher";
+import { useTranslation } from "@/components/language/use-translation";
 
 /**
  * Primary navigation: lockup left, sections centred, account actions right.
@@ -25,6 +27,7 @@ import { CurrencySelector } from "@/components/currency/currency-selector";
  * nearer depth rather than as a second design language.
  */
 export function Navbar() {
+  const { t } = useTranslation();
   const { scrolled, sentinelRef, threshold } = useScrolled(40);
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -65,7 +68,7 @@ export function Navbar() {
         ].join(" ")}
       >
         <nav
-          aria-label="Primary"
+          aria-label={t("nav.primaryLabel")}
           className="mx-auto grid h-full w-[calc(100%-2.5rem)] max-w-[1562px] grid-cols-[auto_1fr_auto] items-center gap-4 sm:w-[calc(100%-3rem)] lg:w-[calc(100%-5.5rem)] lg:grid-cols-[1fr_auto_1fr] lg:gap-10 xl:w-[calc(100%-6.5rem)]"
         >
           <Link
@@ -74,7 +77,7 @@ export function Navbar() {
               "flex items-center justify-self-start rounded-sm transition-[filter] duration-300",
               solidNav ? "" : "invert",
             ].join(" ")}
-            aria-label="HauxHunt — home"
+            aria-label={t("nav.homeAriaLabel")}
           >
             {/* Shrinks with the bar so the lockup keeps its breathing room in
                 both states rather than crowding the condensed nav. */}
@@ -99,7 +102,7 @@ export function Navbar() {
                         : "text-white/75 hover:text-white",
                   ].join(" ")}
                 >
-                  {item.label}
+                  {t(item.labelKey)}
                   {isCurrent(item.href) ? (
                     <span
                       aria-hidden="true"
@@ -113,6 +116,7 @@ export function Navbar() {
 
           {/* --- Account actions, right ---------------------------------- */}
           <div className="flex items-center gap-2 justify-self-end lg:gap-4 xl:gap-5">
+            <LanguageSwitcher inverse={!solidNav} openOnHover />
             <CurrencySelector inverse={!solidNav} openOnHover />
             <Link
               href={authConfig.register.href}
@@ -123,7 +127,7 @@ export function Navbar() {
                   : "text-white/75 hover:text-white",
               ].join(" ")}
             >
-              {authConfig.register.label}
+              {t(authConfig.register.labelKey)}
             </Link>
             <Link
               href={authConfig.login.href}
@@ -134,7 +138,7 @@ export function Navbar() {
                   : "bg-white text-black hover:bg-white/85",
               ].join(" ")}
             >
-              {authConfig.login.label}
+              {t(authConfig.login.labelKey)}
             </Link>
 
             <button
@@ -142,7 +146,7 @@ export function Navbar() {
               onClick={() => setMenuOpen((open) => !open)}
               aria-expanded={menuOpen}
               aria-controls="primary-menu"
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-label={menuOpen ? t("nav.closeMenu") : t("nav.openMenu")}
               className={[
                 "-mr-2 flex size-10 items-center justify-center rounded-full transition-colors duration-150 lg:hidden",
                 solidNav
@@ -183,7 +187,7 @@ export function Navbar() {
                       : "text-fg-secondary hover:text-fg",
                   ].join(" ")}
                 >
-                  {item.label}
+                  {t(item.labelKey)}
                 </Link>
               </li>
             ))}
@@ -193,7 +197,7 @@ export function Navbar() {
                 onClick={() => setMenuOpen(false)}
                 className="font-bricolage text-body-l text-fg-secondary hover:text-fg block py-4 transition-colors duration-150"
               >
-                {authConfig.register.label}
+                {t(authConfig.register.labelKey)}
               </Link>
             </li>
           </ul>

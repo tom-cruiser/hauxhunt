@@ -7,6 +7,10 @@ import { X } from "lucide-react";
 import { OwnerDashboardShell } from "@/components/owner/owner-dashboard-shell";
 import { StatusPill } from "@/components/owner/status-pill";
 import { formatRwf, getOwnerPayments, propertyTitle, subscribeToOwnerPayments, type OwnerPayment, type PaymentStatus } from "@/lib/owner-data";
+import { isPaidTier, useTier } from "@/hooks/use-tier";
+import { LockedFeature } from "@/components/tier/locked-feature";
+
+const COLLECTIBLE_STATUSES: PaymentStatus[] = ["Pending", "Overdue", "Due"];
 
 const FILTERS: Array<PaymentStatus | "All"> = ["All", "Paid", "Pending", "Overdue", "Due", "Failed"];
 
@@ -114,6 +118,9 @@ function SummaryCard({ label, value }: { label: string; value: string }) {
 }
 
 function PaymentDetail({ payment, onClose }: { payment: OwnerPayment; onClose: () => void }) {
+  const tier = useTier();
+  const [collected, setCollected] = useState(false);
+  const isCollectible = COLLECTIBLE_STATUSES.includes(payment.status);
   const rows: [string, string][] = [
     ["Renter", payment.renter],
     ["Property", propertyTitle(payment.propertyId)],
@@ -154,6 +161,28 @@ function PaymentDetail({ payment, onClose }: { payment: OwnerPayment; onClose: (
             </div>
           ))}
         </dl>
+        {isCollectible ? (
+          <div className="mt-6 flex items-center justify-between gap-3">
+            <p className="text-carbon-500 text-xs">In-app rent collection</p>
+            {isPaidTier(tier) ? (
+              collected ? (
+                <span className="text-carbon-600 text-sm font-medium">
+                  Collection request sent to {payment.renter}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setCollected(true)}
+                  className="font-bricolage h-10 rounded-full bg-black px-5 text-sm font-medium text-white"
+                >
+                  Collect rent
+                </button>
+              )
+            ) : (
+              <LockedFeature feature="owner.rentCollection" variant="button" label="Collect rent" />
+            )}
+          </div>
+        ) : null}
       </div>
     </div>
   );

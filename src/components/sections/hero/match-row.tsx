@@ -1,7 +1,10 @@
+"use client";
+
 import { BadgeCheck } from "lucide-react";
 
 import type { PropertyPreview } from "@/types";
 import { CurrencyAmount } from "@/components/currency/currency-selector";
+import { useTranslation } from "@/components/language/use-translation";
 
 type MatchRowProps = {
   property: PropertyPreview;
@@ -21,6 +24,8 @@ type MatchRowProps = {
  * the brand is built against.
  */
 export function MatchRow({ property }: MatchRowProps) {
+  const { t } = useTranslation();
+
   return (
     <article className="border-border-subtle grid gap-x-6 gap-y-2 border-t py-5 sm:grid-cols-[1fr_auto]">
       <div className="min-w-0">
@@ -29,14 +34,15 @@ export function MatchRow({ property }: MatchRowProps) {
           {property.verified ? (
             <span className="text-caption text-fg-muted inline-flex items-center gap-1">
               <BadgeCheck aria-hidden="true" className="size-3.5" />
-              Verified
+              {t("hero.matchRow.verified")}
             </span>
           ) : null}
         </div>
 
         <p className="text-body-s text-fg-muted mt-1">
-          {property.location} · {property.bedrooms} bed ·{" "}
-          <CurrencyAmount usdAmount={property.price} />/month
+          {property.location} · {property.bedrooms} {t("hero.matchRow.bed")}{" "}
+          · <CurrencyAmount usdAmount={property.price} />
+          {t("hero.matchRow.perMonth")}
         </p>
 
         <p className="text-body-s text-fg-tertiary mt-3 max-w-[54ch]">
@@ -48,7 +54,7 @@ export function MatchRow({ property }: MatchRowProps) {
         <span className="text-heading-m text-intel block tabular-nums">
           {property.matchPercentage}%
         </span>
-        <span className="text-caption">match</span>
+        <span className="text-caption">{t("hero.matchRow.match")}</span>
       </p>
     </article>
   );

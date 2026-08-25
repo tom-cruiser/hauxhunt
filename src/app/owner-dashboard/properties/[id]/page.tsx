@@ -43,6 +43,8 @@ import {
 import { getMaintenanceRequests, subscribeToMaintenance, type MaintenanceRequest } from "@/lib/maintenance-data";
 import { REGISTERED_PROFESSIONALS, TEAM_ID, getActiveMemberships, type ProfessionalRole } from "@/lib/team-data";
 import { OWNER_PARTICIPANT_ID, RENTER_PARTICIPANT_ID, getOrCreateConversation } from "@/lib/messages-data";
+import { isPaidTier, useTier } from "@/hooks/use-tier";
+import { LockedFeature, LockedPanel } from "@/components/tier/locked-feature";
 
 type TabKey = "overview" | "listing" | "rental" | "payments" | "maintenance" | "team";
 const TABS: { key: TabKey; label: string }[] = [
@@ -65,6 +67,7 @@ export default function OwnerPropertyDetailPage() {
 function OwnerPropertyDetailPageInner() {
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
+  const tier = useTier();
   const property = getOwnerProperty(params.id);
   const initialTab = (searchParams.get("tab") as TabKey | null) ?? "overview";
   const [tab, setTab] = useState<TabKey>(TABS.some((t) => t.key === initialTab) ? initialTab : "overview");
@@ -177,7 +180,13 @@ function OwnerPropertyDetailPageInner() {
               <OverviewTab property={property} rental={currentRental} listing={listing} maintenance={maintenance} />
             ) : null}
             {tab === "listing" ? <ListingTab property={property} listing={listing} applicationsCount={applicationsCount} /> : null}
-            {tab === "rental" ? <RentalTab rentals={rentals} propertyManager={property.propertyManager} /> : null}
+            {tab === "rental" ? (
+              isPaidTier(tier) ? (
+                <RentalTab rentals={rentals} propertyManager={property.propertyManager} />
+              ) : (
+                <LockedPanel feature="owner.tenantHistory" />
+              )
+            ) : null}
             {tab === "payments" ? <PaymentsTab payments={payments} /> : null}
             {tab === "maintenance" ? <MaintenanceTab requests={maintenance} /> : null}
             {tab === "team" ? (
@@ -422,6 +431,7 @@ function ListingTab({
   listing: (typeof OWNER_LISTINGS)[number] | null;
   applicationsCount: number;
 }) {
+  const tier = useTier();
   const isUnpublished = !listing || listing.status === "Not Listed" || listing.status === "Draft";
   if (isUnpublished) {
     const hasDraft = listing?.status === "Draft";
@@ -447,7 +457,14 @@ function ListingTab({
             <h2 className="font-bricolage text-carbon-900 text-lg font-medium">{property.title}</h2>
             <p className="text-carbon-500 mt-1 text-sm">{property.location}</p>
           </div>
-          <StatusPill status={listing.status} />
+          <div className="flex items-center gap-2">
+            <StatusPill status={listing.status} />
+            {isPaidTier(tier) ? (
+              <BadgeCheck aria-label="Verified listing" className="size-5 fill-black text-white" />
+            ) : (
+              <LockedFeature feature="owner.verifiedBadge" variant="badge" label="Verified listing" />
+            )}
+          </div>
         </div>
         <dl className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div>
@@ -475,8 +492,13 @@ function ListingTab({
 
       {listing.views !== null ? (
         <section className="rounded-[1.5rem] border border-black/10 bg-white p-6">
-          <h2 className="font-bricolage text-carbon-900 text-lg font-medium">Listing performance</h2>
-          <p className="text-carbon-500 mt-1 text-sm">How property seekers are responding to this listing.</p>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 className="font-bricolage text-carbon-900 text-lg font-medium">Listing performance</h2>
+              <p className="text-carbon-500 mt-1 text-sm">How property seekers are responding to this listing.</p>
+            </div>
+            <BoostListingButton />
+          </div>
           <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Metric label="Views" value={listing.views} />
             <Metric label="Saves" value={listing.saves ?? 0} />
@@ -485,6 +507,33 @@ function ListingTab({
         </section>
       ) : null}
     </div>
+  );
+}
+
+function BoostListingButton() {
+  const tier = useTier();
+  const [boosted, setBoosted] = useState(false);
+
+  if (!isPaidTier(tier)) {
+    return <LockedFeature feature="owner.propertyBoost" variant="button" />;
+  }
+
+  if (boosted) {
+    return (
+      <span className="inline-flex h-10 items-center gap-1.5 rounded-full bg-black/[0.06] px-4 text-sm font-medium text-black/70">
+        <BadgeCheck aria-hidden="true" className="size-4" /> Boosted
+      </span>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setBoosted(true)}
+      className="font-bricolage inline-flex h-10 items-center rounded-full bg-black px-4 text-sm font-medium text-white transition-colors hover:bg-black/80"
+    >
+      Boost this listing
+    </button>
   );
 }
 

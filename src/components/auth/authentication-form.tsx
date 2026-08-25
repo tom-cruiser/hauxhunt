@@ -6,6 +6,8 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { setPartnerRole } from "@/components/partner/use-partner-role";
 import { saveProperty } from "@/hooks/use-saved-properties";
+import { setTier } from "@/hooks/use-tier";
+import { useTranslation } from "@/components/language/use-translation";
 import {
   Building2,
   Check,
@@ -26,26 +28,26 @@ type AuthenticationFormProps = {
 const ACCOUNT_TYPES = [
   {
     value: "renter",
-    label: "Renter",
-    description: "Search, save, and request houses.",
+    labelKey: "auth.form.accountTypes.renter.label",
+    descriptionKey: "auth.form.accountTypes.renter.description",
     icon: Home,
   },
   {
     value: "owner",
-    label: "Property Owner",
-    description: "Own properties and delegate to a manager or agent.",
+    labelKey: "auth.form.accountTypes.owner.label",
+    descriptionKey: "auth.form.accountTypes.owner.description",
     icon: KeyRound,
   },
   {
     value: "property_manager",
-    label: "Property Manager",
-    description: "Manage properties you own or are appointed to manage.",
+    labelKey: "auth.form.accountTypes.propertyManager.label",
+    descriptionKey: "auth.form.accountTypes.propertyManager.description",
     icon: Building2,
   },
   {
     value: "agent",
-    label: "Agent",
-    description: "Represent clients and publish listings.",
+    labelKey: "auth.form.accountTypes.agent.label",
+    descriptionKey: "auth.form.accountTypes.agent.description",
     icon: UserRound,
   },
 ] as const;
@@ -56,6 +58,7 @@ export function AuthenticationForm({
   compact = false,
 }: AuthenticationFormProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [accountType, setAccountType] = useState("renter");
   const [error, setError] = useState("");
@@ -80,7 +83,7 @@ export function AuthenticationForm({
 
     if (isRegister) {
       if (data.get("password") !== data.get("confirmPassword")) {
-        setError("The passwords do not match.");
+        setError(t("auth.form.passwordsDontMatch"));
         return;
       }
     }
@@ -109,6 +112,7 @@ export function AuthenticationForm({
       if (email === "renter@gmail.com") {
         window.sessionStorage.setItem("hauxhunt-authenticated-role", "renter");
         window.sessionStorage.setItem("hauxhunt-has-flatmate-profile", "true");
+        setTier("free");
         if (pendingPropertyId) {
           finishPendingRenterSave();
         } else {
@@ -125,6 +129,7 @@ export function AuthenticationForm({
           "property_manager",
         );
         setPartnerRole("property_manager");
+        setTier("free");
         router.replace(
           returnTo?.startsWith("/") ? returnTo : "/partner-dashboard",
         );
@@ -134,6 +139,7 @@ export function AuthenticationForm({
       if (email === "agent@gmail.com") {
         window.sessionStorage.setItem("hauxhunt-authenticated-role", "agent");
         setPartnerRole("agent");
+        setTier("free");
         router.replace(
           returnTo?.startsWith("/") ? returnTo : "/partner-dashboard",
         );
@@ -142,13 +148,16 @@ export function AuthenticationForm({
 
       if (email === "owner@gmail.com") {
         window.sessionStorage.setItem("hauxhunt-authenticated-role", "owner");
+        setTier("free");
         router.replace(returnTo?.startsWith("/") ? returnTo : "/owner-dashboard");
         return;
       }
 
-      setError("Wrong email or password.");
+      setError(t("auth.form.wrongCredentials"));
       return;
     }
+
+    setTier("free");
 
     if (accountType === "renter") {
       window.sessionStorage.setItem("hauxhunt-authenticated-role", "renter");
@@ -197,20 +206,19 @@ export function AuthenticationForm({
         <h2
           className={`font-bricolage mt-7 text-4xl font-medium tracking-[-0.04em] ${isDark ? "text-white" : "text-carbon-900"}`}
         >
-          Your account is ready
+          {t("auth.form.accountReadyTitle")}
         </h2>
         <p
           className={`mx-auto mt-4 max-w-md leading-7 ${isDark ? "text-white/50" : "text-carbon-600"}`}
         >
-          Your account has been created successfully. You are now logged in and
-          ready to continue.
+          {t("auth.form.accountReadyDescription")}
         </p>
         <button
           type="button"
           onClick={handleContinue}
           className={`font-bricolage mt-8 h-12 rounded-full px-7 font-medium transition-colors ${isDark ? "bg-white text-black hover:bg-white/85" : "bg-black text-white hover:bg-black/80"}`}
         >
-          {returnTo ? "Continue" : "Go to Dashboard"}
+          {returnTo ? t("auth.form.continueButton") : t("auth.form.goToDashboard")}
         </button>
       </div>
     );
@@ -227,17 +235,17 @@ export function AuthenticationForm({
           <legend
             className={`font-bricolage text-carbon-900 font-medium ${compact ? "text-lg" : "text-xl"}`}
           >
-            Choose your account type
+            {t("auth.form.chooseAccountType")}
           </legend>
           <p
             className={`text-carbon-500 text-sm ${compact ? "mt-0.5" : "mt-1"}`}
           >
-            This helps us prepare the right tools for your account.
+            {t("auth.form.chooseAccountTypeHelp")}
           </p>
           <div
             className={`grid sm:grid-cols-2 ${compact ? "mt-3 gap-2" : "mt-5 gap-3"}`}
           >
-            {ACCOUNT_TYPES.map(({ value, label, description, icon: Icon }) => (
+            {ACCOUNT_TYPES.map(({ value, labelKey, descriptionKey, icon: Icon }) => (
               <label
                 key={value}
                 className={`cursor-pointer rounded-2xl border transition-colors ${compact ? "p-3" : "p-4"} ${
@@ -257,12 +265,12 @@ export function AuthenticationForm({
                 <span className="flex items-start justify-between gap-3">
                   <span>
                     <span className="font-bricolage block font-medium">
-                      {label}
+                      {t(labelKey)}
                     </span>
                     <span
                       className={`mt-1 block text-xs ${compact ? "leading-4" : "leading-5"} ${accountType === value ? "text-white/65" : "text-carbon-500"}`}
                     >
-                      {description}
+                      {t(descriptionKey)}
                     </span>
                   </span>
                   <Icon aria-hidden="true" className="size-5 shrink-0" />
@@ -279,7 +287,7 @@ export function AuthenticationForm({
         {isRegister && (
           <>
             <Field
-              label="Full name"
+              label={t("auth.form.fullName")}
               name="fullName"
               compact={compact}
               required
@@ -287,7 +295,7 @@ export function AuthenticationForm({
             {(accountType === "property_manager" ||
               accountType === "agent") && (
               <Field
-                label="Agency name (optional)"
+                label={t("auth.form.agencyNameOptional")}
                 name="businessName"
                 compact={compact}
               />
@@ -296,7 +304,7 @@ export function AuthenticationForm({
         )}
 
         <Field
-          label="Email address"
+          label={t("auth.form.emailAddress")}
           name="email"
           type="email"
           autoComplete="email"
@@ -309,7 +317,7 @@ export function AuthenticationForm({
         {isRegister && (
           <>
             <Field
-              label="Phone number"
+              label={t("auth.form.phoneNumber")}
               name="phone"
               type="tel"
               autoComplete="tel"
@@ -317,7 +325,7 @@ export function AuthenticationForm({
               compact={compact}
             />
             <SelectField
-              label="Country"
+              label={t("auth.form.country")}
               name="country"
               options={["Rwanda", "Nigeria", "Kenya"]}
               compact={compact}
@@ -327,7 +335,7 @@ export function AuthenticationForm({
         )}
 
         <PasswordField
-          label="Password"
+          label={t("auth.form.password")}
           name="password"
           autoComplete={isRegister ? "new-password" : "current-password"}
           visible={showPassword}
@@ -339,7 +347,7 @@ export function AuthenticationForm({
 
         {isRegister && (
           <PasswordField
-            label="Confirm password"
+            label={t("auth.form.confirmPassword")}
             name="confirmPassword"
             autoComplete="new-password"
             visible={showPassword}
@@ -360,13 +368,13 @@ export function AuthenticationForm({
               name="remember"
               className={`size-4 ${isDark ? "accent-white" : "accent-black"}`}
             />
-            Remember me
+            {t("auth.form.rememberMe")}
           </label>
           <button
             type="button"
             className={`font-medium ${isDark ? "text-white/75 hover:text-white" : ""}`}
           >
-            Forgot password?
+            {t("auth.form.forgotPassword")}
           </button>
         </div>
       )}
@@ -381,10 +389,7 @@ export function AuthenticationForm({
             required
             className="mt-1 size-4 accent-black"
           />
-          <span>
-            I agree to the HauxHunt terms and confirm that the information I
-            provide is accurate.
-          </span>
+          <span>{t("auth.form.termsAgreement")}</span>
         </label>
       )}
 
@@ -401,18 +406,20 @@ export function AuthenticationForm({
         type="submit"
         className={`font-bricolage inline-flex w-full items-center justify-center gap-2 rounded-full px-7 font-medium transition-colors ${compact ? "mt-4 h-11" : "mt-7 h-12"} ${isDark ? "bg-white text-black hover:bg-white/85" : "bg-black text-white hover:bg-black/80"}`}
       >
-        {isRegister ? "Create account" : "Login"}
+        {isRegister ? t("auth.form.createAccount") : t("common.login")}
       </button>
 
       <p
         className={`text-center text-sm ${compact ? "mt-3" : "mt-6"} ${isDark ? "text-white/40" : "text-carbon-600"}`}
       >
-        {isRegister ? "Already have an account?" : "New to HauxHunt?"}{" "}
+        {isRegister
+          ? t("auth.form.alreadyHaveAccount")
+          : t("auth.form.newToHauxHunt")}{" "}
         <Link
           href={isRegister ? "/login" : "/register"}
           className={`font-medium ${isDark ? "text-white hover:text-white/75" : "text-black"}`}
         >
-          {isRegister ? "Login" : "Create an account"}
+          {isRegister ? t("common.login") : t("auth.form.createAccount")}
         </Link>
       </p>
     </form>
@@ -479,6 +486,7 @@ function PasswordField({
   dark = false,
   compact = false,
 }: PasswordFieldProps) {
+  const { t } = useTranslation();
   return (
     <label>
       <span
@@ -500,7 +508,9 @@ function PasswordField({
         <button
           type="button"
           onClick={onToggle}
-          aria-label={visible ? "Hide password" : "Show password"}
+          aria-label={
+            visible ? t("auth.form.hidePassword") : t("auth.form.showPassword")
+          }
           className={`-mr-1 flex size-8 items-center justify-center rounded-full ${dark ? "text-white/35 hover:text-white" : "text-carbon-500 hover:text-carbon-900"}`}
         >
           {visible ? (
@@ -529,6 +539,7 @@ function SelectField({
   required,
   compact = false,
 }: SelectFieldProps) {
+  const { t } = useTranslation();
   return (
     <label>
       <span
@@ -544,7 +555,7 @@ function SelectField({
           className={`contact-field-control w-full appearance-none rounded-xl border border-black/20 bg-white pr-11 pl-4 transition-colors outline-none focus:border-black ${compact ? "h-10" : "h-12"}`}
         >
           <option value="" disabled>
-            Choose country
+            {t("auth.form.chooseCountry")}
           </option>
           {options.map((option) => (
             <option key={option}>{option}</option>

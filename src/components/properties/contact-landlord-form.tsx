@@ -8,6 +8,13 @@ import Image from "next/image";
 
 import loginIllustration from "@/assets/images/login.png";
 import { recordSentMessage, slugify } from "@/lib/message-threads";
+import { canMessageAgent } from "@/lib/access-control";
+import {
+  getAgentsMessagedThisMonth,
+  recordAgentMessaged,
+} from "@/lib/tenant-messaging-limit";
+import { useTier } from "@/hooks/use-tier";
+import { UpgradeModal } from "@/components/tier/upgrade-modal";
 
 function subscribe(callback: () => void) {
   window.addEventListener("storage", callback);
@@ -26,9 +33,11 @@ export function ContactPropertyManagerForm({
   const [sent, setSent] = useState(false);
   const threadId = `landlord-${slugify(propertyTitle || managerName)}`;
   const [open, setOpen] = useState(false);
+  const [limitOpen, setLimitOpen] = useState(false);
   const [country, setCountry] = useState<"UG" | "RW" | "NG">("UG");
   const [mounted, setMounted] = useState(false);
   const countryCodes = { UG: "+256", RW: "+250", NG: "+234" } as const;
+  const tier = useTier();
 
   useEffect(() => {
     setMounted(true);
@@ -51,8 +60,17 @@ export function ContactPropertyManagerForm({
       setOpen(true);
       return;
     }
+    // Tenant tier gate: free tenants may message up to 3 distinct
+    // agents/landlords per month (access-control.ts). Re-messaging one
+    // already on the list never counts twice.
+    const agentsMessaged = getAgentsMessagedThisMonth();
+    if (!canMessageAgent(tier, threadId, agentsMessaged)) {
+      setLimitOpen(true);
+      return;
+    }
     const form = event.currentTarget;
     const message = String(new FormData(form).get("message") ?? "");
+    recordAgentMessaged(threadId);
     recordSentMessage(
       {
         id: threadId,
@@ -228,6 +246,12 @@ export function ContactPropertyManagerForm({
           </div>
         </div>
       ) : null}
+
+      <UpgradeModal
+        feature="tenant.agentMessaging"
+        open={limitOpen}
+        onClose={() => setLimitOpen(false)}
+      />
     </form>
   );
 }

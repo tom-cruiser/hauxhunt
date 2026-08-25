@@ -1,25 +1,37 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, type LucideIcon } from "lucide-react";
 
+import { useTranslation } from "@/components/language/use-translation";
+
 type CategoryCardProps = {
-  title: string;
+  titleKey: string;
   count: number;
   href: string;
   icon: LucideIcon;
-  countLabel?: string;
+  countLabelKey?: string;
 };
 
 export function CategoryCard({
-  title,
+  titleKey,
   count,
   href,
   icon: Icon,
-  countLabel = "properties available",
+  countLabelKey = "exploreCategories.defaultCountLabel",
 }: CategoryCardProps) {
+  const { t } = useTranslation();
+  const title = t(titleKey);
+  const countLabel = t(countLabelKey);
+
   return (
     <Link
       href={href}
-      aria-label={`Explore ${count}+ ${countLabel} in ${title}`}
+      aria-label={t("exploreCategories.exploreAria", {
+        count,
+        countLabel,
+        title,
+      })}
       className="category-glass hover:border-carbon-900 group flex min-h-[170px] flex-col rounded-2xl p-6 transition-[border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-lg sm:p-7"
     >
       <Icon

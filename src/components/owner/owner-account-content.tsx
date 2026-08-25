@@ -2,10 +2,50 @@
 
 import { useReducer, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
-import { Bell, CheckCircle2, Lock, UserRound, X } from "lucide-react";
+import { Bell, Building2, CheckCircle2, Lock, UserRound, X } from "lucide-react";
 
 import ownerProfile from "@/assets/images/flatmate-billy.jpg";
 import { OWNER } from "@/lib/owner-data";
+import { PlanToggleCard } from "@/components/tier/plan-toggle-card";
+import { LockedFeature } from "@/components/tier/locked-feature";
+import {
+  DEFAULT_PAYOUT_DETAILS,
+  PayoutDetailsForm,
+  type PayoutDetails,
+} from "@/components/tier/payout-details-form";
+import { isPaidTier, useTier } from "@/hooks/use-tier";
+
+const OWNER_PLAN_FEATURES = [
+  { label: "Verified listing badge", free: "Locked", paid: "Included" },
+  { label: "Number of listings", free: "Unlimited", paid: "Unlimited" },
+  { label: "Tenant history", free: "Locked", paid: "Included" },
+  { label: "In-app rent collection", free: "Locked", paid: "Included" },
+  { label: "Bank attachment for payments", free: "Locked", paid: "Included" },
+  { label: "Property boost", free: "Locked", paid: "Included" },
+  { label: "WhatsApp alerts", free: "Locked", paid: "Included" },
+] as const;
+
+const PAYOUT_KEY = "hauxhunt-owner-payout-details";
+
+function readPayoutDetails(): PayoutDetails {
+  if (typeof window === "undefined") return DEFAULT_PAYOUT_DETAILS;
+  try {
+    const raw = window.sessionStorage.getItem(PAYOUT_KEY);
+    return raw
+      ? { ...DEFAULT_PAYOUT_DETAILS, ...(JSON.parse(raw) as Partial<PayoutDetails>) }
+      : DEFAULT_PAYOUT_DETAILS;
+  } catch {
+    return DEFAULT_PAYOUT_DETAILS;
+  }
+}
+function writePayoutDetails(details: PayoutDetails) {
+  if (typeof window === "undefined") return;
+  try {
+    window.sessionStorage.setItem(PAYOUT_KEY, JSON.stringify(details));
+  } catch {
+    // Storage full/unavailable -- change still applies for this render.
+  }
+}
 
 // Owner Account Polish phase (Phase 6) -- mirrors the established
 // server-page + "use client" content-component split already used by
@@ -58,7 +98,11 @@ function writePersonalInfo(info: PersonalInfo) {
 // "Property & Listings" is the one addition beyond the brief's own example
 // list, covering the one Owner-relevant activity type (listing/property
 // state changes) the example list didn't already name.
-type PrefKey = "applications" | "payments" | "maintenance" | "team" | "messages" | "property";
+// "whatsapp" is a delivery channel, not a notification category like the
+// rest of PrefKey — it isn't in PREFERENCE_CATEGORIES/rendered by that list,
+// only by the dedicated "Delivery channels" block below, but it shares this
+// same preferences bucket rather than introducing a second storage key.
+type PrefKey = "applications" | "payments" | "maintenance" | "team" | "messages" | "property" | "whatsapp";
 
 const PREFERENCE_CATEGORIES: { key: PrefKey; title: string; description: string }[] = [
   { key: "applications", title: "Applications", description: "Application decisions and important status updates." },
@@ -76,6 +120,7 @@ const DEFAULT_PREFS: Record<PrefKey, boolean> = {
   team: true,
   messages: true,
   property: true,
+  whatsapp: false,
 };
 
 const PREFS_KEY = "hauxhunt-owner-notification-preferences";
@@ -117,10 +162,12 @@ function useMounted(): boolean {
 
 export function OwnerAccountContent() {
   const mounted = useMounted();
+  const tier = useTier();
   const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
 
   const personalInfo = mounted ? readPersonalInfo() : DEFAULT_PERSONAL_INFO;
   const prefs = mounted ? readPrefs() : DEFAULT_PREFS;
+  const payoutDetails = mounted ? readPayoutDetails() : DEFAULT_PAYOUT_DETAILS;
   const [passwordJustChanged, setPasswordJustChanged] = useState(false);
 
   function savePersonalInfo(next: PersonalInfo) {
@@ -130,6 +177,11 @@ export function OwnerAccountContent() {
 
   function togglePref(key: PrefKey) {
     writePrefs({ ...prefs, [key]: !prefs[key] });
+    forceUpdate();
+  }
+
+  function savePayoutDetails(next: PayoutDetails) {
+    writePayoutDetails(next);
     forceUpdate();
   }
 
@@ -172,7 +224,45 @@ export function OwnerAccountContent() {
             </label>
           ))}
         </div>
+        <div className="mt-5 border-t border-black/10 pt-5">
+          <p className="text-carbon-400 mb-3 text-xs font-medium tracking-wide uppercase">
+            Delivery channels
+          </p>
+          {isPaidTier(tier) ? (
+            <label className="flex items-center justify-between gap-4 rounded-xl border border-black/10 p-3.5">
+              <div className="min-w-0">
+                <p className="text-sm font-medium">WhatsApp alerts</p>
+                <p className="text-carbon-500 mt-0.5 text-xs">
+                  Application, payment, and maintenance alerts on WhatsApp.
+                </p>
+              </div>
+              <input
+                type="checkbox"
+                checked={prefs.whatsapp ?? false}
+                onChange={() => togglePref("whatsapp")}
+                className="size-4 shrink-0 accent-black"
+                aria-label="WhatsApp alerts"
+              />
+            </label>
+          ) : (
+            <LockedFeature
+              feature="owner.whatsappAlerts"
+              label="WhatsApp alerts"
+              className="flex w-full items-center justify-between gap-4 rounded-xl border border-black/10 p-3.5 text-left transition-colors hover:bg-black/[0.02]"
+            />
+          )}
+        </div>
       </SettingsCard>
+
+      <SettingsCard icon={Building2} title="Bank attachment" description="Where HauxHunt sends your rent payouts.">
+        {isPaidTier(tier) ? (
+          <PayoutDetailsForm details={payoutDetails} onSave={savePayoutDetails} />
+        ) : (
+          <LockedFeature feature="owner.bankAttachment" variant="row" />
+        )}
+      </SettingsCard>
+
+      <PlanToggleCard features={OWNER_PLAN_FEATURES} />
     </div>
   );
 }

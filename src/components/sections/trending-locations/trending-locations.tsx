@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
@@ -8,6 +10,7 @@ import kigaliImage from "@/assets/images/kigali-city.jpg";
 import lagosImage from "@/assets/images/lagos.jpg";
 import lekkiImage from "@/assets/images/lekki.png";
 import { LocationCard } from "./location-card";
+import { useTranslation } from "@/components/language/use-translation";
 
 const LOCATIONS = [
   {
@@ -69,6 +72,7 @@ export function TrendingLocations({
   audience = "guest",
   variant = "page",
 }: TrendingLocationsProps = {}) {
+  const { t } = useTranslation();
   const embedded = variant === "embedded";
 
   return (
@@ -92,11 +96,10 @@ export function TrendingLocations({
                   : "font-bricolage text-carbon-900 text-[clamp(2.25rem,4vw,3.75rem)] leading-none font-normal tracking-[-0.04em]"
               }
             >
-              Trending Locations
+              {t("trendingLocations.title")}
             </h2>
             <p className="text-body-m text-carbon-900 mt-4 sm:whitespace-nowrap">
-              Explore homes where renters are looking now, across Rwanda,
-              Nigeria, and Kenya.
+              {t("trendingLocations.subtitle")}
             </p>
           </div>
 
@@ -108,7 +111,7 @@ export function TrendingLocations({
             }
             className="font-bricolage border-carbon-900 text-carbon-900 hover:bg-muted inline-flex h-11 shrink-0 items-center justify-center gap-2 self-start rounded-full border bg-transparent px-5 text-base font-medium transition-colors duration-150 sm:self-auto"
           >
-            Explore more
+            {t("trendingLocations.exploreMore")}
             <ArrowUpRight aria-hidden="true" className="size-4" />
           </Link>
         </div>

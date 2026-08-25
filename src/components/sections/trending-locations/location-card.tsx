@@ -1,6 +1,10 @@
+"use client";
+
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+
+import { useTranslation } from "@/components/language/use-translation";
 
 type LocationCardProps = {
   name: string;
@@ -21,10 +25,12 @@ export function LocationCard({
   className,
   focalPoint = "50% 55%",
 }: LocationCardProps) {
+  const { t } = useTranslation();
+
   return (
     <Link
       href={href}
-      aria-label={`Explore ${homes}+ houses in ${name}, ${country}`}
+      aria-label={t("trendingLocations.exploreAria", { count: homes, name, country })}
       className={`group relative isolate min-h-[310px] overflow-hidden rounded-2xl ${className ?? ""}`}
     >
       <Image
@@ -45,7 +51,7 @@ export function LocationCard({
             {name}
           </h3>
           <p className="mt-2 text-sm text-white/85">
-            {homes.toLocaleString()}+ houses
+            {homes.toLocaleString()}+ {t("trendingLocations.housesSuffix")}
           </p>
         </div>
 

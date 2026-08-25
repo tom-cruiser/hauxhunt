@@ -30,6 +30,8 @@ import {
 import { getActiveAssignmentsForProperty } from "@/lib/team-data";
 import { pushProfessionalNotification } from "@/lib/professional-work";
 import { pushOwnerNotification } from "@/lib/owner-notifications";
+import { isPaidTier, useTier } from "@/hooks/use-tier";
+import { UpgradeModal } from "@/components/tier/upgrade-modal";
 
 // Cross-Role Lifecycle Synchronization phase -- Section 29/45: a new
 // renter-submitted request notifies whichever PM holds "Handle
@@ -92,10 +94,26 @@ function MaintenancePageInner() {
   const requests = demoState === "empty" ? [] : getMaintenanceRequests();
   const [tab, setTab] = useState<Tab>("all");
   const [rentalFilter, setRentalFilter] = useState("all");
-  const [reportOpen, setReportOpen] = useState(
+  const [wantsReportOpen, setWantsReportOpen] = useState(
     searchParams.get("report") === "1",
   );
   const [toast, setToast] = useState("");
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const tier = useTier();
+  // Tenant tier gate: in-app maintenance requests are Paid-only
+  // (access-control.ts). Derived rather than gating the `useState`
+  // initializer above, so a genuinely paid tenant following a `?report=1`
+  // deep link still opens the dialog once `useTier()` resolves
+  // post-hydration (see the identical pattern in renter-map-catalogue.tsx).
+  const reportOpen = wantsReportOpen && isPaidTier(tier);
+
+  function handleReportClick() {
+    if (!isPaidTier(tier)) {
+      setUpgradeOpen(true);
+      return;
+    }
+    setWantsReportOpen(true);
+  }
 
   const shownRequests = requests.filter(
     (request) =>
@@ -127,7 +145,7 @@ function MaintenancePageInner() {
               {hasActiveRental ? (
                 <button
                   type="button"
-                  onClick={() => setReportOpen(true)}
+                  onClick={handleReportClick}
                   className="inline-flex h-11 items-center gap-2 rounded-full bg-black px-5 text-sm font-medium text-white"
                 >
                   <Plus className="size-4" /> Report an Issue
@@ -194,7 +212,7 @@ function MaintenancePageInner() {
                 }}
               />
             ) : !requests.length ? (
-              <MaintenanceEmptyState onReport={() => setReportOpen(true)} />
+              <MaintenanceEmptyState onReport={handleReportClick} />
             ) : shownRequests.length ? (
               <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {shownRequests.map((request) => (
@@ -218,7 +236,7 @@ function MaintenancePageInner() {
 
       {reportOpen ? (
         <ReportIssueDialog
-          close={() => setReportOpen(false)}
+          close={() => setWantsReportOpen(false)}
           submit={(request) => {
             createMaintenanceRequest(request);
             notifyOnNewMaintenanceRequest(request);
@@ -228,6 +246,11 @@ function MaintenancePageInner() {
         />
       ) : null}
       {toast ? <div className="feedback-toast">{toast}</div> : null}
+      <UpgradeModal
+        feature="tenant.maintenanceRequests"
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+      />
     </>
   );
 }

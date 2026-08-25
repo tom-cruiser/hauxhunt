@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Building2,
   Castle,
@@ -8,48 +10,51 @@ import {
 } from "lucide-react";
 
 import { CategoryCard } from "./category-card";
+import { useTranslation } from "@/components/language/use-translation";
 
 const CATEGORIES = [
   {
-    title: "Beach Front Apartments",
+    titleKey: "exploreCategories.categories.beachFront",
     count: 86,
     href: "/search?type=Beach+Front+Apartments",
     icon: Waves,
   },
   {
-    title: "Apartments",
+    titleKey: "exploreCategories.categories.apartments",
     count: 341,
     href: "/search?type=Apartment",
     icon: Building2,
   },
   {
-    title: "Houses",
+    titleKey: "exploreCategories.categories.houses",
     count: 128,
     href: "/search?type=House",
     icon: House,
   },
   {
-    title: "Duplexes",
+    titleKey: "exploreCategories.categories.duplexes",
     count: 94,
     href: "/search?type=Duplex",
     icon: PanelsTopLeft,
   },
   {
-    title: "Villas",
+    titleKey: "exploreCategories.categories.villas",
     count: 67,
     href: "/search?type=Villa",
     icon: Castle,
   },
   {
-    title: "Find a flatmate",
+    titleKey: "exploreCategories.categories.flatmates",
     count: 118,
     href: "/flatmates",
     icon: UsersRound,
-    countLabel: "people and shared homes",
+    countLabelKey: "exploreCategories.categories.flatmatesCountLabel",
   },
 ] as const;
 
 export function ExploreCategories() {
+  const { t } = useTranslation();
+
   return (
     <section
       aria-labelledby="explore-categories-title"
@@ -94,12 +99,12 @@ export function ExploreCategories() {
           id="explore-categories-title"
           className="font-bricolage text-carbon-900 text-[clamp(2rem,3vw,3rem)] leading-none font-normal tracking-[-0.035em]"
         >
-          Explore by Category
+          {t("exploreCategories.title")}
         </h2>
 
         <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
           {CATEGORIES.map((category) => (
-            <CategoryCard key={category.title} {...category} />
+            <CategoryCard key={category.titleKey} {...category} />
           ))}
         </div>
       </div>

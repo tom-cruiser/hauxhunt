@@ -15,6 +15,7 @@ import {
   formatCurrencyRange,
   useDisplayCurrency,
 } from "@/components/currency/currency-selector";
+import { useTranslation } from "@/components/language/use-translation";
 
 type Stage = "idle" | "parsed" | "results";
 
@@ -119,6 +120,7 @@ const reveal = {
  */
 export function SearchWorkspace() {
   const router = useRouter();
+  const { t } = useTranslation();
   const displayCurrency = useDisplayCurrency();
   const [query, setQuery] = useState("");
   const [stage, setStage] = useState<Stage>("idle");
@@ -202,7 +204,7 @@ export function SearchWorkspace() {
 
     if (!Recognition) {
       setUsingCurrentLocation(false);
-      setQuery("Voice search is not supported in this browser");
+      setQuery(t("hero.search.voiceNotSupported"));
       return;
     }
 
@@ -306,14 +308,23 @@ export function SearchWorkspace() {
     if (stage === "parsed") {
       const understood = filters.filter((f) => !f.unclear).length;
       const unclear = filters.some((f) => f.unclear);
-      return `Understood ${understood} filter${understood === 1 ? "" : "s"}${
-        unclear ? ", with one part unclear" : ""
-      }. Review them, then show matches.`;
+      const filterPhrase = t(
+        understood === 1
+          ? "hero.search.understoodFilterOne"
+          : "hero.search.understoodFilterOther",
+        { count: understood },
+      );
+      return `${filterPhrase}${
+        unclear ? t("hero.search.withUnclearPart") : ""
+      }${t("hero.search.reviewThenShow")}`;
     }
-    return `Showing ${results.length} matching home${
-      results.length === 1 ? "" : "s"
-    }.`;
-  }, [stage, filters, results]);
+    return t(
+      results.length === 1
+        ? "hero.search.resultsCountOne"
+        : "hero.search.resultsCountOther",
+      { count: results.length },
+    );
+  }, [stage, filters, results, t]);
 
   const hasSearchInput =
     query.trim().length > 0 ||
@@ -332,14 +343,14 @@ export function SearchWorkspace() {
               type="button"
               onClick={useCurrentLocation}
               disabled={locationLoading}
-              aria-label="Use my current location"
-              title="Use my current location"
+              aria-label={t("hero.search.useCurrentLocation")}
+              title={t("hero.search.useCurrentLocation")}
               className="text-carbon-600 flex size-9 shrink-0 items-center justify-center rounded-full bg-transparent transition-colors hover:text-black disabled:opacity-40"
             >
               <MapPin aria-hidden="true" className="size-5" />
             </button>
             <label htmlFor={inputId} className="sr-only">
-              Describe the home you are looking for
+              {t("hero.search.describeHome")}
             </label>
             <input
               ref={inputRef}
@@ -350,9 +361,7 @@ export function SearchWorkspace() {
                 setUsingCurrentLocation(false);
                 setQuery(event.target.value);
               }}
-              placeholder={
-                'Try "A quiet 2-bedroom in Lagos, under USD 900......"'
-              }
+              placeholder={t("hero.search.placeholder")}
               autoComplete="off"
               className="search-query-input text-body-l text-fg min-w-0 flex-1 bg-transparent px-1 py-1.5 placeholder:text-black/55 placeholder:opacity-100"
             />
@@ -360,8 +369,16 @@ export function SearchWorkspace() {
           <button
             type="button"
             onClick={toggleVoiceSearch}
-            aria-label={listening ? "Stop voice search" : "Start voice search"}
-            title={listening ? "Stop listening" : "Search by voice"}
+            aria-label={
+              listening
+                ? t("hero.search.stopVoiceSearch")
+                : t("hero.search.startVoiceSearch")
+            }
+            title={
+              listening
+                ? t("hero.search.stopListening")
+                : t("hero.search.searchByVoice")
+            }
             className={`flex size-10 shrink-0 items-center justify-center rounded-full bg-transparent transition-colors ${
               listening ? "text-red-600" : "text-carbon-600 hover:text-black"
             }`}
@@ -371,8 +388,8 @@ export function SearchWorkspace() {
           <button
             type="submit"
             disabled={!hasSearchInput}
-            aria-label="Search"
-            title="Search"
+            aria-label={t("hero.search.search")}
+            title={t("hero.search.search")}
             className="bg-action-primary text-fg-on-brand hover:bg-action-primary-hover active:bg-action-primary-active inline-flex size-11 shrink-0 items-center justify-center rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] transition-colors duration-150 disabled:pointer-events-none disabled:opacity-35"
           >
             <Search aria-hidden="true" className="size-4" />
@@ -382,31 +399,31 @@ export function SearchWorkspace() {
         {stage === "idle" ? (
           <div className="border-border-subtle mt-3 grid gap-2.5 border-t pt-3 sm:grid-cols-2 lg:grid-cols-4">
             <SearchSelect
-              label="Location"
+              label={t("hero.search.location")}
               value={location}
               onChange={setLocation}
-              placeholder="Choose location"
+              placeholder={t("hero.search.chooseLocation")}
               options={LOCATIONS}
             />
             <SearchSelect
-              label="Type"
+              label={t("hero.search.type")}
               value={propertyType}
               onChange={setPropertyType}
-              placeholder="Choose property type"
+              placeholder={t("hero.search.choosePropertyType")}
               options={PROPERTY_TYPES}
             />
             <SearchSelect
-              label="Criteria"
+              label={t("hero.search.criteria")}
               value={criteria}
               onChange={setCriteria}
-              placeholder="Choose criteria"
+              placeholder={t("hero.search.chooseCriteria")}
               options={CRITERIA}
             />
             <SearchSelect
-              label="Pricing"
+              label={t("hero.search.pricing")}
               value={pricing}
               onChange={setPricing}
-              placeholder="Choose pricing"
+              placeholder={t("hero.search.choosePricing")}
               options={PRICE_RANGES}
               optionLabels={Object.fromEntries([
                 [
@@ -456,7 +473,9 @@ export function SearchWorkspace() {
               tabIndex={-1}
               className="text-label text-fg-muted uppercase"
             >
-              {directResults ? "Matching homes" : "What we understood"}
+              {directResults
+                ? t("hero.search.matchingHomes")
+                : t("hero.search.whatWeUnderstood")}
             </h3>
 
             {!directResults ? (
@@ -479,14 +498,16 @@ export function SearchWorkspace() {
                     onClick={handleShowMatches}
                     className="border-border-interactive text-body-s text-fg hover:bg-subtle inline-flex h-11 items-center rounded-lg border px-5 font-medium transition-colors duration-150"
                   >
-                    {stage === "results" ? "Update matches" : "Show matches"}
+                    {stage === "results"
+                      ? t("hero.search.updateMatches")
+                      : t("hero.search.showMatches")}
                   </button>
                   <button
                     type="button"
                     onClick={handleStartOver}
                     className="text-body-s text-fg-muted hover:text-fg rounded transition-colors duration-150"
                   >
-                    Start over
+                    {t("hero.search.startOver")}
                   </button>
                 </div>
               </>
@@ -506,8 +527,7 @@ export function SearchWorkspace() {
                     ))
                   ) : (
                     <p className="text-body-s text-fg-muted border-border-subtle border-t py-5">
-                      No exact matches yet. Try widening your location or
-                      budget.
+                      {t("hero.search.noExactMatches")}
                     </p>
                   )}
                   {directResults ? (
@@ -516,7 +536,7 @@ export function SearchWorkspace() {
                       onClick={handleStartOver}
                       className="text-body-s text-fg-muted hover:text-fg mt-3 rounded transition-colors duration-150"
                     >
-                      Start over
+                      {t("hero.search.startOver")}
                     </button>
                   ) : null}
                 </motion.div>
@@ -577,6 +597,7 @@ type AddFilterProps = {
 
 /** Inline control for adding a criterion the sentence didn't cover. */
 function AddFilter({ onAdd }: AddFilterProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -592,7 +613,7 @@ function AddFilter({ onAdd }: AddFilterProps) {
         className="border-border-subtle text-body-s text-fg-muted hover:border-border-default hover:text-fg inline-flex h-9 items-center gap-1.5 rounded-full border border-dashed px-3 transition-colors duration-150"
       >
         <Plus aria-hidden="true" className="size-3.5" />
-        Add
+        {t("hero.search.add")}
       </button>
     );
   }
@@ -623,13 +644,13 @@ function AddFilter({ onAdd }: AddFilterProps) {
             setOpen(false);
           }
         }}
-        placeholder="e.g. balcony"
-        aria-label="Add a criterion"
+        placeholder={t("hero.search.addPlaceholder")}
+        aria-label={t("hero.search.addCriterion")}
         className="hero-search-control text-body-s text-fg placeholder:text-fg-muted w-28 bg-transparent"
       />
       <button
         type="submit"
-        aria-label="Add criterion"
+        aria-label={t("hero.search.addCriterion")}
         className="text-fg-muted hover:bg-subtle hover:text-fg flex size-7 shrink-0 items-center justify-center rounded-full transition-colors duration-150"
       >
         <Plus aria-hidden="true" className="size-3.5" />

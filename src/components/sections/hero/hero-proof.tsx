@@ -1,9 +1,13 @@
+"use client";
+
 import { KeyRound, ReceiptText, ShieldCheck } from "lucide-react";
 
+import { useTranslation } from "@/components/language/use-translation";
+
 const PROOF_POINTS = [
-  { icon: ShieldCheck, label: "Verified homes" },
-  { icon: KeyRound, label: "Verified property managers" },
-  { icon: ReceiptText, label: "Clear move-in costs" },
+  { icon: ShieldCheck, labelKey: "hero.proof.verifiedHomes" },
+  { icon: KeyRound, labelKey: "hero.proof.verifiedManagers" },
+  { icon: ReceiptText, labelKey: "hero.proof.clearCosts" },
 ] as const;
 
 /**
@@ -15,15 +19,17 @@ const PROOF_POINTS = [
  * coloured dot, which would carry meaning in colour alone.
  */
 export function HeroProof() {
+  const { t } = useTranslation();
+
   return (
     <ul className="flex flex-wrap justify-center gap-x-7 gap-y-3">
-      {PROOF_POINTS.map(({ icon: Icon, label }) => (
+      {PROOF_POINTS.map(({ icon: Icon, labelKey }) => (
         <li
-          key={label}
+          key={labelKey}
           className="text-caption text-fg-tertiary flex items-center gap-2"
         >
           <Icon aria-hidden="true" className="text-fg-brand size-4 shrink-0" />
-          {label}
+          {t(labelKey)}
         </li>
       ))}
     </ul>

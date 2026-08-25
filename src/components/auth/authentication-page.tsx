@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
@@ -6,6 +8,7 @@ import { AuthenticationForm } from "@/components/auth/authentication-form";
 import { LoginMosaic } from "@/components/auth/login-mosaic";
 import { Wordmark } from "@/components/layout/wordmark";
 import { HistoryBackButton } from "@/components/navigation/history-back-button";
+import { useTranslation } from "@/components/language/use-translation";
 
 import registrationImage from "@/assets/images/interior.jpg";
 
@@ -14,6 +17,7 @@ type AuthenticationPageProps = {
 };
 
 export function AuthenticationPage({ mode }: AuthenticationPageProps) {
+  const { t } = useTranslation();
   const isRegister = mode === "register";
 
   if (!isRegister) {
@@ -24,7 +28,7 @@ export function AuthenticationPage({ mode }: AuthenticationPageProps) {
             <div className="flex -translate-y-3 items-center justify-between gap-5">
               <Link
                 href="/"
-                aria-label="HauxHunt home"
+                aria-label={t("auth.homeAriaLabel")}
                 className="w-fit invert"
               >
                 <Wordmark height={42} />
@@ -34,17 +38,16 @@ export function AuthenticationPage({ mode }: AuthenticationPageProps) {
                 className="font-bricolage inline-flex h-10 items-center gap-0.5 text-sm font-medium text-white/60 transition-colors hover:text-white"
               >
                 <ChevronLeft aria-hidden="true" className="size-4" />
-                Back
+                {t("auth.back")}
               </HistoryBackButton>
             </div>
 
             <div className="my-auto w-full max-w-md -translate-y-6 self-center py-10">
               <h1 className="font-bricolage text-[clamp(2.7rem,5vw,4.7rem)] leading-[0.92] font-medium tracking-[-0.055em]">
-                Welcome back.
+                {t("auth.login.welcomeTitle")}
               </h1>
               <p className="mt-4 max-w-sm text-sm leading-6 text-white/45">
-                Sign in to continue your property search, manage saved homes, or
-                return to your listings.
+                {t("auth.login.welcomeSubtitle")}
               </p>
               <div className="mt-10">
                 <AuthenticationForm mode="login" variant="dark" />
@@ -64,7 +67,7 @@ export function AuthenticationPage({ mode }: AuthenticationPageProps) {
         <section className="relative hidden min-h-0 overflow-hidden lg:block lg:w-[calc(100%+3rem)]">
           <Image
             src={registrationImage}
-            alt="A calm modern interior with a wooden lounge chair"
+            alt={t("auth.registrationImageAlt")}
             fill
             priority
             sizes="(min-width: 1024px) 46vw, 100vw"
@@ -75,7 +78,7 @@ export function AuthenticationPage({ mode }: AuthenticationPageProps) {
             <div className="flex items-center justify-between gap-5 lg:pr-28">
               <Link
                 href="/"
-                aria-label="HauxHunt home"
+                aria-label={t("auth.homeAriaLabel")}
                 className="w-fit invert"
               >
                 <Wordmark height={42} />
@@ -85,17 +88,16 @@ export function AuthenticationPage({ mode }: AuthenticationPageProps) {
                 className="font-bricolage inline-flex h-10 items-center gap-0.5 text-sm font-medium text-white/70 transition-colors hover:text-white"
               >
                 <ChevronLeft aria-hidden="true" className="size-4" />
-                Back
+                {t("auth.back")}
               </HistoryBackButton>
             </div>
 
             <div className="mt-auto max-w-xl pb-5">
               <h1 className="font-bricolage text-[clamp(3.5rem,7vw,7rem)] leading-[0.86] font-medium tracking-[-0.065em]">
-                Join HauxHunt.
+                {t("auth.register.joinTitle")}
               </h1>
               <p className="mt-7 max-w-lg text-base leading-7 text-white/70">
-                Create one trusted account to find a home, list properties, and
-                connect with serious renters, buyers, and property partners.
+                {t("auth.register.joinSubtitle")}
               </p>
             </div>
           </div>
@@ -108,7 +110,7 @@ export function AuthenticationPage({ mode }: AuthenticationPageProps) {
               className="font-bricolage mb-5 inline-flex h-10 w-fit items-center gap-0.5 text-sm font-medium text-black/60 transition-colors hover:text-black lg:hidden"
             >
               <ChevronLeft aria-hidden="true" className="size-4" />
-              Back
+              {t("auth.back")}
             </HistoryBackButton>
             <AuthenticationForm mode="register" compact />
           </div>

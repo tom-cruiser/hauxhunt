@@ -1,40 +1,83 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
 import footerLogo from "@/assets/images/HauxHunt_white_with_company_name.png";
+import { useTranslation } from "@/components/language/use-translation";
 
+/**
+ * `labelKey` resolves through `nav.*`/`footer.groups.*` at render time, and
+ * `trending` is the one link matched by key rather than by English text (see
+ * the native-navigation branch below) — both so relabelling in translation
+ * never breaks the lookup.
+ */
 const FOOTER_GROUPS = [
   {
-    title: "Find a home",
+    titleKey: "footer.groups.findHome.title",
     links: [
-      { label: "Rent", href: "/rent" },
-      { label: "Find a flatmate", href: "/flatmates" },
-      { label: "Trending locations", href: "/#trending-locations" },
-      { label: "How it works", href: "#how-it-works" },
+      { key: "rent", labelKey: "footer.groups.findHome.rent", href: "/rent" },
+      {
+        key: "flatmates",
+        labelKey: "footer.groups.findHome.flatmates",
+        href: "/flatmates",
+      },
+      {
+        key: "trending",
+        labelKey: "footer.groups.findHome.trending",
+        href: "/#trending-locations",
+      },
+      {
+        key: "howItWorks",
+        labelKey: "footer.groups.findHome.howItWorks",
+        href: "#how-it-works",
+      },
     ],
   },
   {
-    title: "For property partners",
+    titleKey: "footer.groups.partners.title",
     links: [
-      { label: "List a property", href: "/landlords" },
-      { label: "For property managers", href: "/landlords" },
-      { label: "For agents", href: "/landlords" },
-      { label: "For agency teams", href: "/landlords" },
+      {
+        key: "list",
+        labelKey: "footer.groups.partners.list",
+        href: "/landlords",
+      },
+      {
+        key: "managers",
+        labelKey: "footer.groups.partners.managers",
+        href: "/landlords",
+      },
+      {
+        key: "agents",
+        labelKey: "footer.groups.partners.agents",
+        href: "/landlords",
+      },
+      {
+        key: "agencyTeams",
+        labelKey: "footer.groups.partners.agencyTeams",
+        href: "/landlords",
+      },
     ],
   },
   {
-    title: "HauxHunt",
+    titleKey: "footer.groups.company.title",
     links: [
-      { label: "About us", href: "/about" },
-      { label: "Help centre", href: "/help" },
-      { label: "Safety", href: "/safety" },
-      { label: "Contact", href: "/contact" },
+      { key: "about", labelKey: "footer.groups.company.about", href: "/about" },
+      { key: "help", labelKey: "footer.groups.company.help", href: "/help" },
+      { key: "safety", labelKey: "footer.groups.company.safety", href: "/safety" },
+      {
+        key: "contact",
+        labelKey: "footer.groups.company.contact",
+        href: "/contact",
+      },
     ],
   },
 ] as const;
 
 export function Footer() {
+  const { t } = useTranslation();
+
   return (
     <footer className="bg-carbon-950 relative overflow-hidden px-5 pt-16 pb-7 text-white sm:px-6 sm:pt-20 lg:px-11 xl:px-[52px]">
       <svg
@@ -73,7 +116,7 @@ export function Footer() {
           <div>
             <Link
               href="/"
-              aria-label="HauxHunt home"
+              aria-label={t("footer.homeAriaLabel")}
               className="inline-flex rounded-sm"
             >
               <Image
@@ -85,38 +128,37 @@ export function Footer() {
               />
             </Link>
             <p className="text-body-m mt-6 max-w-[38ch] text-white/60">
-              A simpler, trusted way to discover homes across Rwanda, Nigeria,
-              and Kenya.
+              {t("footer.tagline")}
             </p>
           </div>
 
           <nav
-            aria-label="Footer"
+            aria-label={t("footer.navLabel")}
             className="grid gap-10 sm:grid-cols-3 sm:gap-6"
           >
             {FOOTER_GROUPS.map((group) => (
-              <div key={group.title}>
+              <div key={group.titleKey}>
                 <h2 className="font-bricolage text-sm font-medium text-white">
-                  {group.title}
+                  {t(group.titleKey)}
                 </h2>
                 <ul className="mt-5 space-y-3">
                   {group.links.map((link) => (
-                    <li key={link.label}>
-                      {link.label === "Trending locations" ? (
+                    <li key={link.key}>
+                      {link.key === "trending" ? (
                         // Native navigation guarantees cross-page hash scrolling after the home document loads.
                         // eslint-disable-next-line @next/next/no-html-link-for-pages
                         <a
                           href="/#trending-locations"
                           className="text-body-m rounded-sm text-white/55 transition-colors hover:text-white"
                         >
-                          {link.label}
+                          {t(link.labelKey)}
                         </a>
                       ) : (
                         <Link
                           href={link.href}
                           className="text-body-m rounded-sm text-white/55 transition-colors hover:text-white"
                         >
-                          {link.label}
+                          {t(link.labelKey)}
                         </Link>
                       )}
                     </li>
@@ -132,7 +174,7 @@ export function Footer() {
                 href="/register"
                 className="font-bricolage inline-flex h-12 items-center gap-2 rounded-full bg-white px-6 text-base font-medium text-black transition-colors hover:bg-white/85"
               >
-                Get started
+                {t("common.getStarted")}
                 <ArrowUpRight aria-hidden="true" className="size-4" />
               </Link>
             </div>
@@ -141,7 +183,7 @@ export function Footer() {
               <div className="flex items-center gap-2 sm:col-start-3">
                 <Link
                   href="https://instagram.com"
-                  aria-label="HauxHunt on Instagram"
+                  aria-label={t("footer.socialAria.instagram")}
                   className="flex size-10 items-center justify-center rounded-full border border-white/20 text-white/65 transition-colors hover:border-white/50 hover:text-white"
                 >
                   <svg
@@ -165,7 +207,7 @@ export function Footer() {
                 </Link>
                 <Link
                   href="https://linkedin.com"
-                  aria-label="HauxHunt on LinkedIn"
+                  aria-label={t("footer.socialAria.linkedin")}
                   className="flex size-10 items-center justify-center rounded-full border border-white/20 text-white/65 transition-colors hover:border-white/50 hover:text-white"
                 >
                   <svg
@@ -179,7 +221,7 @@ export function Footer() {
                 </Link>
                 <Link
                   href="https://facebook.com"
-                  aria-label="HauxHunt on Facebook"
+                  aria-label={t("footer.socialAria.facebook")}
                   className="flex size-10 items-center justify-center rounded-full border border-white/20 text-white/65 transition-colors hover:border-white/50 hover:text-white"
                 >
                   <svg
@@ -193,7 +235,7 @@ export function Footer() {
                 </Link>
                 <Link
                   href="https://wa.me/"
-                  aria-label="Contact HauxHunt on WhatsApp"
+                  aria-label={t("footer.socialAria.whatsapp")}
                   className="flex size-10 items-center justify-center rounded-full border border-white/20 text-white/65 transition-colors hover:border-white/50 hover:text-white"
                 >
                   <svg
@@ -211,13 +253,13 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col gap-4 pt-7 text-sm text-white/40 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} HauxHunt. All rights reserved.</p>
+          <p>{t("footer.copyright", { year: new Date().getFullYear() })}</p>
           <div className="flex gap-5">
             <Link href="/privacy" className="rounded-sm hover:text-white">
-              Privacy
+              {t("footer.privacy")}
             </Link>
             <Link href="/terms" className="rounded-sm hover:text-white">
-              Terms
+              {t("footer.terms")}
             </Link>
           </div>
         </div>

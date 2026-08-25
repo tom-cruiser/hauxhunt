@@ -1,0 +1,296 @@
+{
+  "common": {
+    "getStarted": "Tangira",
+    "requestProperty": "Saba inzu",
+    "close": "Funga",
+    "signUp": "Iyandikishe",
+    "logIn": "Injira",
+    "login": "Kwinjira",
+    "register": "Iyandikishe"
+  },
+  "nav": {
+    "home": "Ahabanza",
+    "rent": "Gukodesha",
+    "flatmates": "Abasangira inzu",
+    "list": "Tanga inzu",
+    "homeAriaLabel": "HauxHunt — ahabanza",
+    "openMenu": "Fungura menyu",
+    "closeMenu": "Funga menyu",
+    "primaryLabel": "Nyamukuru"
+  },
+  "languageSwitcher": {
+    "ariaLabel": "Hitamo ururimi",
+    "listLabel": "Ururimi",
+    "en": "English",
+    "fr": "Français",
+    "rw": "Ikinyarwanda"
+  },
+  "footer": {
+    "homeAriaLabel": "HauxHunt ahabanza",
+    "tagline": "Uburyo bworoshye kandi bwizewe bwo kubona amazu mu Rwanda, muri Nigeria no muri Kenya.",
+    "navLabel": "Igice cyo hepfo",
+    "groups": {
+      "findHome": {
+        "title": "Shaka inzu",
+        "rent": "Gukodesha",
+        "flatmates": "Shaka uwo musangira inzu",
+        "trending": "Ahantu hakundwa",
+        "howItWorks": "Uko bikorwa"
+      },
+      "partners": {
+        "title": "Ku bafatanyabikorwa b'amazu",
+        "list": "Tanga inzu yawe",
+        "managers": "Ku bacunga amazu",
+        "agents": "Ku ba ajenti",
+        "agencyTeams": "Ku matsinda y'ajensi"
+      },
+      "company": {
+        "title": "HauxHunt",
+        "about": "Abo turi bo",
+        "help": "Ikigo cy'ubufasha",
+        "safety": "Umutekano",
+        "contact": "Twandikire"
+      }
+    },
+    "socialAria": {
+      "instagram": "HauxHunt kuri Instagram",
+      "linkedin": "HauxHunt kuri LinkedIn",
+      "facebook": "HauxHunt kuri Facebook",
+      "whatsapp": "Vugana na HauxHunt kuri WhatsApp"
+    },
+    "copyright": "© {{year}} HauxHunt. Uburenganzira bwose burabitswe.",
+    "privacy": "Ibanga",
+    "terms": "Amabwiriza"
+  },
+  "hero": {
+    "statement": {
+      "line1": "Shaka inzu ijyanye",
+      "line2": "n'uburyo utuye."
+    },
+    "proof": {
+      "verifiedHomes": "Amazu yemejwe",
+      "verifiedManagers": "Abacunga amazu bemejwe",
+      "clearCosts": "Ibiciro bisobanutse byo kwinjira"
+    },
+    "search": {
+      "useCurrentLocation": "Koresha aho ndi ubu",
+      "describeHome": "Sobanura inzu ushaka",
+      "placeholder": "Gerageza \"Inzu ituje ifite ibyumba 2 i Lagos, munsi ya Dolari 900……\"",
+      "stopVoiceSearch": "Hagarika ishakisha ry'ijwi",
+      "startVoiceSearch": "Tangira ishakisha ry'ijwi",
+      "stopListening": "Hagarika kumva",
+      "searchByVoice": "Shakisha ukoresheje ijwi",
+      "search": "Shakisha",
+      "voiceNotSupported": "Ishakisha ry'ijwi ntirikorera kuri iyi porogaramu",
+      "location": "Aho",
+      "chooseLocation": "Hitamo aho",
+      "type": "Ubwoko",
+      "choosePropertyType": "Hitamo ubwoko bw'inzu",
+      "criteria": "Ibisabwa",
+      "chooseCriteria": "Hitamo ibisabwa",
+      "pricing": "Igiciro",
+      "choosePricing": "Hitamo igiciro",
+      "matchingHomes": "Amazu ahuye n'ibyo ushaka",
+      "whatWeUnderstood": "Ibyo twumvise",
+      "updateMatches": "Vugurura ibihuye",
+      "showMatches": "Erekana ibihuye",
+      "startOver": "Ongera utangire",
+      "add": "Ongeraho",
+      "addCriterion": "Ongeraho ikigenderwaho",
+      "addPlaceholder": "urugero: baranda",
+      "noExactMatches": "Nta bihuye neza kubona kugeza ubu. Gerageza kwagura aho ushaka cyangwa amafaranga wateganyije.",
+      "understoodFilterOne": "Twumvise ikigenderwaho {{count}}",
+      "understoodFilterOther": "Twumvise ibigenderwaho {{count}}",
+      "withUnclearPart": ", hariho igice kimwe kidasobanutse",
+      "reviewThenShow": ". Byisuzume, hanyuma werekane ibihuye.",
+      "resultsCountOne": "Harerekanwa inzu {{count}} ihuye n'ibyo ushaka.",
+      "resultsCountOther": "Harerekanwa amazu {{count}} ahuye n'ibyo ushaka."
+    },
+    "filterToken": {
+      "editFilterAria": "Hindura ikigenderwaho: {{label}}",
+      "removeFilterAria": "Kuraho ikigenderwaho: {{label}}"
+    },
+    "matchRow": {
+      "verified": "Byemejwe",
+      "bed": "icyumba",
+      "perMonth": "/ukwezi",
+      "match": "guhuza"
+    }
+  },
+  "howItWorks": {
+    "title": "Uburyo bworoshye bwo kubona inzu ukurikira",
+    "subtitle": "Shakisha, ugereranye, unavugane byose mu buryo bumwe bworoshye — kuva igitekerezo cya mbere kugeza ku nzu nziza.",
+    "step1": {
+      "title": "Tubwire icyo ukeneye",
+      "description": "Sobanura inzu wifuza mu magambo asanzwe cyangwa uhitemo aho, ubwoko bw'inzu, amafaranga n'ibindi bigenderwaho."
+    },
+    "step2": {
+      "title": "Gereranya amazu meza",
+      "description": "Reba amatangazo abereye afite ibiciro bisobanutse, ibikoresho biriho, ubuso, n'ibindi byose bikenewe mu gufata icyemezo."
+    },
+    "step3": {
+      "title": "Vugana wongere imbere",
+      "description": "Vugana n'ucunga inzu cyangwa ajenti uyihagarariye maze utegure intambwe ikurikira wizeye."
+    },
+    "partnerPanel": {
+      "growTitle": "Kwagura ubucuruzi bwawe bw'amazu na HauxHunt",
+      "growDescription": "Abacunga amazu na ba ajenti bashobora kugera ku bashaka amazu koko, gucunga amatangazo, no gusubiza abasaba amazu ahantu hamwe.",
+      "joinUs": "Twifatanye nawe ubu",
+      "appTitle": "Jyana ishakisha ry'inzu aho ugiye hose",
+      "appDescription": "Bika amatangazo, wakire amakuru ku bihuye bishya, kandi uvugane n'inzobere mu mazu aho uri hose ukoresheje porogaramu ya HauxHunt.",
+      "googlePlayAria": "Kura HauxHunt kuri Google Play",
+      "appStoreAria": "Kura HauxHunt kuri App Store",
+      "googlePlayAlt": "Yikure kuri Google Play",
+      "appStoreAlt": "Yikure kuri App Store"
+    }
+  },
+  "exploreCategories": {
+    "title": "Reba ubwoko bw'amazu",
+    "defaultCountLabel": "amazu ahari",
+    "exploreAria": "Reba {{count}}+ {{countLabel}} muri {{title}}",
+    "categories": {
+      "beachFront": "Amazu ari ku nkombe y'inyanja",
+      "apartments": "Apartimenti",
+      "houses": "Amazu",
+      "duplexes": "Duplex",
+      "villas": "Villa",
+      "flatmates": "Shaka uwo musangira inzu",
+      "flatmatesCountLabel": "abantu n'amazu asangiwe"
+    }
+  },
+  "trendingLocations": {
+    "title": "Ahantu hakundwa",
+    "subtitle": "Reba amazu abakodesha bariko barashakisha ubu, mu Rwanda, muri Nigeria no muri Kenya.",
+    "exploreMore": "Reba ibindi",
+    "exploreAria": "Reba amazu {{count}}+ i {{name}}, {{country}}",
+    "housesSuffix": "amazu"
+  },
+  "featuredListings": {
+    "title": "Amatangazo yatoranyijwe",
+    "subtitle": "Reba hafi amazu ahari mu Rwanda, muri Nigeria no muri Kenya.",
+    "viewAll": "Reba amatangazo yose",
+    "perMonth": "ku kwezi",
+    "cta": {
+      "title": "Ntubona ibyo ushaka?",
+      "description": "Tanga icyifuzo cy'inzu maze abacunga amazu cyangwa ba ajenti bemejwe bahuye n'ibyo ushaka bazakuvugana."
+    },
+    "listings": {
+      "modernFamilyHome": "Inzu y'umuryango igezweho",
+      "contemporaryDuplex": "Duplex igezweho",
+      "lakefrontResidence": "Inzu iri ku nkombe y'ikiyaga",
+      "gardenPenthouse": "Penthouse ifite ubusitani",
+      "quietCityVilla": "Villa ituje mu mujyi",
+      "waterfrontApartment": "Apartimenti iri ku nkombe y'amazi",
+      "hillsideFamilyHouse": "Inzu y'umuryango iri ku musozi",
+      "beachFrontApartments": "Amazu ari ku nkombe y'inyanja"
+    }
+  },
+  "listingCard": {
+    "favouriteAdded": "Inzu yongewe ku byo ukunda",
+    "favouriteRemoved": "Inzu yakuwe ku byo ukunda",
+    "removeFromFavouritesAria": "Kuraho {{title}} ku byo ukunda",
+    "addToFavouritesAria": "Ongeraho {{title}} ku byo ukunda",
+    "keepFavouritesTitle": "Bika amazu ukunda ukoresheje konti.",
+    "keepFavouritesDescription": "Injira cyangwa ufungure konti ya HauxHunt kugira ngo wongere iyi nzu ku byo ukunda kandi uyibone ukoresheje ikindi gikoresho cyose.",
+    "beds": "ibyumba {{count}}",
+    "baths": "ubwogero {{count}}",
+    "areaUnit": "{{area}} m²",
+    "furnished": "Ifite ibikoresho",
+    "unfurnished": "Nta bikoresho ifite",
+    "propertyDetailSr": "Amakuru ku nzu"
+  },
+  "requestPropertyDialog": {
+    "title": "Injira kugira ngo usabe inzu.",
+    "description": "Injira cyangwa ufungure konti ya HauxHunt kugira ngo utange icyifuzo cy'inzu, abafatanyabikorwa bemejwe bakubwire amahitamo abereye."
+  },
+  "auth": {
+    "back": "Subira inyuma",
+    "homeAriaLabel": "HauxHunt ahabanza",
+    "registrationImageAlt": "Imbere y'inzu ituje kandi igezweho hari intebe y'igiti",
+    "showcaseAria": "Kwerekana amazu ya HauxHunt",
+    "login": {
+      "welcomeTitle": "Ikaze wagarutse.",
+      "welcomeSubtitle": "Injira kugira ngo ukomeze gushaka inzu, gucunga amazu wabitse, cyangwa gusubira ku matangazo yawe."
+    },
+    "register": {
+      "joinTitle": "Injira muri HauxHunt.",
+      "joinSubtitle": "Fungura konti imwe yizewe kugira ngo ubone inzu, wandikishe amazu, kandi uvugane n'abakodesha, abaguzi n'abafatanyabikorwa b'amazu bafite ishaka rikomeye."
+    },
+    "form": {
+      "accountTypes": {
+        "renter": {
+          "label": "Ukodesha",
+          "description": "Shakisha, ubike, kandi usabe amazu."
+        },
+        "owner": {
+          "label": "Nyir'inzu",
+          "description": "Gutunga amazu no guha inshingano umucungamutungo cyangwa ajenti."
+        },
+        "propertyManager": {
+          "label": "Ucunga amazu",
+          "description": "Gucunga amazu utunze cyangwa washinzwe gucunga."
+        },
+        "agent": {
+          "label": "Ajenti",
+          "description": "Guhagararira abakiriya no gutangaza amatangazo."
+        }
+      },
+      "passwordsDontMatch": "Amagambo y'ibanga ntahura.",
+      "wrongCredentials": "Imeli cyangwa ijambo ry'ibanga sibyo.",
+      "accountReadyTitle": "Konti yawe iteguye",
+      "accountReadyDescription": "Konti yawe yaremwe neza. Ubu winjiye kandi witeguye gukomeza.",
+      "continueButton": "Komeza",
+      "goToDashboard": "Jya ku mbonerahamwe",
+      "chooseAccountType": "Hitamo ubwoko bwa konti yawe",
+      "chooseAccountTypeHelp": "Ibi bidufasha gutegura ibikoresho bikwiriye konti yawe.",
+      "fullName": "Amazina yombi",
+      "agencyNameOptional": "Izina ry'ajensi (ntibisabwa)",
+      "emailAddress": "Aderesi imeli",
+      "phoneNumber": "Nimero ya telefoni",
+      "country": "Igihugu",
+      "chooseCountry": "Hitamo igihugu",
+      "password": "Ijambo ry'ibanga",
+      "confirmPassword": "Emeza ijambo ry'ibanga",
+      "rememberMe": "Nyibuke",
+      "forgotPassword": "Wibagiwe ijambo ry'ibanga?",
+      "termsAgreement": "Nemeje amabwiriza ya HauxHunt kandi nemeza ko amakuru natanze ari ukuri.",
+      "createAccount": "Fungura konti",
+      "alreadyHaveAccount": "Ufite konti yawe?",
+      "newToHauxHunt": "Uri mushya kuri HauxHunt?",
+      "hidePassword": "Hisha ijambo ry'ibanga",
+      "showPassword": "Erekana ijambo ry'ibanga"
+    },
+    "mosaic": {
+      "card1": {
+        "labelA": "HauxHunt",
+        "titleA": "Bona ikwiye.",
+        "labelB": "Shakisha",
+        "titleB": "Reba ikwiye."
+      },
+      "card2": {
+        "labelA": "Menya",
+        "titleA": "Shaka bike.",
+        "labelB": "Amakuru asobanutse",
+        "titleB": "Menya mbere yo kugenda."
+      },
+      "card3": {
+        "labelA": "Ibyo watoranyije",
+        "titleA": "Bika. Gereranya.",
+        "labelB": "Amazu wabitse",
+        "titleB": "Bika ibyo ukunda hafi."
+      },
+      "card4": {
+        "labelA": "Amatangazo yizewe",
+        "titleA": "Imuka vuba.",
+        "labelB": "Amahitamo meza",
+        "titleB": "Imuka wumva neza."
+      },
+      "card5": {
+        "labelA": "Boneka igihe cyose",
+        "titleA": "Ikaze mu rugo.",
+        "labelB": "Intambwe ikurikira",
+        "titleB": "Tangira ahantu heza."
+      }
+    }
+  }
+}

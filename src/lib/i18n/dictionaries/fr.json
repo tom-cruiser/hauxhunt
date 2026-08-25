@@ -1,0 +1,296 @@
+{
+  "common": {
+    "getStarted": "Commencer",
+    "requestProperty": "Demander un bien",
+    "close": "Fermer",
+    "signUp": "S'inscrire",
+    "logIn": "Se connecter",
+    "login": "Connexion",
+    "register": "S'inscrire"
+  },
+  "nav": {
+    "home": "Accueil",
+    "rent": "Louer",
+    "flatmates": "Colocataires",
+    "list": "Publier",
+    "homeAriaLabel": "HauxHunt — accueil",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "primaryLabel": "Principal"
+  },
+  "languageSwitcher": {
+    "ariaLabel": "Choisir la langue",
+    "listLabel": "Langue",
+    "en": "English",
+    "fr": "Français",
+    "rw": "Ikinyarwanda"
+  },
+  "footer": {
+    "homeAriaLabel": "HauxHunt accueil",
+    "tagline": "Une manière plus simple et fiable de trouver un logement au Rwanda, au Nigéria et au Kenya.",
+    "navLabel": "Pied de page",
+    "groups": {
+      "findHome": {
+        "title": "Trouver un logement",
+        "rent": "Louer",
+        "flatmates": "Trouver un colocataire",
+        "trending": "Quartiers tendance",
+        "howItWorks": "Comment ça marche"
+      },
+      "partners": {
+        "title": "Pour les partenaires immobiliers",
+        "list": "Publier un bien",
+        "managers": "Pour les gestionnaires immobiliers",
+        "agents": "Pour les agents",
+        "agencyTeams": "Pour les équipes d'agence"
+      },
+      "company": {
+        "title": "HauxHunt",
+        "about": "À propos de nous",
+        "help": "Centre d'aide",
+        "safety": "Sécurité",
+        "contact": "Contact"
+      }
+    },
+    "socialAria": {
+      "instagram": "HauxHunt sur Instagram",
+      "linkedin": "HauxHunt sur LinkedIn",
+      "facebook": "HauxHunt sur Facebook",
+      "whatsapp": "Contacter HauxHunt sur WhatsApp"
+    },
+    "copyright": "© {{year}} HauxHunt. Tous droits réservés.",
+    "privacy": "Confidentialité",
+    "terms": "Conditions"
+  },
+  "hero": {
+    "statement": {
+      "line1": "Trouvez un logement qui vous correspond,",
+      "line2": "à votre façon de vivre."
+    },
+    "proof": {
+      "verifiedHomes": "Logements vérifiés",
+      "verifiedManagers": "Gestionnaires immobiliers vérifiés",
+      "clearCosts": "Coûts d'entrée clairs"
+    },
+    "search": {
+      "useCurrentLocation": "Utiliser ma position actuelle",
+      "describeHome": "Décrivez le logement que vous recherchez",
+      "placeholder": "Essayez « Un 2-pièces calme à Lagos, sous 900 USD……»",
+      "stopVoiceSearch": "Arrêter la recherche vocale",
+      "startVoiceSearch": "Démarrer la recherche vocale",
+      "stopListening": "Arrêter l'écoute",
+      "searchByVoice": "Rechercher par la voix",
+      "search": "Rechercher",
+      "voiceNotSupported": "La recherche vocale n'est pas prise en charge par ce navigateur",
+      "location": "Lieu",
+      "chooseLocation": "Choisir un lieu",
+      "type": "Type",
+      "choosePropertyType": "Choisir un type de bien",
+      "criteria": "Critère",
+      "chooseCriteria": "Choisir un critère",
+      "pricing": "Budget",
+      "choosePricing": "Choisir un budget",
+      "matchingHomes": "Logements correspondants",
+      "whatWeUnderstood": "Ce que nous avons compris",
+      "updateMatches": "Mettre à jour les résultats",
+      "showMatches": "Afficher les résultats",
+      "startOver": "Recommencer",
+      "add": "Ajouter",
+      "addCriterion": "Ajouter un critère",
+      "addPlaceholder": "ex. balcon",
+      "noExactMatches": "Aucune correspondance exacte pour l'instant. Essayez d'élargir le lieu ou le budget.",
+      "understoodFilterOne": "{{count}} critère compris",
+      "understoodFilterOther": "{{count}} critères compris",
+      "withUnclearPart": ", dont un point à préciser",
+      "reviewThenShow": ". Vérifiez-les, puis affichez les résultats.",
+      "resultsCountOne": "{{count}} logement correspondant affiché.",
+      "resultsCountOther": "{{count}} logements correspondants affichés."
+    },
+    "filterToken": {
+      "editFilterAria": "Modifier le critère : {{label}}",
+      "removeFilterAria": "Supprimer le critère : {{label}}"
+    },
+    "matchRow": {
+      "verified": "Vérifié",
+      "bed": "chambre",
+      "perMonth": "/mois",
+      "match": "correspondance"
+    }
+  },
+  "howItWorks": {
+    "title": "Une manière plus simple de trouver votre prochain logement",
+    "subtitle": "Recherchez, comparez et échangez dans une seule expérience claire — de votre première idée jusqu'au bon bien.",
+    "step1": {
+      "title": "Dites-nous ce dont vous avez besoin",
+      "description": "Décrivez le logement idéal en langage naturel ou choisissez un lieu, un type de bien, un budget et des critères de recherche."
+    },
+    "step2": {
+      "title": "Comparez les bons logements",
+      "description": "Consultez des annonces pertinentes avec des prix clairs, les détails d'ameublement, la surface et tout ce qu'il faut pour décider."
+    },
+    "step3": {
+      "title": "Échangez et avancez",
+      "description": "Contactez le gestionnaire immobilier ou l'agent responsable du bien et organisez la prochaine étape en toute confiance."
+    },
+    "partnerPanel": {
+      "growTitle": "Développez votre activité immobilière avec HauxHunt",
+      "growDescription": "Les gestionnaires immobiliers et les agents peuvent toucher des locataires sérieux, gérer leurs annonces et répondre aux demandes de biens, au même endroit.",
+      "joinUs": "Rejoignez-nous",
+      "appTitle": "Emportez votre recherche de logement partout",
+      "appDescription": "Enregistrez des annonces, recevez des alertes de nouvelles correspondances et contactez des professionnels de l'immobilier partout avec l'application HauxHunt.",
+      "googlePlayAria": "Obtenir HauxHunt sur Google Play",
+      "appStoreAria": "Télécharger HauxHunt sur l'App Store",
+      "googlePlayAlt": "Disponible sur Google Play",
+      "appStoreAlt": "Télécharger sur l'App Store"
+    }
+  },
+  "exploreCategories": {
+    "title": "Explorer par catégorie",
+    "defaultCountLabel": "biens disponibles",
+    "exploreAria": "Explorer {{count}}+ {{countLabel}} à {{title}}",
+    "categories": {
+      "beachFront": "Appartements en bord de mer",
+      "apartments": "Appartements",
+      "houses": "Maisons",
+      "duplexes": "Duplex",
+      "villas": "Villas",
+      "flatmates": "Trouver un colocataire",
+      "flatmatesCountLabel": "personnes et logements partagés"
+    }
+  },
+  "trendingLocations": {
+    "title": "Quartiers tendance",
+    "subtitle": "Découvrez les logements les plus recherchés en ce moment, au Rwanda, au Nigéria et au Kenya.",
+    "exploreMore": "Explorer davantage",
+    "exploreAria": "Explorer {{count}}+ maisons à {{name}}, {{country}}",
+    "housesSuffix": "maisons"
+  },
+  "featuredListings": {
+    "title": "Annonces en vedette",
+    "subtitle": "Un aperçu des logements disponibles au Rwanda, au Nigéria et au Kenya.",
+    "viewAll": "Voir toutes les annonces",
+    "perMonth": "par mois",
+    "cta": {
+      "title": "Vous ne trouvez pas ce que vous cherchez ?",
+      "description": "Publiez une demande de bien et les gestionnaires immobiliers ou agents vérifiés qui correspondent à vos critères vous contacteront."
+    },
+    "listings": {
+      "modernFamilyHome": "Maison familiale moderne",
+      "contemporaryDuplex": "Duplex contemporain",
+      "lakefrontResidence": "Résidence au bord du lac",
+      "gardenPenthouse": "Penthouse avec jardin",
+      "quietCityVilla": "Villa citadine paisible",
+      "waterfrontApartment": "Appartement en bord de l'eau",
+      "hillsideFamilyHouse": "Maison familiale à flanc de colline",
+      "beachFrontApartments": "Appartements en bord de mer"
+    }
+  },
+  "listingCard": {
+    "favouriteAdded": "Logement ajouté à vos favoris",
+    "favouriteRemoved": "Logement retiré de vos favoris",
+    "removeFromFavouritesAria": "Retirer {{title}} des favoris",
+    "addToFavouritesAria": "Ajouter {{title}} aux favoris",
+    "keepFavouritesTitle": "Conservez vos logements favoris avec un compte.",
+    "keepFavouritesDescription": "Connectez-vous ou créez un compte HauxHunt pour ajouter ce logement à vos favoris et le retrouver depuis n'importe quel appareil.",
+    "beds": "{{count}} chambres",
+    "baths": "{{count}} salles de bain",
+    "areaUnit": "{{area}} m²",
+    "furnished": "Meublé",
+    "unfurnished": "Non meublé",
+    "propertyDetailSr": "Détail du bien"
+  },
+  "requestPropertyDialog": {
+    "title": "Connectez-vous pour demander un bien.",
+    "description": "Connectez-vous ou créez un compte HauxHunt pour envoyer une demande de bien et laisser des partenaires vérifiés vous proposer des options correspondantes."
+  },
+  "auth": {
+    "back": "Retour",
+    "homeAriaLabel": "HauxHunt accueil",
+    "registrationImageAlt": "Un intérieur moderne et apaisant avec une chaise longue en bois",
+    "showcaseAria": "Vitrine des biens HauxHunt",
+    "login": {
+      "welcomeTitle": "Bon retour.",
+      "welcomeSubtitle": "Connectez-vous pour continuer votre recherche de logement, gérer vos logements enregistrés ou revenir à vos annonces."
+    },
+    "register": {
+      "joinTitle": "Rejoignez HauxHunt.",
+      "joinSubtitle": "Créez un compte de confiance unique pour trouver un logement, publier des biens et échanger avec des locataires, acheteurs et partenaires immobiliers sérieux."
+    },
+    "form": {
+      "accountTypes": {
+        "renter": {
+          "label": "Locataire",
+          "description": "Recherchez, enregistrez et demandez des logements."
+        },
+        "owner": {
+          "label": "Propriétaire",
+          "description": "Possédez des biens et déléguez-les à un gestionnaire ou à un agent."
+        },
+        "propertyManager": {
+          "label": "Gestionnaire immobilier",
+          "description": "Gérez les biens que vous possédez ou que l'on vous a confiés."
+        },
+        "agent": {
+          "label": "Agent",
+          "description": "Représentez des clients et publiez des annonces."
+        }
+      },
+      "passwordsDontMatch": "Les mots de passe ne correspondent pas.",
+      "wrongCredentials": "Adresse e-mail ou mot de passe incorrect.",
+      "accountReadyTitle": "Votre compte est prêt",
+      "accountReadyDescription": "Votre compte a été créé avec succès. Vous êtes maintenant connecté et prêt à continuer.",
+      "continueButton": "Continuer",
+      "goToDashboard": "Aller au tableau de bord",
+      "chooseAccountType": "Choisissez votre type de compte",
+      "chooseAccountTypeHelp": "Cela nous aide à préparer les bons outils pour votre compte.",
+      "fullName": "Nom complet",
+      "agencyNameOptional": "Nom de l'agence (facultatif)",
+      "emailAddress": "Adresse e-mail",
+      "phoneNumber": "Numéro de téléphone",
+      "country": "Pays",
+      "chooseCountry": "Choisir un pays",
+      "password": "Mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "rememberMe": "Se souvenir de moi",
+      "forgotPassword": "Mot de passe oublié ?",
+      "termsAgreement": "J'accepte les conditions HauxHunt et confirme que les informations fournies sont exactes.",
+      "createAccount": "Créer un compte",
+      "alreadyHaveAccount": "Vous avez déjà un compte ?",
+      "newToHauxHunt": "Nouveau sur HauxHunt ?",
+      "hidePassword": "Masquer le mot de passe",
+      "showPassword": "Afficher le mot de passe"
+    },
+    "mosaic": {
+      "card1": {
+        "labelA": "HauxHunt",
+        "titleA": "Trouvez ce qui vous va.",
+        "labelB": "Explorer",
+        "titleB": "Découvrez ce qui vous va."
+      },
+      "card2": {
+        "labelA": "Découvrir",
+        "titleA": "Cherchez moins.",
+        "labelB": "Détails clairs",
+        "titleB": "Sachez avant d'y aller."
+      },
+      "card3": {
+        "labelA": "Votre sélection",
+        "titleA": "Enregistrez. Comparez.",
+        "labelB": "Logements enregistrés",
+        "titleB": "Gardez vos favoris à portée."
+      },
+      "card4": {
+        "labelA": "Annonces vérifiées",
+        "titleA": "Déménagez plus vite.",
+        "labelB": "De meilleurs choix",
+        "titleB": "Déménagez en toute clarté."
+      },
+      "card5": {
+        "labelA": "Accès 24 h/24",
+        "titleA": "Bienvenue chez vous.",
+        "labelB": "Votre prochaine étape",
+        "titleB": "Commencez du bon pied."
+      }
+    }
+  }
+}

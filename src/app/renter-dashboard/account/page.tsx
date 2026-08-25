@@ -9,8 +9,22 @@ import cardMethodImage from "@/assets/images/card.png";
 import deletingIllustration from "@/assets/images/deleting.png";
 import mobileMethodImage from "@/assets/images/mobile.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
+import { PlanToggleCard } from "@/components/tier/plan-toggle-card";
+import { LockedFeature } from "@/components/tier/locked-feature";
+import { isPaidTier, useTier } from "@/hooks/use-tier";
 
-type SectionId = "personal" | "security" | "methods" | "preferences";
+type SectionId = "personal" | "security" | "methods" | "preferences" | "plan";
+
+const TENANT_PLAN_FEATURES = [
+  { label: "Listing access", free: "All listings", paid: "All listings" },
+  { label: "Agent/landlord messaging", free: "Up to 3 per month", paid: "Unlimited" },
+  { label: "Map view & location link", free: "Locked", paid: "Included" },
+  { label: "House reviews", free: "Locked", paid: "Included" },
+  { label: "Priority alert on requests", free: "Locked", paid: "Included" },
+  { label: "In-app maintenance requests", free: "Locked", paid: "Included" },
+  { label: "Viewing fee", free: "Market rate", paid: "Capped at 5,000 RWF" },
+  { label: "WhatsApp alerts", free: "Locked", paid: "Included" },
+] as const;
 type Modal =
   | "sessions"
   | "delete-account"
@@ -74,6 +88,11 @@ const PREFERENCE_GROUPS = [
     ],
   },
 ] as const;
+
+// WhatsApp is a Paid-only delivery channel (see access-control.ts) — its
+// checkbox renders disabled with a lock for Free tenants (PreferenceGroup
+// below) rather than being omitted, so the option is visible, not hidden.
+const NOTIFICATION_CHANNELS = ["In-app", "Email", "SMS", "WhatsApp"] as const;
 
 const INITIAL_METHODS: PaymentMethod[] = [
   {
@@ -196,9 +215,9 @@ export default function MyAccountPage() {
     Object.fromEntries(
       PREFERENCE_GROUPS.flatMap((group) =>
         group.items.flatMap((item) =>
-          ["In-app", "Email", "SMS"].map((channel) => [
+          NOTIFICATION_CHANNELS.map((channel) => [
             `${item}-${channel}`,
-            channel !== "SMS",
+            channel === "In-app" || channel === "Email",
           ]),
         ),
       ),
@@ -290,6 +309,7 @@ export default function MyAccountPage() {
                   ["security", "Login & Security"],
                   ["methods", "Payment Methods"],
                   ["preferences", "Notifications & Preferences"],
+                  ["plan", "Plan & Billing"],
                 ] as const
               ).map(([id, label]) => (
                 <button
@@ -748,11 +768,13 @@ export default function MyAccountPage() {
               open={openSection === "preferences"}
               toggle={toggleSection}
             >
-              <div className="hidden grid-cols-[1fr_repeat(3,82px)] items-center gap-3 border-b border-black/10 pb-3 text-xs font-medium text-black/45 sm:grid">
+              <div className="hidden grid-cols-[1fr_repeat(4,82px)] items-center gap-3 border-b border-black/10 pb-3 text-xs font-medium text-black/45 sm:grid">
                 <span>Notification</span>
-                <span className="text-center">In-app</span>
-                <span className="text-center">Email</span>
-                <span className="text-center">SMS</span>
+                {NOTIFICATION_CHANNELS.map((channel) => (
+                  <span key={channel} className="text-center">
+                    {channel}
+                  </span>
+                ))}
               </div>
               {PREFERENCE_GROUPS.map((group) => (
                 <PreferenceGroup
@@ -800,6 +822,15 @@ export default function MyAccountPage() {
                   setPreferencesDirty(true);
                 }}
               />
+            </Accordion>
+
+            <Accordion
+              id="plan"
+              title="Plan & Billing"
+              open={openSection === "plan"}
+              toggle={toggleSection}
+            >
+              <PlanToggleCard features={TENANT_PLAN_FEATURES} />
             </Accordion>
           </div>
         </div>
@@ -1056,6 +1087,8 @@ function PreferenceGroup({
   values: Record<string, boolean>;
   toggle: (key: string) => void;
 }) {
+  const tier = useTier();
+
   return (
     <section className="border-b border-black/10 py-6">
       <h3 className="font-bricolage text-lg font-medium">{title}</h3>
@@ -1063,11 +1096,25 @@ function PreferenceGroup({
         {items.map((item) => (
           <div
             key={item}
-            className="grid gap-3 sm:grid-cols-[1fr_repeat(3,82px)] sm:items-center"
+            className="grid gap-3 sm:grid-cols-[1fr_repeat(4,82px)] sm:items-center"
           >
             <p className="text-sm">{item}</p>
-            {["In-app", "Email", "SMS"].map((channel) => {
+            {NOTIFICATION_CHANNELS.map((channel) => {
               const key = `${item}-${channel}`;
+              // WhatsApp is Paid-only (access-control.ts): Free renders a
+              // disabled checkbox that opens the upgrade modal instead of
+              // toggling, so the option is visibly present, not hidden.
+              if (channel === "WhatsApp" && !isPaidTier(tier)) {
+                return (
+                  <div key={channel} className="flex items-center justify-center">
+                    <LockedFeature
+                      feature="tenant.whatsappAlerts"
+                      variant="badge"
+                      label="WhatsApp alerts"
+                    />
+                  </div>
+                );
+              }
               return (
                 <label
                   key={channel}

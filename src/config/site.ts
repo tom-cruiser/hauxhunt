@@ -28,16 +28,20 @@ export type SiteConfig = typeof siteConfig;
  * their pages so the nav is built against the real information architecture
  * rather than against placeholders that would have to be found and replaced
  * later. They will 404 until those pages are built.
+ *
+ * `labelKey` points into the `nav.*` translation namespace rather than
+ * carrying English text directly — `Navbar` resolves it through
+ * `useTranslation()` so the label follows the visitor's chosen language.
  */
-export const navConfig: { label: string; href: string }[] = [
-  { label: "Home", href: "/" },
-  { label: "Rent", href: "/rent" },
-  { label: "Flatmates", href: "/flatmates" },
-  { label: "List", href: "/landlords" },
+export const navConfig: { labelKey: string; href: string }[] = [
+  { labelKey: "nav.home", href: "/" },
+  { labelKey: "nav.rent", href: "/rent" },
+  { labelKey: "nav.flatmates", href: "/flatmates" },
+  { labelKey: "nav.list", href: "/landlords" },
 ];
 
 /** Account actions, right-aligned in the header. */
 export const authConfig = {
-  register: { label: "Register", href: "/register" },
-  login: { label: "Login", href: "/login" },
+  register: { labelKey: "common.register", href: "/register" },
+  login: { labelKey: "common.login", href: "/login" },
 } as const;

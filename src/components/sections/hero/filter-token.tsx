@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { TriangleAlert, X } from "lucide-react";
 
 import type { ParsedFilter } from "@/types";
+import { useTranslation } from "@/components/language/use-translation";
 
 type FilterTokenProps = {
   filter: ParsedFilter;
@@ -21,6 +22,7 @@ type FilterTokenProps = {
  * colour alone can never be the signal (Design System §6.5).
  */
 export function FilterToken({ filter, onRemove, onUpdate }: FilterTokenProps) {
+  const { t } = useTranslation();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(filter.label);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -50,7 +52,9 @@ export function FilterToken({ filter, onRemove, onUpdate }: FilterTokenProps) {
               setEditing(false);
             }
           }}
-          aria-label={`Edit filter: ${filter.label}`}
+          aria-label={t("hero.filterToken.editFilterAria", {
+            label: filter.label,
+          })}
           className="text-body-s text-fg w-32 bg-transparent"
         />
       </span>
@@ -86,7 +90,9 @@ export function FilterToken({ filter, onRemove, onUpdate }: FilterTokenProps) {
           setEditing(true);
           requestAnimationFrame(() => inputRef.current?.select());
         }}
-        aria-label={`Edit filter: ${filter.label}`}
+        aria-label={t("hero.filterToken.editFilterAria", {
+          label: filter.label,
+        })}
         className={[
           "text-body-s rounded-full transition-colors duration-150",
           isUnclear ? "text-warning" : "text-fg-secondary group-hover:text-fg",
@@ -98,7 +104,9 @@ export function FilterToken({ filter, onRemove, onUpdate }: FilterTokenProps) {
       <button
         type="button"
         onClick={() => onRemove(filter.id)}
-        aria-label={`Remove filter: ${filter.label}`}
+        aria-label={t("hero.filterToken.removeFilterAria", {
+          label: filter.label,
+        })}
         className="text-fg-muted hover:bg-subtle hover:text-fg ml-1.5 flex size-7 shrink-0 items-center justify-center rounded-full transition-colors duration-150"
       >
         <X aria-hidden="true" className="size-3.5" />

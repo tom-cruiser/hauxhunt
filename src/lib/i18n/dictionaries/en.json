@@ -1,0 +1,296 @@
+{
+  "common": {
+    "getStarted": "Get started",
+    "requestProperty": "Request property",
+    "close": "Close",
+    "signUp": "Sign up",
+    "logIn": "Log in",
+    "login": "Login",
+    "register": "Register"
+  },
+  "nav": {
+    "home": "Home",
+    "rent": "Rent",
+    "flatmates": "Flatmates",
+    "list": "List",
+    "homeAriaLabel": "HauxHunt — home",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "primaryLabel": "Primary"
+  },
+  "languageSwitcher": {
+    "ariaLabel": "Choose language",
+    "listLabel": "Language",
+    "en": "English",
+    "fr": "Français",
+    "rw": "Ikinyarwanda"
+  },
+  "footer": {
+    "homeAriaLabel": "HauxHunt home",
+    "tagline": "A simpler, trusted way to discover homes across Rwanda, Nigeria, and Kenya.",
+    "navLabel": "Footer",
+    "groups": {
+      "findHome": {
+        "title": "Find a home",
+        "rent": "Rent",
+        "flatmates": "Find a flatmate",
+        "trending": "Trending locations",
+        "howItWorks": "How it works"
+      },
+      "partners": {
+        "title": "For property partners",
+        "list": "List a property",
+        "managers": "For property managers",
+        "agents": "For agents",
+        "agencyTeams": "For agency teams"
+      },
+      "company": {
+        "title": "HauxHunt",
+        "about": "About us",
+        "help": "Help centre",
+        "safety": "Safety",
+        "contact": "Contact"
+      }
+    },
+    "socialAria": {
+      "instagram": "HauxHunt on Instagram",
+      "linkedin": "HauxHunt on LinkedIn",
+      "facebook": "HauxHunt on Facebook",
+      "whatsapp": "Contact HauxHunt on WhatsApp"
+    },
+    "copyright": "© {{year}} HauxHunt. All rights reserved.",
+    "privacy": "Privacy",
+    "terms": "Terms"
+  },
+  "hero": {
+    "statement": {
+      "line1": "Find a home that fits",
+      "line2": "the way you live."
+    },
+    "proof": {
+      "verifiedHomes": "Verified homes",
+      "verifiedManagers": "Verified property managers",
+      "clearCosts": "Clear move-in costs"
+    },
+    "search": {
+      "useCurrentLocation": "Use my current location",
+      "describeHome": "Describe the home you are looking for",
+      "placeholder": "Try \"A quiet 2-bedroom in Lagos, under USD 900……\"",
+      "stopVoiceSearch": "Stop voice search",
+      "startVoiceSearch": "Start voice search",
+      "stopListening": "Stop listening",
+      "searchByVoice": "Search by voice",
+      "search": "Search",
+      "voiceNotSupported": "Voice search is not supported in this browser",
+      "location": "Location",
+      "chooseLocation": "Choose location",
+      "type": "Type",
+      "choosePropertyType": "Choose property type",
+      "criteria": "Criteria",
+      "chooseCriteria": "Choose criteria",
+      "pricing": "Pricing",
+      "choosePricing": "Choose pricing",
+      "matchingHomes": "Matching homes",
+      "whatWeUnderstood": "What we understood",
+      "updateMatches": "Update matches",
+      "showMatches": "Show matches",
+      "startOver": "Start over",
+      "add": "Add",
+      "addCriterion": "Add a criterion",
+      "addPlaceholder": "e.g. balcony",
+      "noExactMatches": "No exact matches yet. Try widening your location or budget.",
+      "understoodFilterOne": "Understood {{count}} filter",
+      "understoodFilterOther": "Understood {{count}} filters",
+      "withUnclearPart": ", with one part unclear",
+      "reviewThenShow": ". Review them, then show matches.",
+      "resultsCountOne": "Showing {{count}} matching home.",
+      "resultsCountOther": "Showing {{count}} matching homes."
+    },
+    "filterToken": {
+      "editFilterAria": "Edit filter: {{label}}",
+      "removeFilterAria": "Remove filter: {{label}}"
+    },
+    "matchRow": {
+      "verified": "Verified",
+      "bed": "bed",
+      "perMonth": "/month",
+      "match": "match"
+    }
+  },
+  "howItWorks": {
+    "title": "A simpler way to find your next home",
+    "subtitle": "Search, compare, and connect in one clear experience—from your first idea to the right property.",
+    "step1": {
+      "title": "Tell us what you need",
+      "description": "Describe your ideal home naturally or choose a location, property type, budget, and listing criteria."
+    },
+    "step2": {
+      "title": "Compare the right homes",
+      "description": "Review relevant listings with clear prices, furnishing details, floor area, and everything needed to decide."
+    },
+    "step3": {
+      "title": "Connect and move forward",
+      "description": "Contact the property manager or agent behind the property and arrange your next step with confidence."
+    },
+    "partnerPanel": {
+      "growTitle": "Grow your property business with HauxHunt",
+      "growDescription": "Property managers and agents can reach serious home seekers, manage listings, and respond to property requests in one place.",
+      "joinUs": "Join us now",
+      "appTitle": "Take your home search anywhere",
+      "appDescription": "Save listings, receive new-match alerts, and contact property professionals wherever you are with the HauxHunt app.",
+      "googlePlayAria": "Get HauxHunt on Google Play",
+      "appStoreAria": "Download HauxHunt on the App Store",
+      "googlePlayAlt": "Get it on Google Play",
+      "appStoreAlt": "Download on the App Store"
+    }
+  },
+  "exploreCategories": {
+    "title": "Explore by Category",
+    "defaultCountLabel": "properties available",
+    "exploreAria": "Explore {{count}}+ {{countLabel}} in {{title}}",
+    "categories": {
+      "beachFront": "Beach Front Apartments",
+      "apartments": "Apartments",
+      "houses": "Houses",
+      "duplexes": "Duplexes",
+      "villas": "Villas",
+      "flatmates": "Find a flatmate",
+      "flatmatesCountLabel": "people and shared homes"
+    }
+  },
+  "trendingLocations": {
+    "title": "Trending Locations",
+    "subtitle": "Explore homes where renters are looking now, across Rwanda, Nigeria, and Kenya.",
+    "exploreMore": "Explore more",
+    "exploreAria": "Explore {{count}}+ houses in {{name}}, {{country}}",
+    "housesSuffix": "houses"
+  },
+  "featuredListings": {
+    "title": "Featured Listings",
+    "subtitle": "A closer look at homes available across Rwanda, Nigeria, and Kenya.",
+    "viewAll": "View all listings",
+    "perMonth": "per month",
+    "cta": {
+      "title": "Can't find what you're looking for?",
+      "description": "Post a property request and verified property managers or agents that meet your criteria will get in touch with you."
+    },
+    "listings": {
+      "modernFamilyHome": "Modern family home",
+      "contemporaryDuplex": "Contemporary duplex",
+      "lakefrontResidence": "Lakefront residence",
+      "gardenPenthouse": "Garden penthouse",
+      "quietCityVilla": "Quiet city villa",
+      "waterfrontApartment": "Waterfront apartment",
+      "hillsideFamilyHouse": "Hillside family house",
+      "beachFrontApartments": "Beach Front Apartments"
+    }
+  },
+  "listingCard": {
+    "favouriteAdded": "Home added to your favourites",
+    "favouriteRemoved": "Home removed from your favourites",
+    "removeFromFavouritesAria": "Remove {{title}} from favourites",
+    "addToFavouritesAria": "Add {{title}} to favourites",
+    "keepFavouritesTitle": "Keep favourite homes with an account.",
+    "keepFavouritesDescription": "Log in or create a HauxHunt account to add this home to your favourites and find it again from any device.",
+    "beds": "{{count}} beds",
+    "baths": "{{count}} baths",
+    "areaUnit": "{{area}} m²",
+    "furnished": "Furnished",
+    "unfurnished": "Unfurnished",
+    "propertyDetailSr": "Property detail"
+  },
+  "requestPropertyDialog": {
+    "title": "Sign in to request a property.",
+    "description": "Log in or create a HauxHunt account to submit a property request and let verified partners respond with matching options."
+  },
+  "auth": {
+    "back": "Back",
+    "homeAriaLabel": "HauxHunt home",
+    "registrationImageAlt": "A calm modern interior with a wooden lounge chair",
+    "showcaseAria": "HauxHunt property showcase",
+    "login": {
+      "welcomeTitle": "Welcome back.",
+      "welcomeSubtitle": "Sign in to continue your property search, manage saved homes, or return to your listings."
+    },
+    "register": {
+      "joinTitle": "Join HauxHunt.",
+      "joinSubtitle": "Create one trusted account to find a home, list properties, and connect with serious renters, buyers, and property partners."
+    },
+    "form": {
+      "accountTypes": {
+        "renter": {
+          "label": "Renter",
+          "description": "Search, save, and request houses."
+        },
+        "owner": {
+          "label": "Property Owner",
+          "description": "Own properties and delegate to a manager or agent."
+        },
+        "propertyManager": {
+          "label": "Property Manager",
+          "description": "Manage properties you own or are appointed to manage."
+        },
+        "agent": {
+          "label": "Agent",
+          "description": "Represent clients and publish listings."
+        }
+      },
+      "passwordsDontMatch": "The passwords do not match.",
+      "wrongCredentials": "Wrong email or password.",
+      "accountReadyTitle": "Your account is ready",
+      "accountReadyDescription": "Your account has been created successfully. You are now logged in and ready to continue.",
+      "continueButton": "Continue",
+      "goToDashboard": "Go to Dashboard",
+      "chooseAccountType": "Choose your account type",
+      "chooseAccountTypeHelp": "This helps us prepare the right tools for your account.",
+      "fullName": "Full name",
+      "agencyNameOptional": "Agency name (optional)",
+      "emailAddress": "Email address",
+      "phoneNumber": "Phone number",
+      "country": "Country",
+      "chooseCountry": "Choose country",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "termsAgreement": "I agree to the HauxHunt terms and confirm that the information I provide is accurate.",
+      "createAccount": "Create account",
+      "alreadyHaveAccount": "Already have an account?",
+      "newToHauxHunt": "New to HauxHunt?",
+      "hidePassword": "Hide password",
+      "showPassword": "Show password"
+    },
+    "mosaic": {
+      "card1": {
+        "labelA": "HauxHunt",
+        "titleA": "Find your fit.",
+        "labelB": "Explore",
+        "titleB": "See what fits."
+      },
+      "card2": {
+        "labelA": "Discover",
+        "titleA": "Search less.",
+        "labelB": "Clear details",
+        "titleB": "Know before you go."
+      },
+      "card3": {
+        "labelA": "Your shortlist",
+        "titleA": "Save. Compare.",
+        "labelB": "Saved homes",
+        "titleB": "Keep favourites close."
+      },
+      "card4": {
+        "labelA": "Trusted listings",
+        "titleA": "Move sooner.",
+        "labelB": "Better choices",
+        "titleB": "Move with clarity."
+      },
+      "card5": {
+        "labelA": "24/7 access",
+        "titleA": "Welcome home.",
+        "labelB": "Your next move",
+        "titleB": "Start somewhere good."
+      }
+    }
+  }
+}

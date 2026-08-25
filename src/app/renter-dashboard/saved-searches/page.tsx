@@ -22,6 +22,8 @@ import emptyIllustration from "@/assets/images/empty.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
 import { type SavedSearch, useSavedSearches } from "@/hooks/use-saved-searches";
 import { PropertyRequestForm } from "@/components/properties/property-request-form";
+import { isPaidTier, useTier } from "@/hooks/use-tier";
+import { LockedFeature } from "@/components/tier/locked-feature";
 import {
   type PropertyRequest,
   usePropertyRequests,
@@ -243,6 +245,7 @@ function RequestCard({
   request: PropertyRequest;
   onDelete: () => void;
 }) {
+  const tier = useTier();
   const date = new Date(request.submittedAt).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -269,9 +272,22 @@ function RequestCard({
               <p className="text-carbon-400 mt-0.5 text-xs">{request.country}</p>
             )}
           </div>
-          <span className="shrink-0 rounded-full border border-black/10 bg-black/[0.04] px-2.5 py-1 text-[11px] font-medium text-black/50">
-            Pending
-          </span>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <span className="rounded-full border border-black/10 bg-black/[0.04] px-2.5 py-1 text-[11px] font-medium text-black/50">
+              Pending
+            </span>
+            {isPaidTier(tier) ? (
+              <span className="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-medium text-red-600">
+                Priority alert sent
+              </span>
+            ) : (
+              <LockedFeature
+                feature="tenant.redAlert"
+                variant="badge"
+                label="Priority alert"
+              />
+            )}
+          </div>
         </div>
 
         {/* Chips */}

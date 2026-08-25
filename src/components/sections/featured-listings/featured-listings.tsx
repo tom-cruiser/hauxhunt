@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
@@ -11,13 +13,19 @@ import cityHome from "@/assets/images/image.png";
 import heroHome from "@/assets/images/landing.png";
 import { RequestPropertyButton } from "@/components/properties/request-property-button";
 import { ListingCard } from "./listing-card";
+import { useTranslation } from "@/components/language/use-translation";
 
+/**
+ * `titleKey` resolves against `featuredListings.listings.*` at render time;
+ * `period` is dropped here rather than stored per-entry because every demo
+ * listing uses the same cadence — `FeaturedListings` supplies the translated
+ * value once via `t("featuredListings.perMonth")` instead of repeating it.
+ */
 const LISTINGS = [
   {
-    title: "Modern family home",
+    titleKey: "featuredListings.listings.modernFamilyHome",
     location: "Kibagabaga, Kigali",
     price: "USD 830",
-    period: "per month",
     bedrooms: 3,
     bathrooms: 2,
     area: 168,
@@ -28,10 +36,9 @@ const LISTINGS = [
     focalPoint: "50% 52%",
   },
   {
-    title: "Contemporary duplex",
+    titleKey: "featuredListings.listings.contemporaryDuplex",
     location: "Lekki Phase 1, Lagos",
     price: "USD 2,100",
-    period: "per month",
     bedrooms: 4,
     bathrooms: 4,
     area: 240,
@@ -42,10 +49,9 @@ const LISTINGS = [
     focalPoint: "50% 46%",
   },
   {
-    title: "Lakefront residence",
+    titleKey: "featuredListings.listings.lakefrontResidence",
     location: "Gisenyi, Rwanda",
     price: "USD 590",
-    period: "per month",
     bedrooms: 2,
     bathrooms: 2,
     area: 120,
@@ -56,10 +62,9 @@ const LISTINGS = [
     focalPoint: "50% 50%",
   },
   {
-    title: "Garden penthouse",
+    titleKey: "featuredListings.listings.gardenPenthouse",
     location: "Nyarutarama, Kigali",
     price: "USD 1,140",
-    period: "per month",
     bedrooms: 3,
     bathrooms: 3,
     area: 196,
@@ -70,10 +75,9 @@ const LISTINGS = [
     focalPoint: "50% 48%",
   },
   {
-    title: "Quiet city villa",
+    titleKey: "featuredListings.listings.quietCityVilla",
     location: "Maitama, Abuja",
     price: "USD 2,500",
-    period: "per month",
     bedrooms: 5,
     bathrooms: 5,
     area: 310,
@@ -84,10 +88,9 @@ const LISTINGS = [
     focalPoint: "50% 58%",
   },
   {
-    title: "Waterfront apartment",
+    titleKey: "featuredListings.listings.waterfrontApartment",
     location: "Ikoyi, Lagos",
     price: "USD 1,700",
-    period: "per month",
     bedrooms: 3,
     bathrooms: 3,
     area: 184,
@@ -98,10 +101,9 @@ const LISTINGS = [
     focalPoint: "50% 55%",
   },
   {
-    title: "Hillside family house",
+    titleKey: "featuredListings.listings.hillsideFamilyHouse",
     location: "Karongi, Rwanda",
     price: "USD 500",
-    period: "per month",
     bedrooms: 3,
     bathrooms: 2,
     area: 146,
@@ -112,10 +114,9 @@ const LISTINGS = [
     focalPoint: "50% 56%",
   },
   {
-    title: "Beach Front Apartments",
+    titleKey: "featuredListings.listings.beachFrontApartments",
     location: "Gisenyi, Rwanda",
     price: "USD 445",
-    period: "per month",
     bedrooms: 2,
     bathrooms: 1,
     area: 98,
@@ -128,6 +129,8 @@ const LISTINGS = [
 ] as const;
 
 export function FeaturedListings() {
+  const { t } = useTranslation();
+
   return (
     <section
       aria-labelledby="featured-listings-title"
@@ -140,11 +143,10 @@ export function FeaturedListings() {
               id="featured-listings-title"
               className="font-bricolage text-carbon-900 text-[clamp(2.25rem,4vw,3.75rem)] leading-none font-normal tracking-[-0.04em]"
             >
-              Featured Listings
+              {t("featuredListings.title")}
             </h2>
             <p className="text-body-m text-carbon-600 mt-4 max-w-[52ch]">
-              A closer look at homes available across Rwanda, Nigeria, and
-              Kenya.
+              {t("featuredListings.subtitle")}
             </p>
           </div>
 
@@ -152,14 +154,20 @@ export function FeaturedListings() {
             href="/properties?mapHidden=1"
             className="font-bricolage border-carbon-900 text-carbon-900 hover:bg-muted inline-flex h-11 shrink-0 items-center justify-center gap-2 self-start rounded-full border px-5 text-base font-medium transition-colors duration-150 sm:self-auto"
           >
-            View all listings
+            {t("featuredListings.viewAll")}
             <ArrowUpRight aria-hidden="true" className="size-4" />
           </Link>
         </div>
 
         <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {LISTINGS.map((listing) => (
-            <ListingCard key={listing.href} {...listing} requiresLogin />
+          {LISTINGS.map(({ titleKey, ...listing }) => (
+            <ListingCard
+              key={listing.href}
+              {...listing}
+              title={t(titleKey)}
+              period={t("featuredListings.perMonth")}
+              requiresLogin
+            />
           ))}
         </div>
 
@@ -193,11 +201,10 @@ export function FeaturedListings() {
 
           <div className="relative z-10">
             <h3 className="font-bricolage text-[clamp(1.75rem,3vw,2.5rem)] leading-tight font-normal tracking-[-0.035em] text-white">
-              Can&apos;t find what you&apos;re looking for?
+              {t("featuredListings.cta.title")}
             </h3>
             <p className="text-body-m mt-3 max-w-[68ch] text-white/65">
-              Post a property request and verified property managers or agents
-              that meet your criteria will get in touch with you.
+              {t("featuredListings.cta.description")}
             </p>
           </div>
 

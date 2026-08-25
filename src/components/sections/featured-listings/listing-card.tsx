@@ -9,6 +9,7 @@ import { Bath, BedDouble, Expand, Heart, MapPin, Sofa, X } from "lucide-react";
 import loginIllustration from "@/assets/images/login.png";
 import { CurrencyAmount } from "@/components/currency/currency-selector";
 import { useSavedProperty } from "@/hooks/use-saved-properties";
+import { useTranslation } from "@/components/language/use-translation";
 
 type ListingCardProps = {
   title: string;
@@ -43,6 +44,7 @@ export function ListingCard({
   requiresLogin = false,
   propertyId,
 }: ListingCardProps) {
+  const { t } = useTranslation();
   const usdAmount = Number(price.replace(/[^0-9.]/g, ""));
   const resolvedPropertyId =
     propertyId ?? href.match(/\/properties\/([^?/#]+)/)?.[1] ?? href;
@@ -76,8 +78,8 @@ export function ListingCard({
     const nextSaved = persistSaved();
     setFeedback(
       nextSaved
-        ? "Home added to your favourites"
-        : "Home removed from your favourites",
+        ? t("listingCard.favouriteAdded")
+        : t("listingCard.favouriteRemoved"),
     );
   }
 
@@ -130,7 +132,7 @@ export function ListingCard({
                         <button
                           type="button"
                           onClick={() => setAuthPromptOpen(false)}
-                          aria-label="Close"
+                          aria-label={t("common.close")}
                           className="absolute top-5 right-5 flex size-9 items-center justify-center rounded-full border border-black/15 bg-white/80"
                         >
                           <X className="size-4" />
@@ -141,24 +143,23 @@ export function ListingCard({
                           id="save-auth-title"
                           className="font-bricolage text-3xl leading-tight font-medium tracking-[-0.035em]"
                         >
-                          Keep favourite homes with an account.
+                          {t("listingCard.keepFavouritesTitle")}
                         </h2>
                         <p className="text-carbon-600 mt-3 text-sm leading-6">
-                          Log in or create a HauxHunt account to add this home
-                          to your favourites and find it again from any device.
+                          {t("listingCard.keepFavouritesDescription")}
                         </p>
                         <div className="mt-7 flex gap-3">
                           <Link
                             href={`/register?returnTo=${encodeURIComponent("/renter-dashboard/saved")}&save=${encodeURIComponent(resolvedPropertyId)}${persistedSaved ? "&already=1" : ""}`}
                             className="font-bricolage flex h-12 flex-1 items-center justify-center rounded-full border border-black/20 px-5 font-medium"
                           >
-                            Sign up
+                            {t("common.signUp")}
                           </Link>
                           <Link
                             href={`/login?returnTo=${encodeURIComponent("/renter-dashboard/saved")}&save=${encodeURIComponent(resolvedPropertyId)}${persistedSaved ? "&already=1" : ""}`}
                             className="font-bricolage flex h-12 flex-1 items-center justify-center rounded-full bg-black px-5 font-medium text-white"
                           >
-                            Log in
+                            {t("common.logIn")}
                           </Link>
                         </div>
                       </div>
@@ -208,10 +209,13 @@ export function ListingCard({
           </div>
 
           <dl className="border-carbon-900/10 text-carbon-600 mt-6 flex items-center justify-between gap-2 border-t pt-5 text-xs">
-            <Fact icon={BedDouble} value={`${bedrooms} beds`} />
-            <Fact icon={Bath} value={`${bathrooms} baths`} />
-            <Fact icon={Expand} value={`${area} m²`} />
-            <Fact icon={Sofa} value={furnished ? "Furnished" : "Unfurnished"} />
+            <Fact icon={BedDouble} value={t("listingCard.beds", { count: bedrooms })} />
+            <Fact icon={Bath} value={t("listingCard.baths", { count: bathrooms })} />
+            <Fact icon={Expand} value={t("listingCard.areaUnit", { area })} />
+            <Fact
+              icon={Sofa}
+              value={t(furnished ? "listingCard.furnished" : "listingCard.unfurnished")}
+            />
           </dl>
         </div>
       </Link>
@@ -220,8 +224,8 @@ export function ListingCard({
         type="button"
         aria-label={
           liked
-            ? `Remove ${title} from favourites`
-            : `Add ${title} to favourites`
+            ? t("listingCard.removeFromFavouritesAria", { title })
+            : t("listingCard.addToFavouritesAria", { title })
         }
         aria-pressed={liked}
         onClick={toggleSaved}
@@ -246,10 +250,11 @@ type FactProps = {
 };
 
 function Fact({ icon: Icon, value }: FactProps) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-1.5 whitespace-nowrap">
       <Icon aria-hidden="true" strokeWidth={1.5} className="size-4 shrink-0" />
-      <dt className="sr-only">Property detail</dt>
+      <dt className="sr-only">{t("listingCard.propertyDetailSr")}</dt>
       <dd>{value}</dd>
     </div>
   );

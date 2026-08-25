@@ -2,15 +2,22 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { useTranslation } from "@/components/language/use-translation";
+
 type CardTone = "dark" | "green" | "lime" | "white";
 type CardPhase = "entering" | "visible" | "exiting";
 
+/**
+ * `labelKey`/`titleKey` point at the `auth.mosaic.card{n}.{labelA,titleA}`
+ * pair; `rotateCard` below toggles each card between its "A" and "B" copy by
+ * checking which `titleKey` is currently showing, then flips to the other.
+ */
 type MosaicCard = {
   id: number;
   position: number;
   tone: CardTone;
-  label: string;
-  title: string;
+  labelKey: string;
+  titleKey: string;
   phase: CardPhase;
   version: number;
 };
@@ -20,8 +27,8 @@ const INITIAL_CARDS: MosaicCard[] = [
     id: 0,
     position: 3,
     tone: "lime",
-    label: "HauxHunt",
-    title: "Find your fit.",
+    labelKey: "auth.mosaic.card1.labelA",
+    titleKey: "auth.mosaic.card1.titleA",
     phase: "entering",
     version: 0,
   },
@@ -29,8 +36,8 @@ const INITIAL_CARDS: MosaicCard[] = [
     id: 1,
     position: 10,
     tone: "green",
-    label: "Discover",
-    title: "Search less.",
+    labelKey: "auth.mosaic.card2.labelA",
+    titleKey: "auth.mosaic.card2.titleA",
     phase: "entering",
     version: 0,
   },
@@ -38,8 +45,8 @@ const INITIAL_CARDS: MosaicCard[] = [
     id: 2,
     position: 13,
     tone: "white",
-    label: "Your shortlist",
-    title: "Save. Compare.",
+    labelKey: "auth.mosaic.card3.labelA",
+    titleKey: "auth.mosaic.card3.titleA",
     phase: "entering",
     version: 0,
   },
@@ -47,8 +54,8 @@ const INITIAL_CARDS: MosaicCard[] = [
     id: 3,
     position: 16,
     tone: "lime",
-    label: "Trusted listings",
-    title: "Move sooner.",
+    labelKey: "auth.mosaic.card4.labelA",
+    titleKey: "auth.mosaic.card4.titleA",
     phase: "entering",
     version: 0,
   },
@@ -56,14 +63,15 @@ const INITIAL_CARDS: MosaicCard[] = [
     id: 4,
     position: 19,
     tone: "dark",
-    label: "24/7 access",
-    title: "Welcome home.",
+    labelKey: "auth.mosaic.card5.labelA",
+    titleKey: "auth.mosaic.card5.titleA",
     phase: "entering",
     version: 0,
   },
 ];
 
 export function LoginMosaic() {
+  const { t } = useTranslation();
   const [cards, setCards] = useState(INITIAL_CARDS);
   const replacementStep = useRef(0);
 
@@ -87,15 +95,18 @@ export function LoginMosaic() {
               if (card.id !== targetId) return card;
 
               if (card.id === 0) {
-                const showOriginalMessage = card.title === "See what fits.";
+                const showOriginalMessage =
+                  card.titleKey === "auth.mosaic.card1.titleB";
                 return {
                   ...card,
                   position: 3,
                   tone: showOriginalMessage ? "lime" : "white",
-                  label: showOriginalMessage ? "HauxHunt" : "Explore",
-                  title: showOriginalMessage
-                    ? "Find your fit."
-                    : "See what fits.",
+                  labelKey: showOriginalMessage
+                    ? "auth.mosaic.card1.labelA"
+                    : "auth.mosaic.card1.labelB",
+                  titleKey: showOriginalMessage
+                    ? "auth.mosaic.card1.titleA"
+                    : "auth.mosaic.card1.titleB",
                   phase: "entering",
                   version: card.version + 1,
                 };
@@ -103,15 +114,17 @@ export function LoginMosaic() {
 
               if (card.id === 1) {
                 const showOriginalMessage =
-                  card.title === "Know before you go.";
+                  card.titleKey === "auth.mosaic.card2.titleB";
                 return {
                   ...card,
                   position: 10,
                   tone: "green",
-                  label: showOriginalMessage ? "Discover" : "Clear details",
-                  title: showOriginalMessage
-                    ? "Search less."
-                    : "Know before you go.",
+                  labelKey: showOriginalMessage
+                    ? "auth.mosaic.card2.labelA"
+                    : "auth.mosaic.card2.labelB",
+                  titleKey: showOriginalMessage
+                    ? "auth.mosaic.card2.titleA"
+                    : "auth.mosaic.card2.titleB",
                   phase: "entering",
                   version: card.version + 1,
                 };
@@ -119,47 +132,52 @@ export function LoginMosaic() {
 
               if (card.id === 2) {
                 const showOriginalMessage =
-                  card.title === "Keep favourites close.";
+                  card.titleKey === "auth.mosaic.card3.titleB";
                 return {
                   ...card,
                   position: 13,
                   tone: "white",
-                  label: showOriginalMessage ? "Your shortlist" : "Saved homes",
-                  title: showOriginalMessage
-                    ? "Save. Compare."
-                    : "Keep favourites close.",
+                  labelKey: showOriginalMessage
+                    ? "auth.mosaic.card3.labelA"
+                    : "auth.mosaic.card3.labelB",
+                  titleKey: showOriginalMessage
+                    ? "auth.mosaic.card3.titleA"
+                    : "auth.mosaic.card3.titleB",
                   phase: "entering",
                   version: card.version + 1,
                 };
               }
 
               if (card.id === 3) {
-                const showOriginalMessage = card.title === "Move with clarity.";
+                const showOriginalMessage =
+                  card.titleKey === "auth.mosaic.card4.titleB";
                 return {
                   ...card,
                   position: 16,
                   tone: "lime",
-                  label: showOriginalMessage
-                    ? "Trusted listings"
-                    : "Better choices",
-                  title: showOriginalMessage
-                    ? "Move sooner."
-                    : "Move with clarity.",
+                  labelKey: showOriginalMessage
+                    ? "auth.mosaic.card4.labelA"
+                    : "auth.mosaic.card4.labelB",
+                  titleKey: showOriginalMessage
+                    ? "auth.mosaic.card4.titleA"
+                    : "auth.mosaic.card4.titleB",
                   phase: "entering",
                   version: card.version + 1,
                 };
               }
 
               const showOriginalMessage =
-                card.title === "Start somewhere good.";
+                card.titleKey === "auth.mosaic.card5.titleB";
               return {
                 ...card,
                 position: 19,
                 tone: "dark",
-                label: showOriginalMessage ? "24/7 access" : "Your next move",
-                title: showOriginalMessage
-                  ? "Welcome home."
-                  : "Start somewhere good.",
+                labelKey: showOriginalMessage
+                  ? "auth.mosaic.card5.labelA"
+                  : "auth.mosaic.card5.labelB",
+                titleKey: showOriginalMessage
+                  ? "auth.mosaic.card5.titleA"
+                  : "auth.mosaic.card5.titleB",
                 phase: "entering",
                 version: card.version + 1,
               };
@@ -189,7 +207,7 @@ export function LoginMosaic() {
 
   return (
     <section
-      aria-label="HauxHunt property showcase"
+      aria-label={t("auth.showcaseAria")}
       className="relative hidden min-h-0 grid-cols-5 grid-rows-4 gap-1 overflow-hidden rounded-[1.75rem] bg-[#0a0a0a] p-2 lg:grid"
     >
       <svg aria-hidden="true" className="absolute size-0">
@@ -249,6 +267,7 @@ export function LoginMosaic() {
 }
 
 function MessageCard({ card }: { card: MosaicCard }) {
+  const { t } = useTranslation();
   const toneClass =
     card.tone === "lime"
       ? "bg-[#d9ff35] text-black"
@@ -277,10 +296,10 @@ function MessageCard({ card }: { card: MosaicCard }) {
     >
       <div className="flex h-full flex-col justify-between">
         <span className="font-bricolage text-[0.6rem] font-medium tracking-[0.1em] uppercase opacity-45 xl:text-xs">
-          {card.label}
+          {t(card.labelKey)}
         </span>
         <h2 className="font-bricolage text-lg leading-none font-medium tracking-[-0.04em] xl:text-2xl">
-          {card.title}
+          {t(card.titleKey)}
         </h2>
       </div>
     </article>

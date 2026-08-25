@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { RequestPropertyButton } from "@/components/properties/request-property-button";
 import { ChevronLeft, List, LocateFixed, Map } from "lucide-react";
@@ -21,6 +20,8 @@ import {
   formatDisplayPrice,
   useDisplayCurrency,
 } from "@/components/currency/currency-selector";
+import { isPaidTier, useTier } from "@/hooks/use-tier";
+import { UpgradeModal } from "@/components/tier/upgrade-modal";
 
 function escapeHtml(value: string) {
   return value.replace(
@@ -90,7 +91,19 @@ export function RenterMapCatalogue({
 }: RenterMapCatalogueProps) {
   const router = useRouter();
   const currency = useDisplayCurrency();
-  const [mapVisible, setMapVisible] = useState(initiallyVisible);
+  const tier = useTier();
+  const [wantsMapVisible, setWantsMapVisible] = useState(initiallyVisible);
+  const [mapUpgradeOpen, setMapUpgradeOpen] = useState(false);
+  // Tenant tier gate: map view is Paid-only (access-control.ts). Deriving
+  // the *effective* visibility from tier — rather than gating the `useState`
+  // initializer itself, which only ever runs on the very first render —
+  // means a paid tenant's map correctly appears the moment `useTier()`
+  // resolves post-hydration, with no separate resync effect needed. This
+  // component is also shared by the logged-out `/properties` catalogue;
+  // defaulting an anonymous visitor to locked is correct there too, since
+  // they have no tenant identity, which is exactly the free/unauthenticated
+  // case `useTier()` already resolves to.
+  const mapVisible = wantsMapVisible && isPaidTier(tier);
   const [locationState, setLocationState] = useState<
     "idle" | "locating" | "ready" | "unavailable"
   >("idle");
@@ -297,7 +310,11 @@ export function RenterMapCatalogue({
 
   function toggleMapVisibility() {
     const nextVisible = !mapVisible;
-    setMapVisible(nextVisible);
+    if (nextVisible && !isPaidTier(tier)) {
+      setMapUpgradeOpen(true);
+      return;
+    }
+    setWantsMapVisible(nextVisible);
 
     const url = new URL(window.location.href);
     if (nextVisible) url.searchParams.delete("mapHidden");
@@ -476,6 +493,12 @@ export function RenterMapCatalogue({
           </div>
         ) : null}
       </div>
+
+      <UpgradeModal
+        feature="tenant.mapView"
+        open={mapUpgradeOpen}
+        onClose={() => setMapUpgradeOpen(false)}
+      />
     </section>
   );
 }
