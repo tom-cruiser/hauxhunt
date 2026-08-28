@@ -9,7 +9,6 @@ import {
   CalendarDays,
   ChevronDown,
   ClipboardCheck,
-  CreditCard,
   HelpCircle,
   Home,
   KeyRound,
@@ -83,12 +82,6 @@ const PROPERTY_MANAGER_NAV: DashboardNavItem[] = [
     href: "/partner-dashboard/rentals",
     section: "rentals",
     icon: KeyRound,
-  },
-  {
-    label: "Payments",
-    href: "/partner-dashboard/payments",
-    section: "payments",
-    icon: CreditCard,
   },
   {
     label: "Finance",
@@ -222,7 +215,10 @@ export function DashboardShell({
           const actionable = getApplicationsFor(pmProfessional.id).filter((a) => a.status === "Under Review" || a.status === "Action Required").length;
           return { ...item, badge: actionable > 0 ? String(actionable) : undefined };
         }
-        if (item.section === "payments") {
+        if (item.section === "finance") {
+          // Finance Consolidation phase -- this badge lived on the old
+          // "Payments" nav item; Finance's own "Payments" tab is what it
+          // describes now.
           const overdue = getPaymentsFor(pmProfessional.id).filter((p) => p.status === "Overdue").length;
           return { ...item, badge: overdue > 0 ? String(overdue) : undefined };
         }

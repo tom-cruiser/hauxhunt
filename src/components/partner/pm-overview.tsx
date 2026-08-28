@@ -76,7 +76,7 @@ export function PmOverview() {
     ...overduePayments.map((p) => ({
       key: `pay-${p.id}`,
       text: `${p.renter}'s payment for ${resolveAnyPropertyTitle(p.propertyId)} is overdue.`,
-      href: `/partner-dashboard/payments?open=${p.id}`,
+      href: `/partner-dashboard/finance?tab=payments&open=${p.id}`,
     })),
     ...newMaintenance.map((m) => ({
       key: `mnt-${m.id}`,
@@ -261,7 +261,7 @@ function MaintenanceCard({ items }: { items: MaintenanceRequest[] }) {
 function PaymentsCard({ items }: { items: OwnerPayment[] }) {
   return (
     <section className="overflow-hidden rounded-[1.75rem] border border-black/10 bg-white shadow-[0_16px_45px_rgba(0,0,0,0.055)]">
-      <SectionHeader title="Recent Payments" description="Rent activity for the rentals you manage." action="View all" actionHref="/partner-dashboard/payments" />
+      <SectionHeader title="Recent Payments" description="Rent activity for the rentals you manage." action="View all" actionHref="/partner-dashboard/finance?tab=payments" />
       {items.length === 0 ? (
         <p className="text-carbon-500 p-5 text-sm sm:p-6">No payment activity yet.</p>
       ) : (
