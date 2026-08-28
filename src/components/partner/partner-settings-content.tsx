@@ -26,6 +26,7 @@ const PARTNER_PLAN_FEATURES = [
   { label: "Verified listing badge", free: "Locked", paid: "Included" },
   { label: "Number of listings", free: "Unlimited", paid: "Unlimited" },
   { label: "Viewing fee collection", free: "Off-platform", paid: "In-app bank attachment" },
+  { label: "In-app rent collection", free: "Off-platform", paid: "Included" },
   { label: "Property boost", free: "Locked", paid: "Included" },
   { label: "WhatsApp alerts", free: "Locked", paid: "Included" },
 ] as const;

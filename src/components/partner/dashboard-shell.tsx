@@ -23,6 +23,7 @@ import {
   Settings,
   ShieldCheck,
   UserRound,
+  Wallet,
   Wrench,
 } from "lucide-react";
 
@@ -88,6 +89,12 @@ const PROPERTY_MANAGER_NAV: DashboardNavItem[] = [
     href: "/partner-dashboard/payments",
     section: "payments",
     icon: CreditCard,
+  },
+  {
+    label: "Finance",
+    href: "/partner-dashboard/finance",
+    section: "finance",
+    icon: Wallet,
   },
   {
     label: "Maintenance",

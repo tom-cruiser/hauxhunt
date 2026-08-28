@@ -84,6 +84,7 @@ export type GatedFeature =
   | "owner.propertyBoost"
   | "owner.whatsappAlerts"
   | "agent.verifiedBadge"
+  | "agent.rentCollection"
   | "agent.bankAttachment"
   | "agent.propertyBoost"
   | "agent.whatsappAlerts";
@@ -194,6 +195,13 @@ export const GATED_FEATURES: Record<GatedFeature, FeatureCopy> = {
     title: "Show a verified listing badge",
     description:
       "Upgrade to Paid to display a verified badge on your listings, signalling extra trust to renters.",
+    upgradeHref: AGENT_UPGRADE_HREF,
+  },
+  "agent.rentCollection": {
+    label: "In-app rent collection",
+    title: "Collect rent in-app",
+    description:
+      "Upgrade to Paid to collect rent directly through HauxHunt, with automatic payout history and a live billing schedule for every tenant.",
     upgradeHref: AGENT_UPGRADE_HREF,
   },
   "agent.bankAttachment": {

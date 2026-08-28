@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useReducer } from "react";
-import { ArrowUpRight, Building2, ClipboardCheck, CreditCard, KeyRound, Wrench } from "lucide-react";
+import { ArrowUpRight, Building2, ClipboardCheck, CreditCard, KeyRound, Wallet, Wrench } from "lucide-react";
 
 import { DashboardShell } from "@/components/partner/dashboard-shell";
 import { StatusPill } from "@/components/owner/status-pill";
@@ -12,7 +12,7 @@ import { useDemoProfessional } from "@/components/partner/use-demo-professional"
 import { getProfessionalPropertyCards, resolveAnyPropertyTitle, subscribeToIndependentProperties, type ProfessionalPropertyCard } from "@/lib/professional-properties";
 import { getApplicationsFor, subscribeToProfessionalWork, type AgentApplicationView } from "@/lib/professional-work";
 import { getMaintenanceFor, getPaymentsFor, getRentalsFor, subscribeToPmWork } from "@/lib/pm-work";
-import type { OwnerPayment } from "@/lib/owner-data";
+import { formatRwf, type OwnerPayment } from "@/lib/owner-data";
 import type { MaintenanceRequest } from "@/lib/maintenance-data";
 import emptyIllustration from "@/assets/images/empty.png";
 
@@ -52,6 +52,12 @@ export function PmOverview() {
   const pendingInvitations = getPendingInvitationsFor(professional.id);
 
   const activeRentals = rentals.filter((r) => r.status === "Active");
+  // Rent Collected KPI (Finance phase) -- the "Rent collected" card's
+  // destination is /partner-dashboard/finance, whose Payout history tab
+  // shows this exact same `payments` array. Sums real Paid amounts only,
+  // never an estimate -- same rule pm-overview.tsx already follows for
+  // every other stat here.
+  const rentCollected = payments.filter((p) => p.status === "Paid").reduce((sum, p) => sum + p.amountValue, 0);
   const paymentsDueOrOverdue = payments.filter((p) => p.status === "Due" || p.status === "Pending" || p.status === "Overdue");
   const overduePayments = payments.filter((p) => p.status === "Overdue");
   const openMaintenance = maintenance.filter((m) => m.status !== "Resolved" && m.status !== "Cancelled");
@@ -100,12 +106,19 @@ export function PmOverview() {
             <p className="text-carbon-600 mt-5 max-w-2xl text-base leading-7 sm:text-lg">Here&apos;s what needs your attention across the properties you manage.</p>
           </header>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <StatCard icon={Building2} label="Managed Properties" value={properties.length} />
             <StatCard icon={KeyRound} label="Active Rentals" value={activeRentals.length} />
             <StatCard icon={CreditCard} label="Payments Due / Overdue" value={paymentsDueOrOverdue.length} />
             <StatCard icon={Wrench} label="Open Maintenance" value={openMaintenance.length} />
             <StatCard icon={ClipboardCheck} label="Active Applications" value={activeApplications.length} />
+            <StatCard
+              icon={Wallet}
+              label="Rent Collected"
+              value={formatRwf(rentCollected)}
+              href="/partner-dashboard/finance"
+              ariaLabel="View rent collection payout history and billing schedules"
+            />
           </div>
 
           {allCaughtUp ? (
@@ -153,14 +166,53 @@ export function PmOverview() {
   );
 }
 
-function StatCard({ icon: Icon, label, value }: { icon: typeof Building2; label: string; value: number }) {
-  return (
-    <article className="rounded-[1.5rem] border border-black/10 bg-white p-6 shadow-[0_12px_35px_rgba(0,0,0,0.045)]">
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  href,
+  ariaLabel,
+}: {
+  icon: typeof Building2;
+  label: string;
+  value: number | string;
+  /** Makes the card a real link -- e.g. Rent Collected's Finance destination. */
+  href?: string;
+  ariaLabel?: string;
+}) {
+  const body = (
+    <>
       <div className="flex items-start justify-between gap-5">
         <p className="text-carbon-500 text-sm">{label}</p>
-        <Icon aria-hidden="true" className="size-5" />
+        <span className="flex items-center">
+          <Icon aria-hidden="true" className="size-5" />
+          {href ? (
+            <ArrowUpRight
+              aria-hidden="true"
+              className="ml-0.5 size-4 max-w-0 -translate-x-1 opacity-0 transition-[opacity,transform,max-width] duration-200 group-hover:max-w-4 group-hover:translate-x-0 group-hover:opacity-100"
+            />
+          ) : null}
+        </span>
       </div>
       <p className="font-bricolage text-carbon-900 mt-5 text-4xl font-medium tracking-tight">{value}</p>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        aria-label={ariaLabel ?? label}
+        className="group rounded-[1.5rem] border border-black/10 bg-white p-6 shadow-[0_12px_35px_rgba(0,0,0,0.045)] transition-all duration-200 hover:border-black/20 hover:shadow-[0_16px_40px_rgba(0,0,0,0.09)]"
+      >
+        {body}
+      </Link>
+    );
+  }
+
+  return (
+    <article className="rounded-[1.5rem] border border-black/10 bg-white p-6 shadow-[0_12px_35px_rgba(0,0,0,0.045)]">
+      {body}
     </article>
   );
 }
