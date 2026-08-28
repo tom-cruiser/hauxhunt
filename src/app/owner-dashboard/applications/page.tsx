@@ -7,6 +7,9 @@ import { Check, CheckCircle2, CircleAlert, ClipboardList, Clock3, KeyRound, Mess
 
 import { OwnerDashboardShell } from "@/components/owner/owner-dashboard-shell";
 import { StatusPill } from "@/components/owner/status-pill";
+import { TenantHistoryButton } from "@/components/partner/tenant-history-button";
+import { StatusReasonModal } from "@/components/partner/status-reason-modal";
+import { logStatusEvent } from "@/lib/application-history";
 import {
   OWNER,
   getOwnerApplications,
@@ -42,7 +45,7 @@ type Filter = "All" | "Needs My Decision" | "Under Review" | "Action Required" |
 const FILTERS: Filter[] = ["All", "Needs My Decision", "Under Review", "Action Required", "Completed"];
 
 function isTerminal(status: ApplicationStatus): boolean {
-  return status === "Approved" || status === "Not Selected";
+  return status === "Approved" || status === "Not Selected" || status === "Completed";
 }
 
 type Participant = { name: string; role: string; note: string };
@@ -99,6 +102,9 @@ function timelineFor(application: OwnerApplication): string[] {
   }
   if (application.status === "Not Selected") {
     events.push(ownerDecides(application) ? "You marked this application as Not Selected" : `${reviewer?.name ?? "Your Property Manager"} marked this application as Not Selected`);
+  }
+  if (application.status === "Completed") {
+    events.push("Lease signed and deposit paid — the rental is now active");
   }
 
   return events;
@@ -383,7 +389,10 @@ function ApplicationDetail({ application }: { application: OwnerApplication }) {
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
                   type="button"
-                  onClick={() => updateOwnerApplication(application.id, { status: "Approved" })}
+                  onClick={() => {
+                    updateOwnerApplication(application.id, { status: "Approved" });
+                    logStatusEvent({ applicationId: application.id, from: application.status, to: "Approved", direction: "forward", actor: "You", actorRole: "Owner" });
+                  }}
                   className="font-bricolage inline-flex h-11 items-center gap-2 rounded-full bg-black px-5 text-sm font-medium text-white"
                 >
                   <Check aria-hidden="true" className="size-4" />
@@ -431,6 +440,7 @@ function ApplicationDetail({ application }: { application: OwnerApplication }) {
         >
           View Property
         </Link>
+        <TenantHistoryButton applicantName={application.applicant} feature="owner.tenantHistory" />
         {!selfManaged
           ? (() => {
               // Messages Synchronization phase -- Section 39: this messages
@@ -462,11 +472,14 @@ function ApplicationDetail({ application }: { application: OwnerApplication }) {
       </div>
 
       {confirmingNotSelect ? (
-        <NotSelectDialog
-          applicantName={application.applicant}
+        <StatusReasonModal
+          title="Not select this application?"
+          description={`${application.applicant} will see that their application was not selected.`}
+          confirmLabel="Not Select"
           onCancel={() => setConfirmingNotSelect(false)}
-          onConfirm={() => {
+          onConfirm={(reason) => {
             updateOwnerApplication(application.id, { status: "Not Selected" });
+            logStatusEvent({ applicationId: application.id, from: application.status, to: "Not Selected", direction: "forward", actor: "You", actorRole: "Owner", reason });
             setConfirmingNotSelect(false);
           }}
         />
@@ -579,29 +592,3 @@ function RentalSetupViewLink({ rentalId }: { rentalId: string }) {
   );
 }
 
-function NotSelectDialog({ applicantName, onCancel, onConfirm }: { applicantName: string; onCancel: () => void; onConfirm: () => void }) {
-  return (
-    <div className="fixed inset-0 z-190 flex items-center justify-center bg-black/40 p-4" onMouseDown={onCancel}>
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="not-select-title"
-        onMouseDown={(e) => e.stopPropagation()}
-        className="w-full max-w-md bg-white p-6 shadow-[0_28px_90px_rgba(0,0,0,0.24)] sm:p-8"
-      >
-        <h2 id="not-select-title" className="font-bricolage text-xl font-medium">
-          Not select this application?
-        </h2>
-        <p className="text-carbon-600 mt-3 text-sm leading-6">{applicantName} will see that their application was not selected.</p>
-        <div className="mt-7 flex justify-end gap-2">
-          <button type="button" onClick={onCancel} className="font-bricolage inline-flex h-11 items-center rounded-full border border-black/15 px-5 text-sm font-medium hover:border-black">
-            Cancel
-          </button>
-          <button type="button" onClick={onConfirm} className="font-bricolage inline-flex h-11 items-center rounded-full bg-black px-5 text-sm font-medium text-white">
-            Not Select
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}

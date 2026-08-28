@@ -84,6 +84,7 @@ export type GatedFeature =
   | "owner.propertyBoost"
   | "owner.whatsappAlerts"
   | "agent.verifiedBadge"
+  | "agent.tenantHistory"
   | "agent.rentCollection"
   | "agent.bankAttachment"
   | "agent.propertyBoost"
@@ -195,6 +196,13 @@ export const GATED_FEATURES: Record<GatedFeature, FeatureCopy> = {
     title: "Show a verified listing badge",
     description:
       "Upgrade to Paid to display a verified badge on your listings, signalling extra trust to renters.",
+    upgradeHref: AGENT_UPGRADE_HREF,
+  },
+  "agent.tenantHistory": {
+    label: "Tenant history",
+    title: "See this applicant's full tenant history",
+    description:
+      "Upgrade to Paid to view an applicant's previous tenancies, on-time payment reliability, and past landlord feedback before you decide.",
     upgradeHref: AGENT_UPGRADE_HREF,
   },
   "agent.rentCollection": {

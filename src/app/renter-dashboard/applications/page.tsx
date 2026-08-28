@@ -53,6 +53,8 @@ function messageForSharedStatus(status: OwnerApplication["status"]): string {
       return "Congratulations — your application has been approved.";
     case "Not Selected":
       return "This application was not selected for this property.";
+    case "Completed":
+      return "Your lease is signed and your deposit is paid — welcome home.";
     default:
       return "";
   }
@@ -88,6 +90,7 @@ const STATUS_OPTIONS: StatusFilter[] = [
   "Decision Pending",
   "Approved",
   "Not Selected",
+  "Completed",
   "Withdrawn",
 ];
 const IMAGES: Record<string, StaticImageData> = {
@@ -101,7 +104,7 @@ const IMAGES: Record<string, StaticImageData> = {
 const tabFor = (status: RenterApplication["status"]): Tab =>
   status === "Draft"
     ? "drafts"
-    : ["Not Selected", "Withdrawn"].includes(status)
+    : ["Not Selected", "Withdrawn", "Completed"].includes(status)
       ? "past"
       : "active";
 

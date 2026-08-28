@@ -7,6 +7,7 @@ import { Check, X } from "lucide-react";
 
 import { DashboardShell } from "@/components/partner/dashboard-shell";
 import { StatusPill } from "@/components/owner/status-pill";
+import { TenantHistoryButton } from "@/components/partner/tenant-history-button";
 import { subscribeToTeam } from "@/lib/team-data";
 import { useDemoProfessional } from "@/components/partner/use-demo-professional";
 import { subscribeToIndependentProperties } from "@/lib/professional-properties";
@@ -75,7 +76,7 @@ function AgentApplicationsWorkspaceInner() {
     filter === "All"
       ? applications
       : filter === "Completed"
-        ? applications.filter((a) => a.status === "Approved" || a.status === "Not Selected")
+        ? applications.filter((a) => a.status === "Approved" || a.status === "Not Selected" || a.status === "Completed")
         : applications.filter((a) => a.status === filter);
 
   const selected = applications.find((a) => a.id === selectedId) ?? visible[0] ?? null;
@@ -169,7 +170,7 @@ function PropertyFilterChip({ propertyId, onClear }: { propertyId: string; onCle
 }
 
 function ApplicationDetail({ application, agentName }: { application: AgentApplicationView; agentName: string }) {
-  const isTerminal = application.status === "Approved" || application.status === "Not Selected";
+  const isTerminal = application.status === "Approved" || application.status === "Not Selected" || application.status === "Completed";
 
   return (
     <div>
@@ -206,7 +207,14 @@ function ApplicationDetail({ application, agentName }: { application: AgentAppli
         <p className="text-sm leading-6">{application.note}</p>
       </div>
 
-      {application.status === "Approved" ? (
+      {application.status === "Completed" ? (
+        <div className="mt-6 rounded-2xl bg-black/3 p-4">
+          <p className="font-medium">Rental Completed</p>
+          <p className="text-carbon-600 mt-1.5 text-sm leading-6">
+            The lease is signed and the deposit is paid — {application.applicant} is now a tenant.
+          </p>
+        </div>
+      ) : application.status === "Approved" ? (
         <div className="mt-6 rounded-2xl bg-black/3 p-4">
           <p className="font-medium">Application Approved</p>
           <p className="text-carbon-600 mt-1.5 text-sm leading-6">
@@ -246,6 +254,10 @@ function ApplicationDetail({ application, agentName }: { application: AgentAppli
           </button>
         </div>
       ) : null}
+
+      <div className="mt-6 flex flex-wrap gap-2 border-t border-black/10 pt-5">
+        <TenantHistoryButton applicantName={application.applicant} feature="agent.tenantHistory" />
+      </div>
     </div>
   );
 }

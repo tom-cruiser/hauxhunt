@@ -66,7 +66,8 @@ export type ApplicationStatus =
   | "Action Required"
   | "Decision Pending"
   | "Approved"
-  | "Not Selected";
+  | "Not Selected"
+  | "Completed";
 export type RentalStatus = "Upcoming" | "Active" | "Ending Soon" | "Ended";
 export type PaymentStatus = "Due" | "Pending" | "Paid" | "Failed" | "Overdue";
 export type MaintenanceStatus = "Open" | "Scheduled" | "In Progress" | "Resolved";

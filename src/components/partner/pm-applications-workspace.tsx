@@ -4,10 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useReducer, useState } from "react";
-import { Check, KeyRound, X } from "lucide-react";
+import { Check, Eye, FileWarning, KeyRound, Send, X } from "lucide-react";
 
 import { DashboardShell } from "@/components/partner/dashboard-shell";
 import { StatusPill } from "@/components/owner/status-pill";
+import { ApplicationStatusActions, type StatusActionConfig } from "@/components/partner/application-status-actions";
+import { ApplicationStatusTimeline } from "@/components/partner/application-status-timeline";
+import { StatusReasonModal } from "@/components/partner/status-reason-modal";
+import { TenantHistoryButton } from "@/components/partner/tenant-history-button";
 import { subscribeToTeam } from "@/lib/team-data";
 import { useDemoProfessional } from "@/components/partner/use-demo-professional";
 import { subscribeToIndependentProperties } from "@/lib/professional-properties";
@@ -21,6 +25,10 @@ import {
   type AgentApplicationView,
 } from "@/lib/professional-work";
 import { canManageRentalSetupFor, canReviewApplicationsFor, getRentalSetupDraft, subscribeToPmWork } from "@/lib/pm-work";
+import { getHistoryFor, logStatusEvent, subscribeToApplicationHistory } from "@/lib/application-history";
+import { transitionApplicationStatus } from "@/lib/application-workflow";
+import { canTransition } from "@/lib/application-status-machine";
+import type { ApplicationStatus } from "@/lib/owner-data";
 import emptyIllustration from "@/assets/images/empty.png";
 
 // Property Manager Dashboard phase -- Section 20-27. Applications is
@@ -52,6 +60,7 @@ function PmApplicationsWorkspaceInner() {
   useEffect(() => subscribeToIndependentProperties(forceUpdate), []);
   useEffect(() => subscribeToProfessionalWork(forceUpdate), []);
   useEffect(() => subscribeToPmWork(forceUpdate), []);
+  useEffect(() => subscribeToApplicationHistory(forceUpdate), []);
 
   const [filter, setFilter] = useState<Filter>("All");
   const [selectedId, setSelectedId] = useState<string | null>(searchParams.get("open"));
@@ -74,7 +83,7 @@ function PmApplicationsWorkspaceInner() {
     filter === "All"
       ? applications
       : filter === "Completed"
-        ? applications.filter((a) => a.status === "Approved" || a.status === "Not Selected")
+        ? applications.filter((a) => a.status === "Approved" || a.status === "Not Selected" || a.status === "Completed")
         : applications.filter((a) => a.status === filter);
 
   const selected = applications.find((a) => a.id === selectedId) ?? visible[0] ?? null;
@@ -167,13 +176,88 @@ function PropertyFilterChip({ propertyId, onClear }: { propertyId: string; onCle
 }
 
 function ApplicationDetail({ application, professionalId, professionalName }: { application: AgentApplicationView; professionalId: string; professionalName: string }) {
-  const isTerminal = application.status === "Approved" || application.status === "Not Selected";
+  const [confirmingDecline, setConfirmingDecline] = useState(false);
+  const isTerminal = application.status === "Approved" || application.status === "Not Selected" || application.status === "Completed";
   // Section 25: existing responsibility model decides authority, never a
   // new one. Independent properties stay Recommend-only -- the deliberately
   // safer Owner-authority interpretation (Section 26).
   const canDecideDirectly = application.source === "TEAM_ASSIGNMENT" && !application.requiresOwnerApproval && canReviewApplicationsFor(professionalId, application.propertyId);
   const canStartRentalSetup = application.source === "TEAM_ASSIGNMENT" && canManageRentalSetupFor(professionalId, application.propertyId);
-  const rentalSetupDraft = application.status === "Approved" ? getRentalSetupDraft(application.id) : undefined;
+  const rentalSetupDraft = application.status === "Approved" || application.status === "Completed" ? getRentalSetupDraft(application.id) : undefined;
+  const history = getHistoryFor(application.id);
+
+  // Applicant Lifecycle State Machine phase -- the contextual action bar
+  // (`application-status-actions.tsx`) replaces the old bare Approve/Not
+  // Select buttons, adding the missing manual steps (Start Review, Request
+  // Info, Send for Decision) and every rollback, all driven by
+  // `application-status-machine.ts`'s transition graph rather than a raw
+  // dropdown of all seven statuses.
+  const forwardActions: StatusActionConfig[] = [
+    { to: "Under Review", label: "Start Review", icon: Eye },
+    { to: "Action Required", label: "Request Info", icon: FileWarning },
+    { to: "Decision Pending", label: "Send for Decision", icon: Send },
+    { to: "Approved", label: "Approve", icon: Check, emphasis: "primary" },
+  ];
+  // A recommend-only reviewer never reaches Approved/Not Selected through
+  // this generic bar -- "recommend" lands on Decision Pending WITH a
+  // recommendation attached (the block below, using the existing
+  // `recommendApplicationDecision`), never on Approved directly. Hiding
+  // both here is what actually enforces that boundary; the pure state
+  // machine has no notion of who's allowed to decide.
+  const hideForward: ApplicationStatus[] = canDecideDirectly ? [] : ["Approved", "Not Selected"];
+  // Rolling "Approved" back to "Under Review" once rental setup has already
+  // been sent to the renter would leave that invite pointing at an
+  // application that's no longer approved -- block the rollback instead.
+  const hideBackward: ApplicationStatus[] = rentalSetupDraft ? ["Under Review"] : [];
+
+  function handleTransition(to: ApplicationStatus, reason?: string) {
+    if (!canTransition(application.status, to, "partner")) {
+      // The bar only ever offers a legal, correctly-gated move, so this
+      // means a real bug rather than user error -- surfaced rather than
+      // silently swallowed.
+      window.alert(`Cannot move an application from "${application.status}" to "${to}".`);
+      return;
+    }
+    if (canDecideDirectly && (to === "Approved" || to === "Not Selected")) {
+      // Keep the existing `decideApplication` call for a direct decision --
+      // unlike the generic writer, it also records `recommendedBy` as the
+      // deciding professional, an attribution this component already
+      // displayed before this change and shouldn't quietly lose.
+      decideApplication(application.id, application.source, to, professionalName);
+      logStatusEvent({
+        applicationId: application.id,
+        from: application.status,
+        to,
+        direction: "forward",
+        actor: professionalName,
+        actorRole: "Property Manager",
+        reason,
+      });
+      return;
+    }
+    const result = transitionApplicationStatus(
+      application.id,
+      application.source,
+      application.status,
+      to,
+      { name: professionalName, role: "Property Manager" },
+      reason,
+    );
+    if (!result.ok) window.alert(result.error);
+  }
+
+  function handleRecommend(recommendation: "Approve" | "Not Selected", reason?: string) {
+    recommendApplicationDecision(application.id, application.source, recommendation, professionalName, "property_manager");
+    logStatusEvent({
+      applicationId: application.id,
+      from: application.status,
+      to: "Decision Pending",
+      direction: "forward",
+      actor: professionalName,
+      actorRole: "Property Manager",
+      reason: recommendation === "Not Selected" ? reason : `Recommended: ${recommendation}`,
+    });
+  }
 
   return (
     <div>
@@ -225,7 +309,23 @@ function ApplicationDetail({ application, professionalId, professionalName }: { 
         </div>
       ) : null}
 
-      {application.status === "Approved" ? (
+      {application.status === "Completed" ? (
+        <div className="mt-6 rounded-2xl bg-black/3 p-4">
+          <p className="font-medium">Rental Completed</p>
+          <p className="text-carbon-600 mt-1.5 text-sm leading-6">
+            The lease is signed and the deposit is paid — {application.applicant} is now a tenant.
+          </p>
+          {rentalSetupDraft?.rentalId ? (
+            <Link
+              href={`/partner-dashboard/rentals/${rentalSetupDraft.rentalId}`}
+              className="font-bricolage mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-black px-4 text-sm font-medium text-white"
+            >
+              <KeyRound aria-hidden="true" className="size-4" />
+              View Rental
+            </Link>
+          ) : null}
+        </div>
+      ) : application.status === "Approved" ? (
         <div className="mt-6 rounded-2xl bg-black/3 p-4">
           <p className="font-medium">Application Approved</p>
           {canStartRentalSetup ? (
@@ -271,34 +371,53 @@ function ApplicationDetail({ application, professionalId, professionalName }: { 
         </div>
       ) : null}
 
-      {!isTerminal && application.status !== "Decision Pending" ? (
-        <div className="mt-6 flex flex-wrap gap-2">
+      <ApplicationStatusActions
+        status={application.status}
+        forwardActions={forwardActions}
+        hideForward={hideForward}
+        hideBackward={hideBackward}
+        onTransition={handleTransition}
+      />
+
+      {!canDecideDirectly && !isTerminal && application.status !== "Decision Pending" ? (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={() =>
-              canDecideDirectly
-                ? decideApplication(application.id, application.source, "Approved", professionalName)
-                : recommendApplicationDecision(application.id, application.source, "Approve", professionalName, "property_manager")
-            }
-            className="font-bricolage inline-flex h-11 items-center gap-2 rounded-full bg-black px-5 text-sm font-medium text-white"
+            onClick={() => handleRecommend("Approve")}
+            className="font-bricolage inline-flex h-11 items-center gap-2 rounded-full border border-black/15 px-5 text-sm font-medium hover:border-black"
           >
             <Check aria-hidden="true" className="size-4" />
-            {canDecideDirectly ? "Approve" : "Recommend Approve"}
+            Recommend Approve
           </button>
           <button
             type="button"
-            onClick={() =>
-              canDecideDirectly
-                ? decideApplication(application.id, application.source, "Not Selected", professionalName)
-                : recommendApplicationDecision(application.id, application.source, "Not Selected", professionalName, "property_manager")
-            }
+            onClick={() => setConfirmingDecline(true)}
             className="font-bricolage inline-flex h-11 items-center gap-2 rounded-full border border-black/15 px-5 text-sm font-medium hover:border-black"
           >
             <X aria-hidden="true" className="size-4" />
-            {canDecideDirectly ? "Not Select" : "Recommend Not Selected"}
+            Recommend Decline
           </button>
-          {!canDecideDirectly ? <p className="text-carbon-400 basis-full text-xs">The Property Owner requires their own approval on this application.</p> : null}
+          <p className="text-carbon-400 basis-full text-xs">The Property Owner requires their own approval on this application.</p>
         </div>
+      ) : null}
+
+      <div className="mt-6 flex flex-wrap gap-2 border-t border-black/10 pt-5">
+        <TenantHistoryButton applicantName={application.applicant} feature="agent.tenantHistory" />
+      </div>
+
+      <ApplicationStatusTimeline events={history} submittedOn={application.submitted} />
+
+      {confirmingDecline ? (
+        <StatusReasonModal
+          title="Recommend declining this application?"
+          description="This sends your recommendation for a final decision. The applicant isn't notified until a decision is made."
+          confirmLabel="Recommend Decline"
+          onCancel={() => setConfirmingDecline(false)}
+          onConfirm={(reason) => {
+            handleRecommend("Not Selected", reason);
+            setConfirmingDecline(false);
+          }}
+        />
       ) : null}
     </div>
   );

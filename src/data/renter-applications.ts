@@ -6,6 +6,7 @@ export type ApplicationStatus =
   | "Decision Pending"
   | "Approved"
   | "Not Selected"
+  | "Completed"
   | "Withdrawn";
 
 export type RenterApplication = {

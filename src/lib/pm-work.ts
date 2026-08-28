@@ -46,9 +46,10 @@ import {
   getProfessionalPropertyCards,
   resolveAnyPropertyTitle,
 } from "@/lib/professional-properties";
-import { pushProfessionalNotification } from "@/lib/professional-work";
+import { getApplication, pushProfessionalNotification } from "@/lib/professional-work";
 import { pushOwnerNotification } from "@/lib/owner-notifications";
 import { pushNotification as pushRenterNotification } from "@/lib/notifications";
+import { completeApplicationAutomatically } from "@/lib/application-workflow";
 
 function accessiblePropertyIds(professionalId: string): Set<string> {
   return new Set(
@@ -449,6 +450,17 @@ export function completeRentalSetup(applicationId: string) {
       d.applicationId === applicationId ? { ...d, status: "Completed" } : d,
     ),
   );
+
+  // Applicant Lifecycle State Machine phase -- the one place `Completed`
+  // (system-only, never a manual button -- see `SYSTEM_ONLY_STATUSES`) is
+  // actually set: the lease is signed and the deposit paid the instant this
+  // function runs (agreementStatus/depositStatus above), so the linked
+  // Application moves to its own terminal state in the same beat, logged to
+  // its status history as a system event.
+  const linkedApplication = getApplication(applicationId);
+  if (linkedApplication) {
+    completeApplicationAutomatically(applicationId, linkedApplication.source, linkedApplication.status);
+  }
 
   // Section 45: "Renter completes Rental Setup -> PM: ... -> Owner: ..."
   const propertyTitle = resolveAnyPropertyTitle(draft.propertyId);

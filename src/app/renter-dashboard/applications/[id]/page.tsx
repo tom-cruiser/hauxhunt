@@ -82,6 +82,7 @@ function ApplicationDetailPageInner() {
   const displayedStatus = requestComplete ? "Under Review" : application.status;
   const completedSteps =
     displayedStatus === "Approved" ||
+    displayedStatus === "Completed" ||
     displayedStatus === "Not Selected" ||
     displayedStatus === "Withdrawn"
       ? 4

@@ -24,6 +24,7 @@ import { isPaidTier, useTier } from "@/hooks/use-tier";
 // staying ungated) -- everything below is shared by both roles.
 const PARTNER_PLAN_FEATURES = [
   { label: "Verified listing badge", free: "Locked", paid: "Included" },
+  { label: "Tenant history", free: "Locked", paid: "Included" },
   { label: "Number of listings", free: "Unlimited", paid: "Unlimited" },
   { label: "Viewing fee collection", free: "Off-platform", paid: "In-app bank attachment" },
   { label: "In-app rent collection", free: "Off-platform", paid: "Included" },
