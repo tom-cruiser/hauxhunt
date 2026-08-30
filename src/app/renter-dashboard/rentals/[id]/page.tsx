@@ -74,30 +74,31 @@ export default function RentalDetail() {
     const notification = {
       title: "Rental renewal requested",
       body: `${RENTER_DEMO_NAME} requested a renewal for ${r.title}. The current agreement ends on ${r.end}.`,
-      actionLabel: "View Rental",
     };
 
+    // Rentals was removed as a partner-dashboard surface, so a PM/Agent has
+    // no page left to send this notification's action to -- they still get
+    // told (informational, no CTA) since they represent the property, but
+    // only the Owner dashboard can actually act on a renewal request now.
     if (property?.propertyManager) {
       pushProfessionalNotification({
         ...notification,
         professionalId: property.propertyManager.professionalId,
         category: "rental",
-        actionHref: `/partner-dashboard/rentals/${r.id}`,
       });
     } else if (independentAuthorization && independentManager) {
       pushProfessionalNotification({
         ...notification,
         professionalId: independentAuthorization.professionalId,
         category: "rental",
-        actionHref: `/partner-dashboard/rentals/${r.id}`,
-      });
-    } else {
-      pushOwnerNotification({
-        ...notification,
-        category: "rental",
-        actionHref: `/owner-dashboard/rentals?open=${encodeURIComponent(r.id)}`,
       });
     }
+    pushOwnerNotification({
+      ...notification,
+      actionLabel: "View Rental",
+      category: "rental",
+      actionHref: `/owner-dashboard/rentals?open=${encodeURIComponent(r.id)}`,
+    });
 
     setRenewalRequested(true);
     setRenewalToast(true);

@@ -11,19 +11,21 @@ import { getRentalSetupManagerFor } from "@/lib/professional-work";
 import { getRentalSetupDraft, sendRentalSetup, startRentalSetup, subscribeToPmWork } from "@/lib/pm-work";
 import { AgreementStep, PaymentTermsStep, RENTAL_SETUP_STEPS as STEPS, RentalDetailsStep, ReviewStep } from "@/components/rental-setup/rental-setup-steps";
 
-// Owner Rental Setup Continuity phase -- the self-managed Owner's entry
-// point onto the exact same Rental Setup wizard the PM dashboard uses
-// (partner-dashboard/rentals/setup/[applicationId]/page.tsx). Same shared
-// RentalSetupDraft, same step components (rental-setup-steps.tsx), same
-// sendRentalSetup() that produces the one real OwnerRental + OwnerPayment
-// PM/Owner/Renter all read afterward. Only the shell (OwnerDashboardShell,
-// breadcrumb, back destination, gating) is Owner-specific.
+// Owner Rental Setup Continuity phase -- the Owner's entry point onto the
+// Rental Setup wizard. This used to be shared with a parallel PM-side
+// wizard (partner-dashboard/rentals/setup/[applicationId]/page.tsx), which
+// was removed along with the rest of the partner-dashboard Rentals surface
+// -- rental setup is Owner-only now, but the shared RentalSetupDraft, step
+// components (rental-setup-steps.tsx), and sendRentalSetup() (producing the
+// one real OwnerRental + OwnerPayment Owner/Renter read afterward) are kept
+// exactly as they were, since a Renter still completes their half of the
+// same draft from renter-dashboard/rental-setup/[id]/page.tsx.
 //
-// Reachable only when the Owner actually owns this task: the application
-// is Approved, and no PM holds "Manage rental setup" for the property
-// (getRentalSetupManagerFor) -- mirrors PM's own
-// canManageRentalSetupFor(professional.id, propertyId) gate, just resolved
-// for "is there nobody else responsible" instead of "is it me".
+// getRentalSetupManagerFor(application.propertyId) always returns null now
+// (no PM/Agent can hold this task any more), so this page is reachable for
+// any Approved application; the `manager` gate below is kept for shape
+// parity with owner-dashboard/applications/page.tsx's RentalSetupSection
+// rather than deleted outright.
 
 export default function OwnerRentalSetupPage() {
   const params = useParams<{ applicationId: string }>();

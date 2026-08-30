@@ -447,18 +447,21 @@ export function getCurrentReviewerFor(propertyId: string): { name: string; roleL
   return { name: professional.name, roleLabel: "Property Manager" };
 }
 
-// Owner Rental Setup Continuity phase -- the same pattern as
-// getCurrentReviewerFor above, resolved against "Manage rental setup"
-// instead of "Review applications". Used by both Owner Applications and
-// the Owner Rental Setup route to decide whether the Owner or an assigned
-// PM owns the tenancy-setup task for a property, so the two never show
-// competing controls.
+// Owner Rental Setup Continuity phase -- originally resolved a PM with
+// "Manage rental setup" so Owner Applications/Rental Setup could defer to
+// them instead of showing a competing control. Rentals was since removed as
+// a partner-dashboard surface entirely (no PM/Agent page can start, view, or
+// complete rental setup any more, whatever their PropertyAssignment
+// responsibilities say) -- so this always returns null now, meaning the
+// Owner is unconditionally the one who owns the tenancy-setup task. Kept as
+// a function (rather than inlined at each call site) so both Owner
+// Applications and the Owner Rental Setup route stay in agreement, and so a
+// future PM-side Rentals surface, if ever rebuilt, has one place to resolve
+// this from again.
+// propertyId is kept, unused, for call-site/API-shape parity (see above).
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function getRentalSetupManagerFor(propertyId: string): { name: string; roleLabel: string } | null {
-  const assignment = getActiveAssignmentsForProperty(propertyId).find((a) => a.role === "property_manager" && a.responsibilities.includes("Manage rental setup"));
-  if (!assignment) return null;
-  const professional = getProfessional(assignment.professionalId);
-  if (!professional) return null;
-  return { name: professional.name, roleLabel: "Property Manager" };
+  return null;
 }
 
 // Owner Applications phase -- promoted here (from the Owner Applications
@@ -791,17 +794,6 @@ const SEED_NOTIFICATIONS: ProfessionalNotification[] = [
     read: false,
     actionLabel: "View Request",
     actionHref: "/partner-dashboard/maintenance?open=HH-MNT-1050",
-  },
-  {
-    id: "notif-jean-rental-setup",
-    professionalId: "jean-mugisha",
-    category: "rental",
-    title: "Rental setup awaiting your action",
-    body: "Nyarutarama Garden Apartment's agreement is prepared and awaiting your next step.",
-    timestamp: Date.now() - 6 * 3_600_000,
-    read: true,
-    actionLabel: "View Rental",
-    actionHref: "/partner-dashboard/rentals?open=HH-RENT-112",
   },
   {
     id: "notif-jean-authorization",

@@ -89,13 +89,6 @@ export function canManageRentalsFor(
   return hasResponsibility(professionalId, propertyId, "Manage active rentals");
 }
 
-export function canManageRentalSetupFor(
-  professionalId: string,
-  propertyId: string,
-): boolean {
-  return hasResponsibility(professionalId, propertyId, "Manage rental setup");
-}
-
 export function canTrackPaymentsFor(
   professionalId: string,
   propertyId: string,
@@ -141,19 +134,6 @@ export function getRentalsFor(professionalId: string): OwnerRental[] {
   );
 }
 
-export function getRentalsForProperty(
-  professionalId: string,
-  propertyId: string,
-): OwnerRental[] {
-  return getRentalsFor(professionalId).filter(
-    (r) => r.propertyId === propertyId,
-  );
-}
-
-export function getRental(rentalId: string): OwnerRental | undefined {
-  return getOwnerRentals().find((r) => r.id === rentalId);
-}
-
 // One subscription for every PM-relevant data source (Rentals, Payments,
 // Maintenance, Rental Setup drafts) -- callers don't need to know which
 // underlying store changed, only that something did.
@@ -187,13 +167,6 @@ export function getPaymentsForProperty(
   return getPaymentsFor(professionalId).filter(
     (p) => p.propertyId === propertyId,
   );
-}
-
-export function getPaymentsForRental(
-  professionalId: string,
-  rentalId: string,
-): OwnerPayment[] {
-  return getPaymentsFor(professionalId).filter((p) => p.rentalId === rentalId);
 }
 
 // ---------------------------------------------------------------------------
@@ -462,22 +435,15 @@ export function completeRentalSetup(applicationId: string) {
     completeApplicationAutomatically(applicationId, linkedApplication.source, linkedApplication.status);
   }
 
-  // Section 45: "Renter completes Rental Setup -> PM: ... -> Owner: ..."
+  // Section 45: "Renter completes Rental Setup -> Owner: ..."
   const propertyTitle = resolveAnyPropertyTitle(draft.propertyId);
   // Owner Rental Setup Continuity phase -- an Owner-initiated draft has no
-  // professionalId (the Owner isn't a RegisteredProfessional), so there is
-  // no professional inbox to notify here. The Owner is still notified
-  // below, unconditionally, exactly as before.
-  if (draft.professionalId) {
-    pushProfessionalNotification({
-      professionalId: draft.professionalId,
-      category: "rental",
-      title: "Rental setup completed",
-      body: `${draft.renterName} completed rental setup for ${propertyTitle}. The rental is now active.`,
-      actionLabel: "View Rental",
-      actionHref: `/partner-dashboard/rentals/${draft.rentalId}`,
-    });
-  }
+  // professionalId (the Owner isn't a RegisteredProfessional), so there was
+  // never a professional inbox to notify here even before Rentals was
+  // removed as a partner-dashboard surface (rental setup is Owner-only now,
+  // so `draft.professionalId` is always unset -- this used to also cover a
+  // PM-initiated draft, which can no longer happen). The Owner is still
+  // notified below, unconditionally, exactly as before.
   pushOwnerNotification({
     category: "rental-setup",
     title: "Rental setup completed",

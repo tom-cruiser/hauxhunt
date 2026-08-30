@@ -261,11 +261,11 @@ function Fact({ label, value }: { label: string; value: string }) {
   );
 }
 
-// Exported so the Phase 2 Property Manager Team page
-// (partner-dashboard/team/page.tsx) can reuse the exact same
-// responsibilities-editing and remove-from-property UI for the PM's own,
-// scope-limited "Manage Access" action -- rather than a second, duplicate
-// assignment-management surface.
+// Exported for reuse elsewhere in the Owner dashboard. This was also
+// reused by the partner-dashboard Team page for the PM's own,
+// scope-limited "Manage Access" action, before that page was removed along
+// with the rest of the partner-dashboard Team surface -- kept exported here
+// regardless, since it's still used locally below.
 export function ManageAssignmentDialog({
   assignment,
   member,

@@ -134,6 +134,14 @@ export type ListingRecord = {
   availableFrom: string;
   amenities: string[];
   updatedAt: string;
+  // Listing Performance phase -- real engagement counts, present only for a
+  // Pacifique property (carried over from owner-data.ts's OWNER_LISTINGS,
+  // the same numbers the Owner dashboard shows). Independent properties and
+  // properties on any other Team have no traffic-tracking in this
+  // prototype, so these stay undefined for them -- never a fabricated 0.
+  views?: number | null;
+  saves?: number | null;
+  enquiries?: number | null;
 };
 
 export type IndependentProperty = PropertyFacts;
@@ -420,6 +428,9 @@ export function getListingForProperty(propertyId: string): ListingRecord | null 
       availableFrom: "",
       amenities: facts?.amenities ?? [],
       updatedAt: "",
+      views: ownerListing.views,
+      saves: ownerListing.saves,
+      enquiries: ownerListing.enquiries,
     };
   }
 

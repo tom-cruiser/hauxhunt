@@ -1,10 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useReducer, useState } from "react";
-import { Check, Eye, FileWarning, KeyRound, Send, X } from "lucide-react";
+import { Check, Eye, FileWarning, Send, X } from "lucide-react";
 
 import { DashboardShell } from "@/components/partner/dashboard-shell";
 import { StatusPill } from "@/components/owner/status-pill";
@@ -24,7 +23,7 @@ import {
   subscribeToProfessionalWork,
   type AgentApplicationView,
 } from "@/lib/professional-work";
-import { canManageRentalSetupFor, canReviewApplicationsFor, getRentalSetupDraft, subscribeToPmWork } from "@/lib/pm-work";
+import { canReviewApplicationsFor, getRentalSetupDraft, subscribeToPmWork } from "@/lib/pm-work";
 import { getHistoryFor, logStatusEvent, subscribeToApplicationHistory } from "@/lib/application-history";
 import { transitionApplicationStatus } from "@/lib/application-workflow";
 import { canTransition } from "@/lib/application-status-machine";
@@ -182,7 +181,11 @@ function ApplicationDetail({ application, professionalId, professionalName }: { 
   // new one. Independent properties stay Recommend-only -- the deliberately
   // safer Owner-authority interpretation (Section 26).
   const canDecideDirectly = application.source === "TEAM_ASSIGNMENT" && !application.requiresOwnerApproval && canReviewApplicationsFor(professionalId, application.propertyId);
-  const canStartRentalSetup = application.source === "TEAM_ASSIGNMENT" && canManageRentalSetupFor(professionalId, application.propertyId);
+  // Rental setup itself (Start/Continue/View) is an Owner-side task only --
+  // Rentals was removed as a partner-dashboard surface. `rentalSetupDraft` is
+  // still read here (from the same shared record the Owner's wizard writes)
+  // purely to know WHETHER setup has started, for hideBackward below and the
+  // Approved/Completed messaging.
   const rentalSetupDraft = application.status === "Approved" || application.status === "Completed" ? getRentalSetupDraft(application.id) : undefined;
   const history = getHistoryFor(application.id);
 
@@ -315,45 +318,14 @@ function ApplicationDetail({ application, professionalId, professionalName }: { 
           <p className="text-carbon-600 mt-1.5 text-sm leading-6">
             The lease is signed and the deposit is paid — {application.applicant} is now a tenant.
           </p>
-          {rentalSetupDraft?.rentalId ? (
-            <Link
-              href={`/partner-dashboard/rentals/${rentalSetupDraft.rentalId}`}
-              className="font-bricolage mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-black px-4 text-sm font-medium text-white"
-            >
-              <KeyRound aria-hidden="true" className="size-4" />
-              View Rental
-            </Link>
-          ) : null}
         </div>
       ) : application.status === "Approved" ? (
         <div className="mt-6 rounded-2xl bg-black/3 p-4">
           <p className="font-medium">Application Approved</p>
-          {canStartRentalSetup ? (
-            rentalSetupDraft ? (
-              <>
-                <p className="text-carbon-600 mt-1.5 text-sm leading-6">Rental setup has been sent to {application.applicant}.</p>
-                <Link
-                  href={`/partner-dashboard/rentals${rentalSetupDraft.rentalId ? `/${rentalSetupDraft.rentalId}` : ""}`}
-                  className="font-bricolage mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-black px-4 text-sm font-medium text-white"
-                >
-                  <KeyRound aria-hidden="true" className="size-4" />
-                  View Rental
-                </Link>
-              </>
-            ) : (
-              <>
-                <p className="text-carbon-600 mt-1.5 text-sm leading-6">You can now begin rental setup for {application.applicant}.</p>
-                <Link
-                  href={`/partner-dashboard/rentals/setup/${application.id}`}
-                  className="font-bricolage mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-black px-4 text-sm font-medium text-white"
-                >
-                  <KeyRound aria-hidden="true" className="size-4" />
-                  Start Rental Setup
-                </Link>
-              </>
-            )
-          ) : application.source === "INDEPENDENT_AUTHORIZATION" ? (
+          {application.source === "INDEPENDENT_AUTHORIZATION" ? (
             <p className="text-carbon-600 mt-1.5 text-sm leading-6">Rental setup for independently managed properties isn&apos;t yet available in HauxHunt.</p>
+          ) : rentalSetupDraft ? (
+            <p className="text-carbon-600 mt-1.5 text-sm leading-6">Rental setup has been sent to {application.applicant} — handled by the Property Owner.</p>
           ) : (
             <p className="text-carbon-600 mt-1.5 text-sm leading-6">Awaiting Owner Rental Setup.</p>
           )}

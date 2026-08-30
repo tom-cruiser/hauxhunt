@@ -5,13 +5,13 @@ import Image from "next/image";
 import { useEffect, useReducer, useState, type ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
+  BarChart3,
   Bell,
   CalendarDays,
   ChevronDown,
   ClipboardCheck,
   HelpCircle,
   Home,
-  KeyRound,
   LayoutDashboard,
   LogOut,
   MessageSquare,
@@ -51,13 +51,25 @@ type DashboardNavItem = {
   badge?: string;
 };
 
-// Property Manager Dashboard phase -- Section 5/90. Performance and
-// "Enquiries & calendar" are deliberately removed from top-level nav (their
-// routes/components still exist, just unlinked here -- Section 6: leasing
-// activity for a PM lives contextually inside Property Detail instead).
-// Rentals/Payments/Maintenance are new top-level PM surfaces; Applications
-// is promoted to real (no longer a placeholder). Badges are live counts,
-// computed in DashboardShell below -- never the old static placeholders.
+// Property Manager Dashboard phase -- Section 5/90. "Enquiries & calendar"
+// is deliberately removed from top-level nav (its route/component still
+// exists, just unlinked here -- Section 6: leasing activity for a PM lives
+// contextually inside Property Detail instead). Payments/Maintenance are
+// top-level PM surfaces; Applications is promoted to real (no longer a
+// placeholder). Badges are live counts, computed in DashboardShell below --
+// never the old static placeholders.
+//
+// Rentals and Team were removed as top-level PM/Agent surfaces (they're
+// still real records under the hood -- OwnerRental via pm-work.ts, Team
+// membership/invitations via team-data.ts -- just no longer a page a
+// professional navigates to directly from partner-dashboard; rental setup
+// and team-invitation handling now live solely on the Owner side).
+//
+// Listing Performance phase -- Performance is back as a top-level surface
+// for both roles (it was unlinked, not deleted, during the phase above),
+// now that performance-dashboard.tsx reads real per-listing views/saves/
+// enquiries (professional-properties.ts's getListingForProperty) instead of
+// the hardcoded demo numbers it originally shipped with.
 const PROPERTY_MANAGER_NAV: DashboardNavItem[] = [
   {
     label: "Overview",
@@ -72,16 +84,16 @@ const PROPERTY_MANAGER_NAV: DashboardNavItem[] = [
     icon: Home,
   },
   {
+    label: "Performance",
+    href: "/partner-dashboard/performance",
+    section: "performance",
+    icon: BarChart3,
+  },
+  {
     label: "Applications",
     href: "/partner-dashboard/applications",
     section: "applications",
     icon: ClipboardCheck,
-  },
-  {
-    label: "Rentals",
-    href: "/partner-dashboard/rentals",
-    section: "rentals",
-    icon: KeyRound,
   },
   {
     label: "Finance",
@@ -94,12 +106,6 @@ const PROPERTY_MANAGER_NAV: DashboardNavItem[] = [
     href: "/partner-dashboard/maintenance",
     section: "maintenance",
     icon: Wrench,
-  },
-  {
-    label: "Team",
-    href: "/partner-dashboard/team",
-    section: "team",
-    icon: UserRound,
   },
   {
     label: "Messages",
@@ -123,6 +129,12 @@ const AGENT_NAV: DashboardNavItem[] = [
     icon: Home,
   },
   {
+    label: "Performance",
+    href: "/partner-dashboard/performance",
+    section: "performance",
+    icon: BarChart3,
+  },
+  {
     label: "Enquiries",
     href: "/partner-dashboard/enquiries",
     section: "enquiries",
@@ -139,12 +151,6 @@ const AGENT_NAV: DashboardNavItem[] = [
     href: "/partner-dashboard/messages",
     section: "messages",
     icon: MessageSquare,
-  },
-  {
-    label: "Team",
-    href: "/partner-dashboard/team",
-    section: "team",
-    icon: UserRound,
   },
 ];
 

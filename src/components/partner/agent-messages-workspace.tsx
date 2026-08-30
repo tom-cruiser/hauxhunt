@@ -44,6 +44,10 @@ export function PmMessagesWorkspace() {
   );
 }
 
+// "rental" and "rental-setup" contexts fall through to `default: null` --
+// Rentals was removed as a partner-dashboard surface, so there's no page
+// left for a PM/Agent to be sent to for either one (rental setup and
+// tracking are Owner-side only now).
 function contextInfo(context: ConversationContext | undefined): { label: string; href: string } | null {
   if (!context) return null;
   switch (context.type) {
@@ -51,10 +55,6 @@ function contextInfo(context: ConversationContext | undefined): { label: string;
       return context.maintenanceRequestId ? { label: "View Request", href: `/partner-dashboard/maintenance?open=${context.maintenanceRequestId}` } : null;
     case "application":
       return context.applicationId ? { label: "View Application", href: `/partner-dashboard/applications?open=${context.applicationId}` } : null;
-    case "rental":
-      return context.rentalId ? { label: "View Rental", href: `/partner-dashboard/rentals/${context.rentalId}` } : null;
-    case "rental-setup":
-      return context.applicationId ? { label: "View Rental Setup", href: `/partner-dashboard/rentals/setup/${context.applicationId}` } : null;
     case "property":
       return context.propertyId ? { label: "View Property", href: `/partner-dashboard/properties/${context.propertyId}` } : null;
     default:

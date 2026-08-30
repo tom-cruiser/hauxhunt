@@ -6,15 +6,15 @@ import { Check, ChevronRight, FileText } from "lucide-react";
 import { saveRentalSetupDraft, type RentalSetupDraft } from "@/lib/pm-work";
 
 // Owner Rental Setup Continuity phase -- extracted from the Property
-// Manager Dashboard phase's rental setup wizard
-// (partner-dashboard/rentals/setup/[applicationId]/page.tsx), which
-// mixed this reusable step UI with PM-only shell code (DashboardShell,
-// useDemoProfessional, breadcrumb). The Owner performs the exact same
-// domain task -- prepare rental terms, attach an agreement, confirm
-// payment terms, review, send -- so these steps are pulled out verbatim
-// (no visual or behavioral change) for both dashboards to render inside
-// their own shell. PM's page has been updated to import from here instead
-// of defining these locally; its rendered output is unchanged.
+// Manager Dashboard phase's rental setup wizard (partner-dashboard's
+// rentals/setup/[applicationId]/page.tsx, since removed along with the
+// rest of the partner-dashboard Rentals surface -- rental setup is
+// Owner-only now), which mixed this reusable step UI with PM-only shell
+// code (DashboardShell, useDemoProfessional, breadcrumb). The Owner
+// performs the exact same domain task -- prepare rental terms, attach an
+// agreement, confirm payment terms, review, send -- so these steps were
+// pulled out verbatim (no visual or behavioral change) for the Owner
+// dashboard's own rental-setup route to render inside its own shell.
 
 export const RENTAL_SETUP_STEPS = [
   "Rental Details",

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useReducer } from "react";
-import { ArrowUpRight, Building2, CalendarClock, ClipboardCheck, Inbox, MessageSquare } from "lucide-react";
+import { ArrowUpRight, Building2, CalendarClock, ClipboardCheck, Inbox, MessageSquare, Plus } from "lucide-react";
 
 import { DashboardShell } from "@/components/partner/dashboard-shell";
 import { StatusPill } from "@/components/owner/status-pill";
@@ -76,9 +76,18 @@ export function AgentOverview() {
     <DashboardShell>
       <section className="px-5 pt-10 pb-24 sm:px-6 lg:px-10 xl:px-12">
         <div className="mx-auto max-w-340">
-          <header className="border-b border-black/10 pb-10">
-            <h1 className="dashboard-page-title text-carbon-900">Welcome back, {professional.name.split(" ")[0]}</h1>
-            <p className="text-carbon-600 mt-5 max-w-2xl text-lg leading-7">The properties you represent, and what needs your attention today.</p>
+          <header className="flex flex-col gap-8 border-b border-black/10 pb-10 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h1 className="dashboard-page-title text-carbon-900">Welcome back, {professional.name.split(" ")[0]}</h1>
+              <p className="text-carbon-600 mt-5 max-w-2xl text-lg leading-7">The properties you represent, and what needs your attention today.</p>
+            </div>
+            <Link
+              href="/partner-dashboard/properties/new"
+              className="font-bricolage inline-flex h-12 shrink-0 items-center justify-center gap-2 self-start rounded-full bg-black px-6 font-medium text-white transition-colors hover:bg-black/80 lg:self-auto"
+            >
+              <Plus aria-hidden="true" className="size-4" />
+              Add property
+            </Link>
           </header>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

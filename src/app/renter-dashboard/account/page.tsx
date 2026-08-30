@@ -9,6 +9,7 @@ import cardMethodImage from "@/assets/images/card.png";
 import deletingIllustration from "@/assets/images/deleting.png";
 import mobileMethodImage from "@/assets/images/mobile.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
+import { InternationalPhoneInput } from "@/components/shared/international-phone-input";
 import { PlanToggleCard } from "@/components/tier/plan-toggle-card";
 import { LockedFeature } from "@/components/tier/locked-feature";
 import { isPaidTier, useTier } from "@/hooks/use-tier";
@@ -163,12 +164,6 @@ const COUNTRY_PHONE_PLACEHOLDERS: Record<string, string> = {
   Rwanda: "7XXXXXXXX",
   Kenya: "7XXXXXXXX",
   Nigeria: "8XXXXXXXXX",
-};
-
-const COUNTRY_CODE_PHONE_PLACEHOLDERS: Record<string, string> = {
-  "+250": "7XXXXXXXX",
-  "+254": "7XXXXXXXX",
-  "+234": "8XXXXXXXXX",
 };
 
 export default function MyAccountPage() {
@@ -507,41 +502,26 @@ export default function MyAccountPage() {
                     >
                       Phone Number
                     </label>
-                    <div className="mt-2 flex h-11 items-center rounded-xl bg-black/[0.035] pr-1.5">
-                      <select
-                        aria-label="Country code"
-                        value={countryCode}
-                        onChange={(event) => {
-                          setCountryCode(event.target.value);
-                          setPhoneOtp("");
-                          setPhoneVerificationRequested(false);
-                          setPhoneOtpVerified(false);
-                        }}
-                        className="contact-field-control h-full w-12 shrink-0 appearance-none border-0 border-r border-black/10 bg-transparent px-3 text-sm font-medium shadow-none ring-0 outline-none"
-                      >
-                        <option value="+250">RW</option>
-                        <option value="+254">KE</option>
-                        <option value="+234">NG</option>
-                      </select>
-                      <span className="shrink-0 pl-2 text-sm">
-                        {countryCode}
-                      </span>
-                      <input
-                        id="account-phone"
-                        type="tel"
-                        value={phoneDraft}
-                        placeholder={
-                          COUNTRY_CODE_PHONE_PLACEHOLDERS[countryCode] ??
-                          "7XXXXXXXX"
-                        }
-                        onChange={(event) => {
-                          setPhoneDraft(event.target.value);
-                          setPhoneOtp("");
-                          setPhoneVerificationRequested(false);
-                          setPhoneOtpVerified(false);
-                        }}
-                        className="contact-field-control h-full min-w-0 flex-1 appearance-none border-0 bg-transparent px-3 text-sm font-normal shadow-none ring-0 outline-none"
-                      />
+                    <div className="mt-2 flex items-center gap-1.5">
+                      <div className="min-w-0 flex-1">
+                        <InternationalPhoneInput
+                          id="account-phone"
+                          dialCode={countryCode}
+                          nationalNumber={phoneDraft}
+                          onDialCodeChange={(dialCode) => {
+                            setCountryCode(dialCode);
+                            setPhoneOtp("");
+                            setPhoneVerificationRequested(false);
+                            setPhoneOtpVerified(false);
+                          }}
+                          onNationalNumberChange={(value) => {
+                            setPhoneDraft(value);
+                            setPhoneOtp("");
+                            setPhoneVerificationRequested(false);
+                            setPhoneOtpVerified(false);
+                          }}
+                        />
+                      </div>
                       {phoneChanged && phoneDraft.trim() ? (
                         <button
                           type="button"

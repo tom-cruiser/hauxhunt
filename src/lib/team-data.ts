@@ -436,14 +436,6 @@ export function getPendingInvitations(teamId?: string): TeamInvitation[] {
   return getTeamInvitations().filter((i) => i.status === "Pending" && (teamId === undefined || i.teamId === teamId));
 }
 
-// Every Pending invitation for this professional, across any Team --
-// a professional can have more than one open invitation at once.
-export function getPendingInvitationsFor(professionalId: string): TeamInvitation[] {
-  return getTeamInvitations()
-    .filter((i) => i.professionalId === professionalId && i.status === "Pending")
-    .sort((a, b) => b.ts - a.ts);
-}
-
 export function getInvitationFor(professionalId: string, teamId?: string): TeamInvitation | undefined {
   // Most recent invitation for this person on this Team, if any.
   return getTeamInvitations()

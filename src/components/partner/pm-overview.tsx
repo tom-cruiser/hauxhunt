@@ -3,24 +3,28 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useReducer } from "react";
-import { ArrowUpRight, Building2, ClipboardCheck, CreditCard, KeyRound, Wallet, Wrench } from "lucide-react";
+import { ArrowUpRight, Building2, ClipboardCheck, CreditCard, Plus, Wallet, Wrench } from "lucide-react";
 
 import { DashboardShell } from "@/components/partner/dashboard-shell";
 import { StatusPill } from "@/components/owner/status-pill";
-import { getPendingInvitationsFor, subscribeToTeam } from "@/lib/team-data";
+import { subscribeToTeam } from "@/lib/team-data";
 import { useDemoProfessional } from "@/components/partner/use-demo-professional";
 import { getProfessionalPropertyCards, resolveAnyPropertyTitle, subscribeToIndependentProperties, type ProfessionalPropertyCard } from "@/lib/professional-properties";
 import { getApplicationsFor, subscribeToProfessionalWork, type AgentApplicationView } from "@/lib/professional-work";
-import { getMaintenanceFor, getPaymentsFor, getRentalsFor, subscribeToPmWork } from "@/lib/pm-work";
+import { getMaintenanceFor, getPaymentsFor, subscribeToPmWork } from "@/lib/pm-work";
 import { formatRwf, type OwnerPayment } from "@/lib/owner-data";
 import type { MaintenanceRequest } from "@/lib/maintenance-data";
 import emptyIllustration from "@/assets/images/empty.png";
 
 // Property Manager Dashboard phase -- Section 7-11/89. The Overview a PM
 // actually needs: what requires attention, what's happening across managed
-// properties, rentals, payments, maintenance, and applications. No fake
-// revenue, no CRM metrics -- every number here is a real, scoped count from
+// properties, payments, maintenance, and applications. No fake revenue, no
+// CRM metrics -- every number here is a real, scoped count from
 // professional-properties.ts / professional-work.ts / pm-work.ts.
+//
+// Rentals and Team are not surfaced here -- rental setup/tracking and team
+// invitations are handled entirely on the Owner side now (see
+// dashboard-shell.tsx for why).
 
 const ACTIVE_APPLICATION_STATUSES = new Set(["Submitted", "Under Review", "Action Required", "Decision Pending"]);
 const NEW_MAINTENANCE_STATUSES = new Set(["Submitted", "Under Review"]);
@@ -45,13 +49,10 @@ export function PmOverview() {
   }
 
   const properties = getProfessionalPropertyCards(professional.id);
-  const rentals = getRentalsFor(professional.id);
   const payments = getPaymentsFor(professional.id);
   const maintenance = getMaintenanceFor(professional.id);
   const applications = getApplicationsFor(professional.id);
-  const pendingInvitations = getPendingInvitationsFor(professional.id);
 
-  const activeRentals = rentals.filter((r) => r.status === "Active");
   // Rent Collected KPI (Finance phase) -- the "Rent collected" card's
   // destination is /partner-dashboard/finance, whose Payout history tab
   // shows this exact same `payments` array. Sums real Paid amounts only,
@@ -88,11 +89,6 @@ export function PmOverview() {
       text: `Your authorization for ${p.title} needs attention.`,
       href: `/partner-dashboard/properties/${p.propertyId}`,
     })),
-    ...pendingInvitations.map((inv) => ({
-      key: `inv-${inv.id}`,
-      text: `You have a pending Team invitation.`,
-      href: `/partner-dashboard/team`,
-    })),
   ];
 
   const allCaughtUp = attentionItems.length === 0;
@@ -101,17 +97,49 @@ export function PmOverview() {
     <DashboardShell>
       <section className="px-5 pt-10 pb-24 sm:px-6 lg:px-10 xl:px-12">
         <div className="mx-auto max-w-340">
-          <header className="border-b border-black/10 pb-8">
-            <h1 className="dashboard-page-title text-carbon-900">Welcome back, {professional.name.split(" ")[0]}</h1>
-            <p className="text-carbon-600 mt-5 max-w-2xl text-base leading-7 sm:text-lg">Here&apos;s what needs your attention across the properties you manage.</p>
+          <header className="flex flex-col gap-8 border-b border-black/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h1 className="dashboard-page-title text-carbon-900">Welcome back, {professional.name.split(" ")[0]}</h1>
+              <p className="text-carbon-600 mt-5 max-w-2xl text-base leading-7 sm:text-lg">Here&apos;s what needs your attention across the properties you manage.</p>
+            </div>
+            <Link
+              href="/partner-dashboard/properties/new"
+              className="font-bricolage inline-flex h-12 shrink-0 items-center justify-center gap-2 self-start rounded-full bg-black px-6 font-medium text-white transition-colors hover:bg-black/80 lg:self-auto"
+            >
+              <Plus aria-hidden="true" className="size-4" />
+              Add property
+            </Link>
           </header>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <StatCard icon={Building2} label="Managed Properties" value={properties.length} />
-            <StatCard icon={KeyRound} label="Active Rentals" value={activeRentals.length} />
-            <StatCard icon={CreditCard} label="Payments Due / Overdue" value={paymentsDueOrOverdue.length} />
-            <StatCard icon={Wrench} label="Open Maintenance" value={openMaintenance.length} />
-            <StatCard icon={ClipboardCheck} label="Active Applications" value={activeApplications.length} />
+            <StatCard
+              icon={Building2}
+              label="Managed Properties"
+              value={properties.length}
+              href="/partner-dashboard/properties"
+              ariaLabel="View managed properties"
+            />
+            <StatCard
+              icon={CreditCard}
+              label="Payments Due / Overdue"
+              value={paymentsDueOrOverdue.length}
+              href="/partner-dashboard/finance?tab=payments"
+              ariaLabel="View due and overdue payments"
+            />
+            <StatCard
+              icon={Wrench}
+              label="Open Maintenance"
+              value={openMaintenance.length}
+              href="/partner-dashboard/maintenance"
+              ariaLabel="View open maintenance requests"
+            />
+            <StatCard
+              icon={ClipboardCheck}
+              label="Active Applications"
+              value={activeApplications.length}
+              href="/partner-dashboard/applications"
+              ariaLabel="View active applications"
+            />
             <StatCard
               icon={Wallet}
               label="Rent Collected"

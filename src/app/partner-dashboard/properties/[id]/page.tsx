@@ -26,12 +26,10 @@ import { getApplicationsFor, getEnquiriesFor, getViewingsFor, subscribeToProfess
 import {
   canHandleMaintenanceFor,
   canManageEnquiriesFor,
-  canManageRentalsFor,
   canReviewApplicationsFor,
   canTrackPaymentsFor,
   getMaintenanceForProperty,
   getPaymentsForProperty,
-  getRentalsForProperty,
   subscribeToPmWork,
 } from "@/lib/pm-work";
 
@@ -72,7 +70,7 @@ export default function PartnerPropertyDetailPage() {
   const showLeasing = role === "agent" || canManageEnquiriesFor(professional.id, card.propertyId) || canReviewApplicationsFor(professional.id, card.propertyId);
   const showRentalOps =
     role === "property_manager" &&
-    (canManageRentalsFor(professional.id, card.propertyId) || canTrackPaymentsFor(professional.id, card.propertyId) || canHandleMaintenanceFor(professional.id, card.propertyId));
+    (canTrackPaymentsFor(professional.id, card.propertyId) || canHandleMaintenanceFor(professional.id, card.propertyId));
 
   return (
     <DashboardShell initialSection="properties">
@@ -199,24 +197,23 @@ function LeasingStat({ label, value, href }: { label: string; value: number; hre
 }
 
 // Property Manager Dashboard phase -- Section 14/91 "Rental Operations":
-// Rentals, Payments, Maintenance for THIS property, scoped/gated by the same
+// Payments, Maintenance for THIS property, scoped/gated by the same
 // pm-work.ts responsibility checks used for the top-level PM pages -- never
 // a second permission system. Links carry ?propertyId= into the real
 // top-level workspaces (Section 71), same pattern as Leasing Activity above.
+// Rentals was dropped from this section -- rental tracking is an Owner-side
+// task now (see dashboard-shell.tsx).
 function RentalOperationsSection({ propertyId, professionalId }: { propertyId: string; professionalId: string }) {
-  const showRentals = canManageRentalsFor(professionalId, propertyId);
   const showPayments = canTrackPaymentsFor(professionalId, propertyId);
   const showMaintenance = canHandleMaintenanceFor(professionalId, propertyId);
 
-  const activeRentals = showRentals ? getRentalsForProperty(professionalId, propertyId).filter((r) => r.status === "Active" || r.status === "Upcoming").length : 0;
   const paymentsDue = showPayments ? getPaymentsForProperty(professionalId, propertyId).filter((p) => p.status === "Due" || p.status === "Pending" || p.status === "Overdue").length : 0;
   const openMaintenance = showMaintenance ? getMaintenanceForProperty(professionalId, propertyId).filter((m) => m.status !== "Resolved" && m.status !== "Cancelled").length : 0;
 
   return (
     <section className="rounded-[1.5rem] border border-black/10 bg-white p-6">
       <h2 className="font-bricolage text-carbon-900 text-lg font-medium">Rental Operations</h2>
-      <div className="mt-5 grid gap-4" style={{ gridTemplateColumns: `repeat(${[showRentals, showPayments, showMaintenance].filter(Boolean).length}, minmax(0, 1fr))` }}>
-        {showRentals ? <LeasingStat label="Active Rentals" value={activeRentals} href={`/partner-dashboard/rentals?propertyId=${encodeURIComponent(propertyId)}`} /> : null}
+      <div className="mt-5 grid gap-4" style={{ gridTemplateColumns: `repeat(${[showPayments, showMaintenance].filter(Boolean).length}, minmax(0, 1fr))` }}>
         {showPayments ? <LeasingStat label="Payments Due" value={paymentsDue} href={`/partner-dashboard/payments?propertyId=${encodeURIComponent(propertyId)}`} /> : null}
         {showMaintenance ? <LeasingStat label="Open Maintenance" value={openMaintenance} href={`/partner-dashboard/maintenance?propertyId=${encodeURIComponent(propertyId)}`} /> : null}
       </div>

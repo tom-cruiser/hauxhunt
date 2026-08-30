@@ -17,7 +17,7 @@ import {
   subscribeToIndependentProperties,
   type ProfessionalPropertyCard,
 } from "@/lib/professional-properties";
-import { getMaintenanceForProperty, getPaymentsForProperty, getRentalsForProperty, subscribeToPmWork } from "@/lib/pm-work";
+import { getMaintenanceForProperty, getPaymentsForProperty, subscribeToPmWork } from "@/lib/pm-work";
 import emptyIllustration from "@/assets/images/empty.png";
 
 // Phase 3 -- the professional's OWN properties, from either authority
@@ -198,16 +198,15 @@ function EmptyState({ title, body, cta, illustrated }: { title: string; body: st
 // listing content) lives on Property Detail, not here.
 //
 // Property Manager Dashboard phase -- Section 13: PM's card additionally
-// gets a compact operational summary line ("2 active rentals · 1 open
-// maintenance"), scoped to properties this PM actually has rental/
-// maintenance responsibility for (pm-work.ts already gates on that).
+// gets a compact operational summary line ("1 open maintenance · 1 payment
+// overdue"), scoped to properties this PM actually has maintenance/payment
+// responsibility for (pm-work.ts already gates on that). Rentals was
+// dropped from this line -- rental tracking is Owner-side only now.
 // Agent's card is unaffected -- showOperationalSummary is false for Agent.
 function PropertyCard({ card, professionalId, showOperationalSummary }: { card: ProfessionalPropertyCard; professionalId?: string; showOperationalSummary: boolean }) {
   const sourceLabel = card.source === "TEAM_ASSIGNMENT" ? "Team Assigned" : card.role === "agent" ? "Independent Representation" : "Independent Management";
   const listingLabel = card.listing?.status ?? "Not Listed";
 
-  const rentals = showOperationalSummary && professionalId ? getRentalsForProperty(professionalId, card.propertyId) : [];
-  const activeRentals = rentals.filter((r) => r.status === "Active").length;
   const openMaintenance = showOperationalSummary && professionalId ? getMaintenanceForProperty(professionalId, card.propertyId).filter((m) => m.status !== "Resolved" && m.status !== "Cancelled").length : 0;
   const overduePayments = showOperationalSummary && professionalId ? getPaymentsForProperty(professionalId, card.propertyId).filter((p) => p.status === "Overdue").length : 0;
 
@@ -241,9 +240,9 @@ function PropertyCard({ card, professionalId, showOperationalSummary }: { card: 
         {canManageListingFor(card) ? null : <span className="text-carbon-400 text-xs">View only</span>}
       </div>
 
-      {showOperationalSummary && (rentals.length > 0 || openMaintenance > 0 || overduePayments > 0) ? (
+      {showOperationalSummary && (openMaintenance > 0 || overduePayments > 0) ? (
         <p className="text-carbon-500 mt-3 border-t border-black/8 pt-3 text-xs">
-          {activeRentals} active rental{activeRentals === 1 ? "" : "s"} · {openMaintenance} open maintenance
+          {openMaintenance} open maintenance
           {overduePayments > 0 ? ` · ${overduePayments} payment overdue` : ""}
         </p>
       ) : null}

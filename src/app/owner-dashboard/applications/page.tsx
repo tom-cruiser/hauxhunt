@@ -491,15 +491,12 @@ function ApplicationDetail({ application }: { application: OwnerApplication }) {
 // Approved applications only -- Not Selected never reaches this component
 // (RentalSetupSection returns null for any non-Approved status), so a
 // declined applicant can never show a rental-setup state or CTA.
-// Owner Rental Setup Continuity phase -- Section 6/24/29: the CTA an Owner
-// sees here depends on who owns the task, never on who's merely involved.
-// getRentalSetupManagerFor resolves the PM with "Manage rental setup" for
-// this property, if any -- the exact same responsibility gate PM's own
-// wizard checks (canManageRentalSetupFor). When a PM owns it, Owner is
-// oversight-only regardless of the draft's status, so Owner and PM can
-// never create competing drafts. When no PM owns it (self-managed or
-// Agent-only), Owner gets the real Start/Continue Rental Setup entry
-// point that Phase 2 deliberately left as an honest gap.
+// Owner Rental Setup Continuity phase -- Section 6/24/29: getRentalSetupManagerFor
+// used to resolve a PM with "Manage rental setup" so Owner could stay
+// oversight-only and defer to them. Rentals was since removed as a
+// partner-dashboard surface entirely, so that function always returns null
+// now -- meaning `manager` below is always null and the Owner always gets
+// the real Start/Continue Rental Setup entry point, unconditionally.
 function RentalSetupSection({ application }: { application: OwnerApplication }) {
   if (application.status !== "Approved") return null;
 
