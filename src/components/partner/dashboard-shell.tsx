@@ -23,7 +23,6 @@ import {
   ShieldCheck,
   UserRound,
   Wallet,
-  Wrench,
 } from "lucide-react";
 
 import { Wordmark } from "@/components/layout/wordmark";
@@ -70,6 +69,11 @@ type DashboardNavItem = {
 // now that performance-dashboard.tsx reads real per-listing views/saves/
 // enquiries (professional-properties.ts's getListingForProperty) instead of
 // the hardcoded demo numbers it originally shipped with.
+//
+// Messages & Maintenance Consolidation phase -- Maintenance no longer has
+// its own nav entry; it's the "Maintenance" tab inside Messages
+// (agent-messages-workspace.tsx's PmMessagesWorkspace), the same move
+// Finance Consolidation already made for Payments into Finance.
 const PROPERTY_MANAGER_NAV: DashboardNavItem[] = [
   {
     label: "Overview",
@@ -100,12 +104,6 @@ const PROPERTY_MANAGER_NAV: DashboardNavItem[] = [
     href: "/partner-dashboard/finance",
     section: "finance",
     icon: Wallet,
-  },
-  {
-    label: "Maintenance",
-    href: "/partner-dashboard/maintenance",
-    section: "maintenance",
-    icon: Wrench,
   },
   {
     label: "Messages",
@@ -228,13 +226,16 @@ export function DashboardShell({
           const overdue = getPaymentsFor(pmProfessional.id).filter((p) => p.status === "Overdue").length;
           return { ...item, badge: overdue > 0 ? String(overdue) : undefined };
         }
-        if (item.section === "maintenance") {
-          const open = getMaintenanceFor(pmProfessional.id).filter((m) => m.status === "Submitted" || m.status === "Under Review").length;
-          return { ...item, badge: open > 0 ? String(open) : undefined };
-        }
         if (item.section === "messages") {
+          // Messages & Maintenance Consolidation phase -- Maintenance's own
+          // badge (open Submitted/Under Review count) folds in here too,
+          // the same way Finance Consolidation folded Payments' overdue
+          // badge into Finance's own -- nothing that used to surface in the
+          // sidebar goes dark just because its page moved behind a tab.
           const unreadCount = getConversationsFor(pmProfessional.id).filter((c) => c.unread).length;
-          return { ...item, badge: unreadCount > 0 ? String(unreadCount) : undefined };
+          const openMaintenance = getMaintenanceFor(pmProfessional.id).filter((m) => m.status === "Submitted" || m.status === "Under Review").length;
+          const total = unreadCount + openMaintenance;
+          return { ...item, badge: total > 0 ? String(total) : undefined };
         }
         return item;
       });

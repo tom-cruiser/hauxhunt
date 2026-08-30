@@ -258,6 +258,32 @@ export function createMaintenanceRequest(request: MaintenanceRequest) {
   writeMaintenanceAdditions([request, ...readMaintenanceAdditions()]);
 }
 
+// Maintenance-in-Messages phase -- the one status transition map for
+// maintenance requests, shared by the Maintenance workspace (full detail +
+// actions) and the Messages thread's inline maintenance card (Section: never
+// a second, page-local copy of what actions a status allows -- the same
+// mistake maintenance-data.ts's own doc comment already calls out for a
+// second maintenance vocabulary).
+export const MAINTENANCE_STATUS_ACTIONS: Partial<Record<MaintenanceStatus, { label: string; next: MaintenanceStatus }[]>> = {
+  Submitted: [{ label: "Review Request", next: "Under Review" }],
+  "Under Review": [
+    { label: "Schedule Visit", next: "Scheduled" },
+    { label: "Request Information", next: "Waiting for Renter" },
+  ],
+  Scheduled: [
+    { label: "Mark In Progress", next: "In Progress" },
+    { label: "Cancel", next: "Cancelled" },
+  ],
+  "In Progress": [
+    { label: "Resolve", next: "Resolved" },
+    { label: "Cancel", next: "Cancelled" },
+  ],
+  "Waiting for Renter": [
+    { label: "Mark In Progress", next: "In Progress" },
+    { label: "Cancel", next: "Cancelled" },
+  ],
+};
+
 export const ISSUE_CATEGORIES = [
   "Plumbing",
   "Electrical",
