@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { OwnerDashboardShell } from "@/components/owner/owner-dashboard-shell";
+import { BoostListingButton } from "@/components/tier/boost-listing-button";
 
 type Range = "7 days" | "30 days" | "90 days" | "This year";
 type Metric = "Views" | "Saves" | "Viewing requests" | "Applications";
@@ -186,6 +187,12 @@ export default function OwnerPerformancePage() {
                 </select>
                 <ChevronDown className="text-carbon-500 pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2" />
               </label>
+              {propertyId !== "all" ? (
+                // Keyed by propertyId so switching the filter to a
+                // different property resets this back to "not boosted"
+                // instead of carrying over a stale badge from the last one.
+                <BoostListingButton key={propertyId} feature="owner.propertyBoost" />
+              ) : null}
             </div>
           </header>
 

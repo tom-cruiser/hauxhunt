@@ -45,6 +45,7 @@ import { REGISTERED_PROFESSIONALS, TEAM_ID, getActiveMemberships, type Professio
 import { OWNER_PARTICIPANT_ID, RENTER_PARTICIPANT_ID, getOrCreateConversation } from "@/lib/messages-data";
 import { isPaidTier, useTier } from "@/hooks/use-tier";
 import { LockedFeature, LockedPanel } from "@/components/tier/locked-feature";
+import { BoostListingButton } from "@/components/tier/boost-listing-button";
 
 type TabKey = "overview" | "listing" | "rental" | "payments" | "maintenance" | "team";
 const TABS: { key: TabKey; label: string }[] = [
@@ -497,7 +498,7 @@ function ListingTab({
               <h2 className="font-bricolage text-carbon-900 text-lg font-medium">Listing performance</h2>
               <p className="text-carbon-500 mt-1 text-sm">How property seekers are responding to this listing.</p>
             </div>
-            <BoostListingButton />
+            <BoostListingButton feature="owner.propertyBoost" />
           </div>
           <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Metric label="Views" value={listing.views} />
@@ -507,33 +508,6 @@ function ListingTab({
         </section>
       ) : null}
     </div>
-  );
-}
-
-function BoostListingButton() {
-  const tier = useTier();
-  const [boosted, setBoosted] = useState(false);
-
-  if (!isPaidTier(tier)) {
-    return <LockedFeature feature="owner.propertyBoost" variant="button" />;
-  }
-
-  if (boosted) {
-    return (
-      <span className="inline-flex h-10 items-center gap-1.5 rounded-full bg-black/[0.06] px-4 text-sm font-medium text-black/70">
-        <BadgeCheck aria-hidden="true" className="size-4" /> Boosted
-      </span>
-    );
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={() => setBoosted(true)}
-      className="font-bricolage inline-flex h-10 items-center rounded-full bg-black px-4 text-sm font-medium text-white transition-colors hover:bg-black/80"
-    >
-      Boost this listing
-    </button>
   );
 }
 

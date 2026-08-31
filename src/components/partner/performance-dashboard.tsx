@@ -6,6 +6,7 @@ import { useEffect, useReducer } from "react";
 import { ArrowUpRight, Eye, Heart, MessageSquare, Percent } from "lucide-react";
 
 import { StatusPill } from "@/components/owner/status-pill";
+import { BoostListingButton } from "@/components/tier/boost-listing-button";
 import { usePartnerRole } from "@/components/partner/use-partner-role";
 import { useDemoProfessional } from "@/components/partner/use-demo-professional";
 import {
@@ -138,24 +139,30 @@ function StatCard({ icon: Icon, label, value }: { icon: typeof Eye; label: strin
   );
 }
 
+// Boost lives here as a sibling of the navigation Link, not nested inside
+// it -- a clickable button inside an anchor is both invalid markup and
+// would fire the row's own navigation on every Boost click.
 function ListingRow({ card }: { card: TrackedCard }) {
   return (
-    <Link href={`/partner-dashboard/properties/${card.propertyId}`} className="flex items-center gap-4 p-5 transition-colors hover:bg-black/2 sm:p-6">
-      <span className="relative size-12 shrink-0 overflow-hidden rounded-xl">
-        <Image src={card.image} alt="" fill className="object-cover" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-medium">{card.title}</p>
-        <p className="text-carbon-500 mt-1 truncate text-sm">{card.location}</p>
-      </div>
-      <div className="hidden shrink-0 items-center gap-6 text-sm sm:flex">
+    <div className="flex flex-wrap items-center gap-4 p-5 transition-colors hover:bg-black/2 sm:p-6">
+      <Link href={`/partner-dashboard/properties/${card.propertyId}`} className="flex min-w-0 flex-1 items-center gap-4">
+        <span className="relative size-12 shrink-0 overflow-hidden rounded-xl">
+          <Image src={card.image} alt="" fill className="object-cover" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-medium">{card.title}</p>
+          <p className="text-carbon-500 mt-1 truncate text-sm">{card.location}</p>
+        </div>
+      </Link>
+      <div className="hidden shrink-0 items-center gap-6 text-sm lg:flex">
         <Metric label="Views" value={card.listing.views} />
         <Metric label="Saves" value={card.listing.saves} />
         <Metric label="Enquiries" value={card.listing.enquiries} />
       </div>
       <StatusPill status={card.listing.status} />
+      <BoostListingButton feature="agent.propertyBoost" />
       <ArrowUpRight aria-hidden="true" className="text-carbon-400 size-4 shrink-0" />
-    </Link>
+    </div>
   );
 }
 

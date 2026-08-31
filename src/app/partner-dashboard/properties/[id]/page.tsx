@@ -7,6 +7,7 @@ import { useEffect, useReducer, useState } from "react";
 import { Bath, BadgeCheck, BedDouble, ChevronLeft, Expand, FileText, MapPin } from "lucide-react";
 import { isPaidTier, useTier } from "@/hooks/use-tier";
 import { LockedFeature } from "@/components/tier/locked-feature";
+import { BoostListingButton } from "@/components/tier/boost-listing-button";
 
 import { DashboardShell } from "@/components/partner/dashboard-shell";
 import { usePartnerRole } from "@/components/partner/use-partner-role";
@@ -228,7 +229,6 @@ function RentalOperationsSection({ propertyId, professionalId }: { propertyId: s
 function ListingSection({ card }: { card: ProfessionalPropertyCard }) {
   const tier = useTier();
   const [viewOpen, setViewOpen] = useState(false);
-  const [boosted, setBoosted] = useState(false);
   const listing = card.listing && card.listing.status !== "Not Listed" ? card.listing : null;
   const canManage = canManageListingFor(card);
   const isIndependent = card.source === "INDEPENDENT_AUTHORIZATION";
@@ -300,19 +300,7 @@ function ListingSection({ card }: { card: ProfessionalPropertyCard }) {
                     <button type="button" onClick={() => setViewOpen((v) => !v)} className="font-bricolage inline-flex h-10 items-center rounded-full border border-black/15 px-4 text-sm font-medium hover:border-black">
                       View Public Listing
                     </button>
-                    {isPaidTier(tier) ? (
-                      boosted ? (
-                        <span className="inline-flex h-10 items-center gap-1.5 rounded-full bg-black/[0.06] px-4 text-sm font-medium text-black/70">
-                          <BadgeCheck aria-hidden="true" className="size-4" /> Boosted
-                        </span>
-                      ) : (
-                        <button type="button" onClick={() => setBoosted(true)} className="font-bricolage inline-flex h-10 items-center rounded-full bg-black px-4 text-sm font-medium text-white hover:bg-black/80">
-                          Boost this listing
-                        </button>
-                      )
-                    ) : (
-                      <LockedFeature feature="agent.propertyBoost" variant="button" />
-                    )}
+                    <BoostListingButton feature="agent.propertyBoost" />
                   </>
                 ) : (
                   <button type="button" onClick={() => setViewOpen((v) => !v)} className="font-bricolage inline-flex h-10 items-center rounded-full border border-black/15 px-4 text-sm font-medium hover:border-black">
