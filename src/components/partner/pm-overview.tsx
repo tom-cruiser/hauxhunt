@@ -3,14 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useReducer } from "react";
-import { ArrowUpRight, Building2, ClipboardCheck, CreditCard, Plus, Wallet, Wrench } from "lucide-react";
+import { ArrowUpRight, Bell, Building2, ClipboardCheck, CreditCard, FileText, MessageSquare, Plus, Wallet, Wrench } from "lucide-react";
 
 import { DashboardShell } from "@/components/partner/dashboard-shell";
 import { StatusPill } from "@/components/owner/status-pill";
+import { VerificationProgressCard } from "@/components/partner/verification-progress-card";
+import { ListingPerformanceCard } from "@/components/partner/listing-performance-card";
+import { QuickLinksPanel } from "@/components/partner/quick-links-panel";
 import { subscribeToTeam } from "@/lib/team-data";
 import { useDemoProfessional } from "@/components/partner/use-demo-professional";
 import { getProfessionalPropertyCards, resolveAnyPropertyTitle, subscribeToIndependentProperties, type ProfessionalPropertyCard } from "@/lib/professional-properties";
-import { getApplicationsFor, subscribeToProfessionalWork, type AgentApplicationView } from "@/lib/professional-work";
+import { getApplicationsFor, getConversationsFor, getProfessionalUnreadCount, subscribeToProfessionalWork, type AgentApplicationView } from "@/lib/professional-work";
 import { getMaintenanceFor, getPaymentsFor, subscribeToPmWork } from "@/lib/pm-work";
 import { formatRwf, type OwnerPayment } from "@/lib/owner-data";
 import type { MaintenanceRequest } from "@/lib/maintenance-data";
@@ -25,6 +28,16 @@ import emptyIllustration from "@/assets/images/empty.png";
 // Rentals and Team are not surfaced here -- rental setup/tracking and team
 // invitations are handled entirely on the Owner side now (see
 // dashboard-shell.tsx for why).
+//
+// Overview Redesign phase -- the layout now mirrors Joseph's earlier
+// prototype overview (2-column grid, a persistent right sidebar with
+// verification progress / listing performance / quick links) while keeping
+// every number this file already computed real. The sidebar and "Managed
+// Properties" are always visible, matching that prototype's always-populated
+// sections -- Maintenance/Payments/Applications already carry their own
+// "nothing yet" messages, so they render unconditionally too; only "Needs
+// Your Attention" falls back to a friendly empty note when there is
+// genuinely nothing there.
 
 const ACTIVE_APPLICATION_STATUSES = new Set(["Submitted", "Under Review", "Action Required", "Decision Pending"]);
 const NEW_MAINTENANCE_STATUSES = new Set(["Submitted", "Under Review"]);
@@ -52,6 +65,7 @@ export function PmOverview() {
   const payments = getPaymentsFor(professional.id);
   const maintenance = getMaintenanceFor(professional.id);
   const applications = getApplicationsFor(professional.id);
+  const conversations = getConversationsFor(professional.id);
 
   // Rent Collected KPI (Finance phase) -- the "Rent collected" card's
   // destination is /partner-dashboard/finance, whose Payout history tab
@@ -66,6 +80,9 @@ export function PmOverview() {
   const activeApplications = applications.filter((a) => ACTIVE_APPLICATION_STATUSES.has(a.status));
   const applicationsNeedingReview = applications.filter((a) => a.status === "Submitted" || a.status === "Under Review" || a.status === "Action Required");
   const attentionAuthorizations = properties.filter((p) => p.source === "INDEPENDENT_AUTHORIZATION" && (p.authorizationStatus === "Needs Attention" || p.authorizationStatus === "Rejected"));
+  const draftListings = properties.filter((p) => p.listing?.status === "Draft").length;
+  const unreadMessages = conversations.filter((c) => c.unread).length;
+  const unreadNotifications = getProfessionalUnreadCount(professional.id);
 
   type AttentionItem = { key: string; text: string; href: string };
   const attentionItems: AttentionItem[] = [
@@ -90,8 +107,6 @@ export function PmOverview() {
       href: `/partner-dashboard/properties/${p.propertyId}`,
     })),
   ];
-
-  const allCaughtUp = attentionItems.length === 0;
 
   return (
     <DashboardShell>
@@ -149,29 +164,31 @@ export function PmOverview() {
             />
           </div>
 
-          {allCaughtUp ? (
-            <div className="mt-8 flex flex-col items-center justify-center rounded-[1.75rem] bg-white px-6 py-16 text-center shadow-[0_16px_45px_rgba(0,0,0,0.055)]">
-              <Image src={emptyIllustration} alt="" className="h-28 w-auto object-contain" />
-              <h2 className="font-bricolage text-carbon-900 mt-5 text-2xl font-medium">You&apos;re all caught up</h2>
-              <p className="text-carbon-500 mt-2 max-w-sm text-sm leading-6">Important property and rental activity will appear here.</p>
-            </div>
-          ) : (
-            <div className="mt-8 space-y-8">
-              <section className="rounded-[1.75rem] border border-black/10 bg-white shadow-[0_16px_45px_rgba(0,0,0,0.055)]">
-                <SectionHeader title="Needs Your Attention" description="Items that need a decision or action from you." />
-                <ul className="divide-y divide-black/8">
-                  {attentionItems.map((item) => (
-                    <li key={item.key}>
-                      <Link href={item.href} className="flex items-center justify-between gap-4 p-5 transition-colors hover:bg-black/2 sm:p-6">
-                        <span className="text-sm leading-6">{item.text}</span>
-                        <ArrowUpRight aria-hidden="true" className="size-4 shrink-0" />
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </section>
+          <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.75fr)]">
+            <div className="space-y-8">
+              {attentionItems.length > 0 ? (
+                <section className="rounded-[1.75rem] border border-black/10 bg-white shadow-[0_16px_45px_rgba(0,0,0,0.055)]">
+                  <SectionHeader title="Needs Your Attention" description="Items that need a decision or action from you." />
+                  <ul className="divide-y divide-black/8">
+                    {attentionItems.map((item) => (
+                      <li key={item.key}>
+                        <Link href={item.href} className="flex items-center justify-between gap-4 p-5 transition-colors hover:bg-black/2 sm:p-6">
+                          <span className="text-sm leading-6">{item.text}</span>
+                          <ArrowUpRight aria-hidden="true" className="size-4 shrink-0" />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ) : (
+                <div className="flex flex-col items-center rounded-[1.75rem] border border-black/10 bg-white px-6 py-10 text-center shadow-[0_16px_45px_rgba(0,0,0,0.055)]">
+                  <Image src={emptyIllustration} alt="" className="h-20 w-auto object-contain" />
+                  <h2 className="font-bricolage text-carbon-900 mt-4 text-xl font-medium">You&apos;re all caught up</h2>
+                  <p className="text-carbon-500 mt-2 max-w-sm text-sm leading-6">Important property and rental activity will appear here.</p>
+                </div>
+              )}
 
-              <div className="grid gap-8 xl:grid-cols-2">
+              <div className="grid gap-8 sm:grid-cols-2">
                 <MaintenanceCard items={openMaintenance.slice(0, 3)} />
                 <PaymentsCard items={payments.slice(0, 3)} />
               </div>
@@ -180,14 +197,32 @@ export function PmOverview() {
 
               <section className="rounded-[1.75rem] border border-black/10 bg-white shadow-[0_16px_45px_rgba(0,0,0,0.055)]">
                 <SectionHeader title="Managed Properties" description="Properties you manage, across every Team and Independent authorization." action="View all" actionHref="/partner-dashboard/properties" />
-                <div className="grid gap-4 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-4">
-                  {properties.slice(0, 4).map((property) => (
-                    <PropertyMiniCard key={property.propertyId} card={property} />
-                  ))}
-                </div>
+                {properties.length === 0 ? (
+                  <p className="text-carbon-500 p-5 text-sm sm:p-6">No properties yet.</p>
+                ) : (
+                  <div className="grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
+                    {properties.slice(0, 4).map((property) => (
+                      <PropertyMiniCard key={property.propertyId} card={property} />
+                    ))}
+                  </div>
+                )}
               </section>
             </div>
-          )}
+
+            <aside className="space-y-8">
+              <VerificationProgressCard />
+
+              <ListingPerformanceCard properties={properties} />
+
+              <QuickLinksPanel
+                items={[
+                  { icon: MessageSquare, label: "Unread messages", value: unreadMessages, href: "/partner-dashboard/messages" },
+                  { icon: FileText, label: "Draft listings", value: draftListings, href: "/partner-dashboard/listings" },
+                  { icon: Bell, label: "Unread notifications", value: unreadNotifications, href: "/partner-dashboard/notifications" },
+                ]}
+              />
+            </aside>
+          </div>
         </div>
       </section>
     </DashboardShell>

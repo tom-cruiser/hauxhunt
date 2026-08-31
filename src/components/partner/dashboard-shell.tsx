@@ -106,7 +106,7 @@ const PROPERTY_MANAGER_NAV: DashboardNavItem[] = [
     icon: Wallet,
   },
   {
-    label: "Messages",
+    label: "Messages & Maintenance",
     href: "/partner-dashboard/messages",
     section: "messages",
     icon: MessageSquare,
