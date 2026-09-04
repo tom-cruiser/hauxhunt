@@ -292,5 +292,133 @@
         "titleB": "Tangira ahantu heza."
       }
     }
+  },
+  "renterDashboard": {
+    "nav": {
+      "homeAria": "Imbonerahamwe y'ukodesha ya HauxHunt",
+      "messages": "Ubutumwa",
+      "groups": {
+        "findHome": {
+          "label": "Shaka Inzu",
+          "listings": "Amatangazo",
+          "myFavourites": "Ibyo Nkunda",
+          "savedSearches": "Amashakisha Yabitswe",
+          "myViewings": "Gusura Amazu",
+          "applications": "Ibyifuzo"
+        },
+        "myHome": {
+          "label": "Inzu Yanjye",
+          "myRentals": "Amazu Nkodesha",
+          "payments": "Kwishyura",
+          "maintenance": "Isana"
+        },
+        "findFlatmate": {
+          "label": "Shaka Uwo Musangira Inzu",
+          "browseFlatmates": "Reba Abasangira Inzu",
+          "myFlatmateProfile": "Umwirondoro Wanjye w'Uwo Dusangira Inzu",
+          "matches": "Ibihuye / Abifuza Kuvugana"
+        }
+      }
+    },
+    "notificationsAria": "Amakuru",
+    "notificationsAriaUnread": "Amakuru, {{count}} atarasomwa",
+    "profileMenu": {
+      "myAccount": "Konti Yanjye",
+      "helpCenter": "Ikigo cy'Ubufasha",
+      "sendFeedback": "Ohereza Ibitekerezo",
+      "logOut": "Sohoka"
+    },
+    "overview": {
+      "dashboardAriaLabel": "Imbonerahamwe y'ukodesha ya HauxHunt",
+      "heroTitle": "Shaka inzu ijyanye n'ubuzima bwawe.",
+      "heroImageAlt": "Inzu igezweho ihagaze mu murima ugaragara",
+      "searchAria": "Shakisha amazu",
+      "searchPlaceholder": "Gerageza 'Apartimenti ifite ibyumba 3 i Kacyiru munsi ya Dolari 800'",
+      "exploreTitle": "Reba amazu kuri HauxHunt",
+      "viewAllProperties": "Reba amazu yose",
+      "filters": {
+        "location": "Aho",
+        "locationPlaceholder": "Shakisha umujyi, akarere, cyangwa umurenge",
+        "propertyType": "Ubwoko bw'inzu",
+        "priceRange": "Igiciro",
+        "bedrooms": "Ibyumba byo kuraramo",
+        "bathrooms": "Ubwogero",
+        "any": "Byose",
+        "anyType": "Ubwoko Bwose",
+        "anyPrice": "Ibiciro Byose",
+        "house": "Inzu",
+        "apartment": "Apartimenti",
+        "villa": "Villa",
+        "land": "Ubutaka"
+      },
+      "noResults": {
+        "imageAlt": "Nta nzu yabonetse",
+        "title": "Nta nzu ihuye n'ibyo washyizeho",
+        "description": "Gerageza ahandi cyangwa wagure ibyo ushaka mu nzu.",
+        "clearFilters": "Siba ibyashyizweho"
+      },
+      "pagination": {
+        "ariaLabel": "Impapuro z'amazu",
+        "previous": "Ipaji ibanziriza",
+        "next": "Ipaji ikurikira"
+      },
+      "favourites": {
+        "title": "Amazu Ukunda",
+        "subtitle": "Bika hafi amahitamo yawe akomeye kugira ngo ubigereranye.",
+        "viewAll": "Reba amazu ukunda"
+      },
+      "activity": {
+        "visitsTitle": "Gusura Biteganyijwe",
+        "visitsDescription": "Gusura amazu abiri biteganyijwe iki cyumweru.",
+        "visitsUpdate": "Ku wa Kabiri, itariki 11 Kanama · Saa 10:30 · Gusura byateganyijwe",
+        "visitsAction": "Reba gusura",
+        "applicationsTitle": "Amakuru ku Byifuzo",
+        "applicationsDescription": "Komeza kumenya ibyemezo n'amakuru asabwa.",
+        "applicationsUpdate": "Birimo gusuzumwa · Byavuguruwe uyu munsi",
+        "applicationsAction": "Reba ibyifuzo"
+      },
+      "ctaRequest": {
+        "title": "Uracyashaka inzu ikwiye?",
+        "description": "Tubwire icyo ukeneye maze abacunga amazu na ba ajenti bemejwe bakubwire amahitamo abereye.",
+        "action": "Tanga icyifuzo cy'inzu"
+      },
+      "ctaAgent": {
+        "title": "Ba ajenti",
+        "description": "Injira muri HauxHunt maze ufashe abakodesha kubona amazu mu Rwanda, muri Nigeria no muri Kenya.",
+        "action": "Saba ubu"
+      },
+      "listings": {
+        "brightTwoBedroom": "Apartimenti ibengerana ifite ibyumba bibiri",
+        "quietCompoundApartment": "Apartimenti ituje mu rugo rwuzuye",
+        "gardenFamilyResidence": "Inzu y'umuryango ifite ubusitani",
+        "secureCompoundTownhouse": "Inzu ifite umutekano mu rugo rwuzuye",
+        "cityViewApartment": "Apartimenti ireba umujyi",
+        "furnishedExecutiveStudio": "Studio ifite ibikoresho by'ikirenga",
+        "spaciousFamilyHouse": "Inzu y'umuryango inini",
+        "hillsideHomeWithViews": "Inzu iri ku musozi ireba neza"
+      }
+    },
+    "notificationsDrawer": {
+      "title": "Amakuru",
+      "settingsAria": "Igenamiterere ry'amakuru",
+      "closeAria": "Funga amakuru",
+      "filterAll": "Byose",
+      "filterUnread": "Atarasomwa",
+      "markAllRead": "Shyiraho ko byose byasomwe",
+      "clearAll": "Siba byose",
+      "viewAll": "Reba amakuru yose",
+      "notificationCleared": "Amakuru yasibwe",
+      "markedAsRead": "Byashyizweho ko byasomwe",
+      "clearAria": "Siba amakuru",
+      "markReadAria": "Shyiraho ko byasomwe",
+      "browseHomes": "Reba Amazu",
+      "groupToday": "Uyu munsi",
+      "groupYesterday": "Ejo hashize",
+      "groupEarlier": "Kera",
+      "emptyAllTitle": "Wabonye byose",
+      "emptyAllDescription": "Amakuru y'ingenzi ku bikorwa byawe kuri HauxHunt azagaragara hano.",
+      "emptyUnreadTitle": "Nta makuru atarasomwa",
+      "emptyUnreadDescription": "Wabonye amakuru yawe yose agezweho."
+    }
   }
 }

@@ -25,11 +25,16 @@ import {
   EMPTY_UNREAD_COUNT,
   type Notification,
 } from "@/lib/notifications";
+import { useTranslation } from "@/components/language/use-translation";
 import emptyIllustration from "@/assets/images/empty.png";
 
-
-
 type Group = "Today" | "Yesterday" | "Earlier";
+
+const GROUP_LABEL_KEYS: Record<Group, string> = {
+  Today: "renterDashboard.notificationsDrawer.groupToday",
+  Yesterday: "renterDashboard.notificationsDrawer.groupYesterday",
+  Earlier: "renterDashboard.notificationsDrawer.groupEarlier",
+};
 
 function getGroup(timestamp: number): Group {
   const todayStart = new Date();
@@ -65,6 +70,7 @@ export function NotificationsDrawer({
   onClose: () => void;
   onFilterChange: (f: Filter) => void;
 }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const panelRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
@@ -148,7 +154,7 @@ export function NotificationsDrawer({
         ref={panelRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Notifications"
+        aria-label={t("renterDashboard.notificationsDrawer.title")}
         className={`fixed inset-y-0 right-0 z-[70] flex w-full flex-col bg-white shadow-[-20px_0_60px_rgba(0,0,0,0.18)] transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] sm:w-1/2 sm:min-w-[420px] ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
@@ -158,14 +164,14 @@ export function NotificationsDrawer({
         <div className="flex shrink-0 items-center justify-between border-b border-black/[0.08] px-8 pt-6 pb-3 sm:px-10">
           <div className="flex items-center gap-3">
             <h2 className="font-bricolage text-xl font-medium tracking-tight">
-              Notifications
+              {t("renterDashboard.notificationsDrawer.title")}
             </h2>
           </div>
           <div className="flex items-center gap-2">
             <Link
               href="/renter-dashboard/account?section=preferences"
               onClick={onClose}
-              aria-label="Notification settings"
+              aria-label={t("renterDashboard.notificationsDrawer.settingsAria")}
               className="text-carbon-400 flex size-9 items-center justify-center rounded-full transition-colors hover:bg-black/[0.055] hover:text-black"
             >
               <Settings className="size-4" />
@@ -173,7 +179,7 @@ export function NotificationsDrawer({
             <button
               type="button"
               onClick={onClose}
-              aria-label="Close notifications"
+              aria-label={t("renterDashboard.notificationsDrawer.closeAria")}
               className="flex size-9 items-center justify-center rounded-full transition-colors hover:bg-black/[0.055]"
             >
               <X className="size-4" />
@@ -196,7 +202,9 @@ export function NotificationsDrawer({
                     : "bg-black/[0.055] text-black hover:bg-black/10"
                 }`}
               >
-                {f === "all" ? "All" : "Unread"}
+                {f === "all"
+                  ? t("renterDashboard.notificationsDrawer.filterAll")
+                  : t("renterDashboard.notificationsDrawer.filterUnread")}
                 {f === "unread" && unreadCount > 0 ? (
                   <span className={`ml-1.5 inline-flex size-3.5 items-center justify-center rounded-full text-[0.55rem] font-bold ${
                     filter === "unread" ? "bg-white text-black" : "bg-black text-white"
@@ -215,7 +223,7 @@ export function NotificationsDrawer({
                   onClick={markAllNotificationsRead}
                   className="text-carbon-500 text-xs font-medium underline underline-offset-4 hover:text-black"
                 >
-                  Mark all as read
+                  {t("renterDashboard.notificationsDrawer.markAllRead")}
                 </button>
               ) : null}
               <button
@@ -223,7 +231,7 @@ export function NotificationsDrawer({
                 onClick={clearAllNotifications}
                 className="text-carbon-500 text-xs font-medium underline underline-offset-4 hover:text-black"
               >
-                Clear all
+                {t("renterDashboard.notificationsDrawer.clearAll")}
               </button>
             </div>
           ) : null}
@@ -240,7 +248,7 @@ export function NotificationsDrawer({
               onClick={onClose}
               className="text-carbon-500 inline-flex items-center gap-1 text-xs font-medium hover:text-black"
             >
-              View all notifications
+              {t("renterDashboard.notificationsDrawer.viewAll")}
               <ArrowUpRight className="size-3.5" />
             </Link>
           </div>
@@ -252,7 +260,7 @@ export function NotificationsDrawer({
             grouped.map(({ group, items }) => (
               <section key={group} className="mb-6">
                 <h3 className="mb-2 text-[0.65rem] font-semibold tracking-wider text-black/35 uppercase">
-                  {group}
+                  {t(GROUP_LABEL_KEYS[group])}
                 </h3>
                 <div className="flex flex-col gap-2">
                   {items.map((n) => (
@@ -291,6 +299,7 @@ function NotificationRow({
   onClick: () => void;
   onToast: (msg: string) => void;
 }) {
+  const { t } = useTranslation();
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -309,8 +318,12 @@ function NotificationRow({
         <div className="absolute -left-2 top-1/2 z-10 flex -translate-y-1/2 flex-col gap-1">
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); clearNotification(n.id); onToast("Notification cleared"); }}
-            aria-label="Clear notification"
+            onClick={(e) => {
+              e.stopPropagation();
+              clearNotification(n.id);
+              onToast(t("renterDashboard.notificationsDrawer.notificationCleared"));
+            }}
+            aria-label={t("renterDashboard.notificationsDrawer.clearAria")}
             className="flex size-4 items-center justify-center rounded-full bg-black/80 text-white backdrop-blur-sm transition-colors hover:bg-black"
           >
             <X className="size-2" />
@@ -318,8 +331,12 @@ function NotificationRow({
           {!n.read && (
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); markNotificationRead(n.id); onToast("Marked as read"); }}
-              aria-label="Mark as read"
+              onClick={(e) => {
+                e.stopPropagation();
+                markNotificationRead(n.id);
+                onToast(t("renterDashboard.notificationsDrawer.markedAsRead"));
+              }}
+              aria-label={t("renterDashboard.notificationsDrawer.markReadAria")}
               className="flex size-4 items-center justify-center rounded-full bg-black/80 text-white backdrop-blur-sm transition-colors hover:bg-black"
             >
               <Check className="size-2" />
@@ -371,6 +388,7 @@ function NotificationRow({
 // ---------------------------------------------------------------------------
 
 function AllEmptyState({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation();
   const router = useRouter();
   return (
     <div className="flex h-full flex-col items-center justify-center py-20 text-center">
@@ -380,23 +398,24 @@ function AllEmptyState({ onClose }: { onClose: () => void }) {
         className="h-36 w-auto object-contain"
       />
       <h3 className="font-bricolage mt-6 text-xl font-medium">
-        You&apos;re all caught up
+        {t("renterDashboard.notificationsDrawer.emptyAllTitle")}
       </h3>
       <p className="text-carbon-500 mt-2 max-w-[220px] text-sm leading-6">
-        Important updates about your HauxHunt activity will appear here.
+        {t("renterDashboard.notificationsDrawer.emptyAllDescription")}
       </p>
       <button
         type="button"
         onClick={() => { onClose(); router.push("/renter-dashboard/properties"); }}
         className="mt-6 inline-flex h-10 items-center rounded-full bg-black px-5 text-sm font-medium text-white"
       >
-        Browse Homes
+        {t("renterDashboard.notificationsDrawer.browseHomes")}
       </button>
     </div>
   );
 }
 
 function UnreadEmptyState() {
+  const { t } = useTranslation();
   return (
     <div className="flex h-full flex-col items-center justify-center py-20 text-center">
       <Image
@@ -405,10 +424,10 @@ function UnreadEmptyState() {
         className="h-36 w-auto object-contain"
       />
       <h3 className="font-bricolage mt-6 text-xl font-medium">
-        No unread notifications
+        {t("renterDashboard.notificationsDrawer.emptyUnreadTitle")}
       </h3>
       <p className="text-carbon-500 mt-2 max-w-[220px] text-sm leading-6">
-        You&apos;ve seen all your latest updates.
+        {t("renterDashboard.notificationsDrawer.emptyUnreadDescription")}
       </p>
     </div>
   );

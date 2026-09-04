@@ -35,6 +35,8 @@ import {
   subscribeToNotifications,
 } from "@/lib/notifications";
 import { NotificationsDrawer } from "@/components/renter/notifications-drawer";
+import { LanguageSwitcher } from "@/components/language/language-switcher";
+import { useTranslation } from "@/components/language/use-translation";
 import heroImage from "@/assets/images/house-isolated-field.jpg";
 import houseOne from "@/assets/images/house1.jpg";
 import houseTwo from "@/assets/images/house2.jpg";
@@ -49,10 +51,10 @@ import { clearTier } from "@/hooks/use-tier";
 const LISTINGS = [
   {
     id: "kacyiru-2br",
-    title: "Bright two-bedroom apartment",
+    titleKey: "renterDashboard.overview.listings.brightTwoBedroom",
+    type: "Apartment",
     location: "Kacyiru, Kigali",
     price: "USD 520",
-    period: "per month",
     bedrooms: 2,
     bathrooms: 2,
     area: 112,
@@ -63,10 +65,10 @@ const LISTINGS = [
   },
   {
     id: "kibagabaga-modern-family-home",
-    title: "Modern family home",
+    titleKey: "featuredListings.listings.modernFamilyHome",
+    type: "House",
     location: "Kibagabaga, Kigali",
     price: "USD 830",
-    period: "per month",
     bedrooms: 3,
     bathrooms: 2,
     area: 186,
@@ -77,10 +79,10 @@ const LISTINGS = [
   },
   {
     id: "nyarutarama-2br",
-    title: "Quiet compound apartment",
+    titleKey: "renterDashboard.overview.listings.quietCompoundApartment",
+    type: "Apartment",
     location: "Nyarutarama, Kigali",
     price: "USD 660",
-    period: "per month",
     bedrooms: 2,
     bathrooms: 2,
     area: 128,
@@ -91,10 +93,10 @@ const LISTINGS = [
   },
   {
     id: "remera-3br",
-    title: "Garden family residence",
+    titleKey: "renterDashboard.overview.listings.gardenFamilyResidence",
+    type: "House",
     location: "Remera, Kigali",
     price: "USD 540",
-    period: "per month",
     bedrooms: 3,
     bathrooms: 2,
     area: 164,
@@ -105,10 +107,10 @@ const LISTINGS = [
   },
   {
     id: "maitama-quiet-city-villa",
-    title: "Quiet city villa",
+    titleKey: "featuredListings.listings.quietCityVilla",
+    type: "Villa",
     location: "Maitama, Abuja",
     price: "USD 2,500",
-    period: "per month",
     bedrooms: 5,
     bathrooms: 5,
     area: 310,
@@ -119,10 +121,10 @@ const LISTINGS = [
   },
   {
     id: "ikoyi-waterfront-apartment",
-    title: "Waterfront apartment",
+    titleKey: "featuredListings.listings.waterfrontApartment",
+    type: "Apartment",
     location: "Ikoyi, Lagos",
     price: "USD 1,700",
-    period: "per month",
     bedrooms: 3,
     bathrooms: 3,
     area: 184,
@@ -133,10 +135,10 @@ const LISTINGS = [
   },
   {
     id: "gacuriro-townhouse",
-    title: "Secure compound townhouse",
+    titleKey: "renterDashboard.overview.listings.secureCompoundTownhouse",
+    type: "House",
     location: "Gacuriro, Kigali",
     price: "USD 920",
-    period: "per month",
     bedrooms: 4,
     bathrooms: 3,
     area: 214,
@@ -147,10 +149,10 @@ const LISTINGS = [
   },
   {
     id: "kimihurura-city-apartment",
-    title: "City-view apartment",
+    titleKey: "renterDashboard.overview.listings.cityViewApartment",
+    type: "Apartment",
     location: "Kimihurura, Kigali",
     price: "USD 740",
-    period: "per month",
     bedrooms: 2,
     bathrooms: 2,
     area: 132,
@@ -161,10 +163,10 @@ const LISTINGS = [
   },
   {
     id: "kigali-heights-studio",
-    title: "Furnished executive studio",
+    titleKey: "renterDashboard.overview.listings.furnishedExecutiveStudio",
+    type: "Studio",
     location: "Kacyiru, Kigali",
     price: "USD 410",
-    period: "per month",
     bedrooms: 1,
     bathrooms: 1,
     area: 68,
@@ -175,10 +177,10 @@ const LISTINGS = [
   },
   {
     id: "kanombe-family-house",
-    title: "Spacious family house",
+    titleKey: "renterDashboard.overview.listings.spaciousFamilyHouse",
+    type: "House",
     location: "Kanombe, Kigali",
     price: "USD 610",
-    period: "per month",
     bedrooms: 4,
     bathrooms: 3,
     area: 226,
@@ -189,10 +191,10 @@ const LISTINGS = [
   },
   {
     id: "rebero-hillside-home",
-    title: "Hillside home with views",
+    titleKey: "renterDashboard.overview.listings.hillsideHomeWithViews",
+    type: "House",
     location: "Rebero, Kigali",
     price: "USD 1,050",
-    period: "per month",
     bedrooms: 4,
     bathrooms: 4,
     area: 248,
@@ -203,10 +205,10 @@ const LISTINGS = [
   },
   {
     id: "gisenyi-lakefront-residence",
-    title: "Lakefront residence",
+    titleKey: "featuredListings.listings.lakefrontResidence",
+    type: "House",
     location: "Gisenyi, Rwanda",
     price: "USD 590",
-    period: "per month",
     bedrooms: 2,
     bathrooms: 2,
     area: 120,
@@ -219,37 +221,37 @@ const LISTINGS = [
 
 const RENTER_NAV_GROUPS = [
   {
-    label: "Find a Home",
+    labelKey: "renterDashboard.nav.groups.findHome.label",
     links: [
-      ["Listings", "/renter-dashboard/properties"],
-      ["My Favourites", "/renter-dashboard/saved"],
-      ["Saved Searches", "/renter-dashboard/saved-searches"],
-      ["My Viewings", "/renter-dashboard/visits"],
-      ["Applications", "/renter-dashboard/applications"],
+      ["renterDashboard.nav.groups.findHome.listings", "/renter-dashboard/properties"],
+      ["renterDashboard.nav.groups.findHome.myFavourites", "/renter-dashboard/saved"],
+      ["renterDashboard.nav.groups.findHome.savedSearches", "/renter-dashboard/saved-searches"],
+      ["renterDashboard.nav.groups.findHome.myViewings", "/renter-dashboard/visits"],
+      ["renterDashboard.nav.groups.findHome.applications", "/renter-dashboard/applications"],
     ],
   },
   {
-    label: "My Home",
+    labelKey: "renterDashboard.nav.groups.myHome.label",
     links: [
-      ["My Rentals", "/renter-dashboard/rentals"],
-      ["Payments", "/renter-dashboard/payments"],
-      ["Maintenance", "/renter-dashboard/maintenance"],
+      ["renterDashboard.nav.groups.myHome.myRentals", "/renter-dashboard/rentals"],
+      ["renterDashboard.nav.groups.myHome.payments", "/renter-dashboard/payments"],
+      ["renterDashboard.nav.groups.myHome.maintenance", "/renter-dashboard/maintenance"],
     ],
   },
   {
-    label: "Find a Flatmate",
+    labelKey: "renterDashboard.nav.groups.findFlatmate.label",
     links: [
-      ["Browse Flatmates", "/flatmates?from=renter"],
-      ["My Flatmate Profile", "/renter-dashboard/flatmates/profile"],
-      ["Matches / Interested People", "/renter-dashboard/flatmates/matches"],
+      ["renterDashboard.nav.groups.findFlatmate.browseFlatmates", "/flatmates?from=renter"],
+      ["renterDashboard.nav.groups.findFlatmate.myFlatmateProfile", "/renter-dashboard/flatmates/profile"],
+      ["renterDashboard.nav.groups.findFlatmate.matches", "/renter-dashboard/flatmates/matches"],
     ],
   },
 ] as const;
 
 const PROFILE_LINKS = [
-  ["My Account", "/renter-dashboard/account"],
-  ["Help Center", "/renter-dashboard/help"],
-  ["Send Feedback", "/feedback"],
+  ["renterDashboard.profileMenu.myAccount", "/renter-dashboard/account"],
+  ["renterDashboard.profileMenu.helpCenter", "/renter-dashboard/help"],
+  ["renterDashboard.profileMenu.sendFeedback", "/feedback"],
 ] as const;
 
 type SpeechRecognitionEventLike = {
@@ -289,6 +291,7 @@ function subscribeToStorage(callback: () => void) {
 }
 
 export default function RenterDashboardPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   // Mock, session-only count (not a real synced inbox) — same source the
   // shared nav bar reads, kept in sync here since this page has its own
@@ -326,14 +329,7 @@ export default function RenterDashboardPage() {
     const locationMatches = listing.location
       .toLowerCase()
       .includes(locationFilter.trim().toLowerCase());
-    const listingType = listing.title.toLowerCase().includes("apartment")
-      ? "Apartment"
-      : listing.title.toLowerCase().includes("studio")
-        ? "Studio"
-        : listing.title.toLowerCase().includes("villa")
-          ? "Villa"
-          : "House";
-    const typeMatches = typeFilter === "Any Type" || typeFilter === listingType;
+    const typeMatches = typeFilter === "Any Type" || typeFilter === listing.type;
     const numericPrice = Number(listing.price.replace(/[^0-9.]/g, ""));
     const priceMatches =
       priceFilter === "Any Price" ||
@@ -451,7 +447,7 @@ export default function RenterDashboardPage() {
 
     if (!Recognition) {
       setUsingCurrentLocation(false);
-      setSearchQuery("Voice search is not supported in this browser");
+      setSearchQuery(t("hero.search.voiceNotSupported"));
       return;
     }
 
@@ -508,7 +504,7 @@ export default function RenterDashboardPage() {
       <section className="relative min-h-[590px] bg-black text-white">
         <Image
           src={heroImage}
-          alt="Modern home standing in an open field"
+          alt={t("renterDashboard.overview.heroImageAlt")}
           fill
           priority
           sizes="100vw"
@@ -522,7 +518,7 @@ export default function RenterDashboardPage() {
           <div className="mx-auto grid h-full w-[calc(100%-2.5rem)] max-w-[1562px] grid-cols-[auto_1fr_auto] items-center gap-4 sm:w-[calc(100%-3rem)] lg:w-[calc(100%-5.5rem)] lg:grid-cols-[1fr_auto_1fr] lg:gap-10 xl:w-[calc(100%-6.5rem)]">
             <Link
               href="/renter-dashboard"
-              aria-label="HauxHunt renter dashboard"
+              aria-label={t("renterDashboard.overview.dashboardAriaLabel")}
               className={`shrink-0 transition-[filter] duration-300 ${scrolled ? "" : "invert"}`}
             >
               <Wordmark height={scrolled ? 38 : 48} />
@@ -530,15 +526,15 @@ export default function RenterDashboardPage() {
             <nav className="hidden items-center gap-5 justify-self-center text-sm font-medium lg:flex xl:gap-7">
               {RENTER_NAV_GROUPS.map((group) => (
                 <RenterNavDropdown
-                  key={group.label}
+                  key={group.labelKey}
                   group={group}
-                  open={openNavMenu === group.label}
+                  open={openNavMenu === group.labelKey}
                   onToggle={() =>
                     setOpenNavMenu((current) =>
-                      current === group.label ? null : group.label,
+                      current === group.labelKey ? null : group.labelKey,
                     )
                   }
-                  onOpen={() => setOpenNavMenu(group.label)}
+                  onOpen={() => setOpenNavMenu(group.labelKey)}
                   onClose={() => setOpenNavMenu(null)}
                 />
               ))}
@@ -546,7 +542,7 @@ export default function RenterDashboardPage() {
                 href="/renter-dashboard/messages"
                 className="relative inline-flex items-center transition-opacity hover:opacity-60"
               >
-                Messages
+                {t("renterDashboard.nav.messages")}
                 {unreadMessageCount > 0 && (
                   <span
                     className={`absolute -top-1.5 -right-3.5 flex size-4 items-center justify-center rounded-full text-[0.55rem] font-bold ${scrolled ? "bg-black text-white" : "bg-white text-black"}`}
@@ -557,11 +553,18 @@ export default function RenterDashboardPage() {
               </Link>
             </nav>
             <div className="flex items-center gap-2 justify-self-end sm:gap-4">
+              <LanguageSwitcher inverse={!scrolled} openOnHover />
               <CurrencySelector inverse={!scrolled} openOnHover />
               <button
                 type="button"
                 onClick={() => setNotifOpen((v) => !v)}
-                aria-label={`Notifications${unreadNotificationCount > 0 ? `, ${unreadNotificationCount} unread` : ""}`}
+                aria-label={
+                  unreadNotificationCount > 0
+                    ? t("renterDashboard.notificationsAriaUnread", {
+                        count: unreadNotificationCount,
+                      })
+                    : t("renterDashboard.notificationsAria")
+                }
                 aria-expanded={notifOpen}
                 className={`relative flex size-11 items-center justify-center rounded-full transition-colors ${scrolled ? "hover:bg-black/[0.055]" : "hover:bg-white/10"}`}
               >
@@ -618,7 +621,7 @@ export default function RenterDashboardPage() {
 
         <div className="relative z-10 mx-auto flex min-h-[590px] max-w-[1040px] flex-col items-center justify-center px-5 pt-20 text-center lg:pt-24">
           <h1 className="font-bricolage text-[clamp(2.8rem,6vw,5.5rem)] leading-[0.94] font-medium tracking-[-0.055em]">
-            Find a home that fits your life.
+            {t("renterDashboard.overview.heroTitle")}
           </h1>
           <form
             onSubmit={(event) => {
@@ -632,16 +635,16 @@ export default function RenterDashboardPage() {
                 type="button"
                 onClick={useCurrentLocation}
                 disabled={locationLoading}
-                aria-label="Use my current location"
-                title="Use my current location"
+                aria-label={t("hero.search.useCurrentLocation")}
+                title={t("hero.search.useCurrentLocation")}
                 className="text-carbon-400 ml-3 flex size-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-black/[0.055] hover:text-black disabled:opacity-40"
               >
                 <MapPin aria-hidden="true" className="size-5" />
               </button>
               <input
                 type="search"
-                aria-label="Search homes"
-                placeholder="Try ‘3-bedroom apartment in Kacyiru under USD 800’"
+                aria-label={t("renterDashboard.overview.searchAria")}
+                placeholder={t("renterDashboard.overview.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(event) => {
                   setUsingCurrentLocation(false);
@@ -655,9 +658,15 @@ export default function RenterDashboardPage() {
               type="button"
               onClick={toggleVoiceSearch}
               aria-label={
-                listening ? "Stop voice search" : "Start voice search"
+                listening
+                  ? t("hero.search.stopVoiceSearch")
+                  : t("hero.search.startVoiceSearch")
               }
-              title={listening ? "Stop listening" : "Search by voice"}
+              title={
+                listening
+                  ? t("hero.search.stopListening")
+                  : t("hero.search.searchByVoice")
+              }
               className={`my-2 flex size-12 shrink-0 items-center justify-center rounded-full bg-transparent transition-colors ${listening ? "text-red-600" : "text-black/55 hover:text-black"}`}
             >
               <Mic className="size-5" />
@@ -665,7 +674,7 @@ export default function RenterDashboardPage() {
             <button
               type="submit"
               disabled={!searchQuery.trim()}
-              aria-label="Search"
+              aria-label={t("hero.search.search")}
               className="m-2 flex h-12 items-center justify-center rounded-full bg-black px-6 text-white transition-opacity hover:opacity-75 disabled:pointer-events-none disabled:opacity-35"
             >
               <Search className="size-5" />
@@ -681,22 +690,22 @@ export default function RenterDashboardPage() {
         <div className="flex flex-col gap-6 border-b border-black/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="font-bricolage text-3xl font-medium tracking-[-0.04em] sm:text-4xl">
-              Explore houses on HauxHunt
+              {t("renterDashboard.overview.exploreTitle")}
             </h2>
           </div>
           <Link
             href="/renter-dashboard/properties"
             className="font-bricolage border-carbon-900 text-carbon-900 hover:bg-muted inline-flex h-11 shrink-0 items-center justify-center gap-2 self-start rounded-full border px-5 text-base font-medium transition-colors duration-150 lg:self-auto"
           >
-            View all properties
+            {t("renterDashboard.overview.viewAllProperties")}
             <ArrowUpRight aria-hidden="true" className="size-4" />
           </Link>
         </div>
 
         <div className="mt-7 grid items-end gap-4 md:grid-cols-2 xl:grid-cols-[minmax(250px,1.5fr)_repeat(4,minmax(135px,0.7fr))]">
           <FilterTextField
-            label="Location"
-            placeholder="Search city, town, or district"
+            label={t("renterDashboard.overview.filters.location")}
+            placeholder={t("renterDashboard.overview.filters.locationPlaceholder")}
             value={locationFilter}
             onChange={(value) => {
               setLocationFilter(value);
@@ -704,16 +713,23 @@ export default function RenterDashboardPage() {
             }}
           />
           <FilterSelect
-            label="Property type"
+            label={t("renterDashboard.overview.filters.propertyType")}
             value={typeFilter}
             options={["Any Type", "House", "Apartment", "Villa", "Land"]}
+            optionLabels={{
+              "Any Type": t("renterDashboard.overview.filters.anyType"),
+              House: t("renterDashboard.overview.filters.house"),
+              Apartment: t("renterDashboard.overview.filters.apartment"),
+              Villa: t("renterDashboard.overview.filters.villa"),
+              Land: t("renterDashboard.overview.filters.land"),
+            }}
             onChange={(value) => {
               setTypeFilter(value);
               setListingPage(1);
             }}
           />
           <FilterSelect
-            label="Price range"
+            label={t("renterDashboard.overview.filters.priceRange")}
             value={priceFilter}
             options={[
               "Any Price",
@@ -723,7 +739,7 @@ export default function RenterDashboardPage() {
               "Above USD 2,000",
             ]}
             optionLabels={{
-              "Any Price": "Any Price",
+              "Any Price": t("renterDashboard.overview.filters.anyPrice"),
               "Under USD 500": formatCurrencyRange(null, 500, displayCurrency),
               "USD 500–1,000": formatCurrencyRange(500, 1000, displayCurrency),
               "USD 1,000–2,000": formatCurrencyRange(
@@ -743,18 +759,20 @@ export default function RenterDashboardPage() {
             }}
           />
           <FilterSelect
-            label="Bedrooms"
+            label={t("renterDashboard.overview.filters.bedrooms")}
             value={bedroomFilter}
             options={["Any", "1", "2", "3", "4+"]}
+            optionLabels={{ Any: t("renterDashboard.overview.filters.any") }}
             onChange={(value) => {
               setBedroomFilter(value);
               setListingPage(1);
             }}
           />
           <FilterSelect
-            label="Bathrooms"
+            label={t("renterDashboard.overview.filters.bathrooms")}
             value={bathroomFilter}
             options={["Any", "1", "2", "3", "4+"]}
+            optionLabels={{ Any: t("renterDashboard.overview.filters.any") }}
             onChange={(value) => {
               setBathroomFilter(value);
               setListingPage(1);
@@ -764,10 +782,12 @@ export default function RenterDashboardPage() {
 
         {visibleListings.length ? (
           <div className="mt-7 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-            {visibleListings.map((listing) => (
+            {visibleListings.map(({ titleKey, ...listing }) => (
               <ListingCard
                 key={listing.id}
                 {...listing}
+                title={t(titleKey)}
+                period={t("featuredListings.perMonth")}
                 href={`${listing.href}?from=renter`}
               />
             ))}
@@ -776,34 +796,34 @@ export default function RenterDashboardPage() {
           <div className="mt-7 rounded-3xl bg-black/[0.04] px-6 py-16 text-center">
             <Image
               src={emptyIllustration}
-              alt="No houses found"
+              alt={t("renterDashboard.overview.noResults.imageAlt")}
               className="mx-auto h-44 w-auto object-contain"
             />
             <h3 className="font-bricolage mt-5 text-2xl font-medium">
-              No houses match these filters
+              {t("renterDashboard.overview.noResults.title")}
             </h3>
             <p className="text-carbon-500 mt-3 text-sm">
-              Try another location or broaden your property preferences.
+              {t("renterDashboard.overview.noResults.description")}
             </p>
             <button
               type="button"
               onClick={clearExploreFilters}
               className="font-bricolage mt-6 inline-flex h-11 items-center rounded-full bg-black px-6 text-sm font-medium text-white"
             >
-              Clear filters
+              {t("renterDashboard.overview.noResults.clearFilters")}
             </button>
           </div>
         )}
         {filteredListings.length === LISTINGS.length ? (
           <nav
-            aria-label="Property pagination"
+            aria-label={t("renterDashboard.overview.pagination.ariaLabel")}
             className="mt-12 flex items-center justify-center gap-2"
           >
             <button
               type="button"
               onClick={() => setListingPage((page) => Math.max(1, page - 1))}
               disabled={listingPage === 1}
-              aria-label="Previous page"
+              aria-label={t("renterDashboard.overview.pagination.previous")}
               className="flex size-11 items-center justify-center rounded-full border border-black/15 disabled:cursor-not-allowed disabled:opacity-30"
             >
               <ArrowLeft className="size-4" />
@@ -823,7 +843,7 @@ export default function RenterDashboardPage() {
               type="button"
               onClick={() => setListingPage((page) => Math.min(3, page + 1))}
               disabled={listingPage === 3}
-              aria-label="Next page"
+              aria-label={t("renterDashboard.overview.pagination.next")}
               className="flex size-11 items-center justify-center rounded-full border border-black/15 disabled:cursor-not-allowed disabled:opacity-30"
             >
               <ArrowRight className="size-4" />
@@ -837,17 +857,18 @@ export default function RenterDashboardPage() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <h2 className="font-bricolage text-3xl font-medium tracking-[-0.04em] sm:text-4xl">
-                Your favourite homes
+                {t("renterDashboard.overview.favourites.title")}
               </h2>
               <p className="text-carbon-500 mt-3 text-sm">
-                Keep your strongest options close while you compare.
+                {t("renterDashboard.overview.favourites.subtitle")}
               </p>
             </div>
             <Link
               href="/renter-dashboard/saved"
               className="font-bricolage border-carbon-900 text-carbon-900 hover:bg-muted inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border px-5 text-sm font-medium transition-colors duration-150"
             >
-              View favourite homes <ArrowUpRight className="size-4" />
+              {t("renterDashboard.overview.favourites.viewAll")}{" "}
+              <ArrowUpRight className="size-4" />
             </Link>
           </div>
           <div className="mt-8 grid gap-4 lg:grid-cols-3">
@@ -864,13 +885,13 @@ export default function RenterDashboardPage() {
                 />
                 <div className="min-w-0">
                   <h3 className="font-bricolage truncate font-medium">
-                    {listing.title}
+                    {t(listing.titleKey)}
                   </h3>
                   <p className="text-carbon-500 mt-1 truncate text-sm">
                     {listing.location}
                   </p>
                   <p className="mt-3 text-sm font-medium">
-                    {listing.price} · {listing.period}
+                    {listing.price} · {t("featuredListings.perMonth")}
                   </p>
                 </div>
               </Link>
@@ -881,21 +902,23 @@ export default function RenterDashboardPage() {
         <section className="mt-20 grid gap-5 lg:grid-cols-2">
           <RenterActivityCard
             icon={CalendarDays}
-            title="Upcoming visits"
-            description="Two property visits are scheduled this week."
-            property="Modern family home"
-            update="Tue, 11 Aug · 4:30 PM · Visit scheduled"
+            title={t("renterDashboard.overview.activity.visitsTitle")}
+            description={t("renterDashboard.overview.activity.visitsDescription")}
+            property={t("featuredListings.listings.modernFamilyHome")}
+            update={t("renterDashboard.overview.activity.visitsUpdate")}
             href="/renter-dashboard/visits"
-            action="View visits"
+            action={t("renterDashboard.overview.activity.visitsAction")}
           />
           <RenterActivityCard
             icon={FileCheck2}
-            title="Application updates"
-            description="Stay on top of decisions and requested information."
-            property="Bright two-bedroom apartment"
-            update="Under review · Updated today"
+            title={t("renterDashboard.overview.activity.applicationsTitle")}
+            description={t(
+              "renterDashboard.overview.activity.applicationsDescription",
+            )}
+            property={t("renterDashboard.overview.listings.brightTwoBedroom")}
+            update={t("renterDashboard.overview.activity.applicationsUpdate")}
             href="/renter-dashboard/applications"
-            action="View applications"
+            action={t("renterDashboard.overview.activity.applicationsAction")}
           />
         </section>
 
@@ -903,18 +926,18 @@ export default function RenterDashboardPage() {
           <article className="relative overflow-hidden rounded-[2rem] bg-black px-6 py-10 text-white sm:px-10 lg:flex lg:items-center lg:justify-between lg:gap-10 lg:px-12 lg:py-12">
             <div className="relative z-10">
               <h2 className="font-bricolage text-3xl font-medium tracking-[-0.04em] sm:text-4xl">
-                Still looking for the right home?
+                {t("renterDashboard.overview.ctaRequest.title")}
               </h2>
               <p className="mt-4 max-w-2xl text-white/60">
-                Tell us what you need and let verified property managers and
-                agents respond with relevant options.
+                {t("renterDashboard.overview.ctaRequest.description")}
               </p>
             </div>
             <Link
               href="/renter-dashboard/saved-searches?tab=requests"
               className="font-bricolage relative z-10 mt-7 inline-flex h-12 shrink-0 items-center gap-2 rounded-full bg-white px-6 font-medium text-black transition-opacity hover:opacity-80 lg:mt-0"
             >
-              Create a property request <ArrowUpRight className="size-4" />
+              {t("renterDashboard.overview.ctaRequest.action")}{" "}
+              <ArrowUpRight className="size-4" />
             </Link>
             <div className="pointer-events-none absolute -right-12 -bottom-28 size-72 rounded-full border border-white/15" />
           </article>
@@ -922,17 +945,17 @@ export default function RenterDashboardPage() {
           <article className="flex min-h-64 flex-col items-center justify-center rounded-[2rem] border border-dashed border-black/25 px-7 py-10 text-center">
             <BriefcaseBusiness className="size-8" strokeWidth={1.6} />
             <h2 className="font-bricolage mt-6 text-2xl font-medium tracking-[-0.03em]">
-              Become an agent
+              {t("renterDashboard.overview.ctaAgent.title")}
             </h2>
             <p className="text-carbon-500 mt-3 max-w-xs text-sm leading-6">
-              Join HauxHunt and help renters find homes across Rwanda, Nigeria,
-              and Kenya.
+              {t("renterDashboard.overview.ctaAgent.description")}
             </p>
             <Link
               href="/register"
               className="font-bricolage border-carbon-900 text-carbon-900 hover:bg-muted mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-full border px-5 text-sm font-medium transition-colors duration-150"
             >
-              Apply now <ArrowUpRight className="size-4" />
+              {t("renterDashboard.overview.ctaAgent.action")}{" "}
+              <ArrowUpRight className="size-4" />
             </Link>
           </article>
         </section>
@@ -954,6 +977,7 @@ function RenterNavDropdown({
   onOpen: () => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div
       className="relative"
@@ -971,7 +995,7 @@ function RenterNavDropdown({
         aria-haspopup="menu"
         className="relative inline-flex items-center gap-1.5 transition-opacity hover:opacity-60"
       >
-        {group.label}
+        {t(group.labelKey)}
         <ChevronDown
           className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`}
         />
@@ -982,14 +1006,14 @@ function RenterNavDropdown({
             role="menu"
             className="overflow-hidden rounded-2xl bg-white p-2 text-black shadow-[0_24px_70px_rgba(0,0,0,0.24)]"
           >
-            {group.links.map(([label, href]) => (
+            {group.links.map(([labelKey, href]) => (
               <Link
-                key={label}
+                key={labelKey}
                 href={href}
                 role="menuitem"
                 className="flex min-h-11 items-center rounded-xl px-3 text-sm font-normal transition-colors hover:bg-black/[0.055] focus:bg-black/[0.055] focus:outline-none"
               >
-                {label}
+                {t(labelKey)}
               </Link>
             ))}
           </div>
@@ -1000,6 +1024,7 @@ function RenterNavDropdown({
 }
 
 function ProfileMenu() {
+  const { t } = useTranslation();
   return (
     <div className="absolute top-full right-0 z-50 w-[290px] pt-3">
       <div
@@ -1011,14 +1036,14 @@ function ProfileMenu() {
           <p className="text-carbon-500 mt-0.5 text-sm">renter@gmail.com</p>
         </div>
         <div className="p-2">
-          {PROFILE_LINKS.map(([label, href]) => (
+          {PROFILE_LINKS.map(([labelKey, href]) => (
             <Link
-              key={label}
+              key={labelKey}
               href={href}
               role="menuitem"
               className="flex h-11 w-full items-center rounded-xl px-3 text-left text-sm transition-colors hover:bg-black/[0.055]"
             >
-              {label}
+              {t(labelKey)}
             </Link>
           ))}
         </div>
@@ -1032,7 +1057,7 @@ function ProfileMenu() {
             }}
             className="flex h-11 items-center rounded-xl px-3 text-sm hover:bg-black/[0.055]"
           >
-            Log Out
+            {t("renterDashboard.profileMenu.logOut")}
           </Link>
         </div>
       </div>

@@ -292,5 +292,133 @@
         "titleB": "Start somewhere good."
       }
     }
+  },
+  "renterDashboard": {
+    "nav": {
+      "homeAria": "HauxHunt renter home",
+      "messages": "Messages",
+      "groups": {
+        "findHome": {
+          "label": "Find a Home",
+          "listings": "Listings",
+          "myFavourites": "My Favourites",
+          "savedSearches": "Saved Searches",
+          "myViewings": "My Viewings",
+          "applications": "Applications"
+        },
+        "myHome": {
+          "label": "My Home",
+          "myRentals": "My Rentals",
+          "payments": "Payments",
+          "maintenance": "Maintenance"
+        },
+        "findFlatmate": {
+          "label": "Find a Flatmate",
+          "browseFlatmates": "Browse Flatmates",
+          "myFlatmateProfile": "My Flatmate Profile",
+          "matches": "Matches / Interested People"
+        }
+      }
+    },
+    "notificationsAria": "Notifications",
+    "notificationsAriaUnread": "Notifications, {{count}} unread",
+    "profileMenu": {
+      "myAccount": "My Account",
+      "helpCenter": "Help Center",
+      "sendFeedback": "Send Feedback",
+      "logOut": "Log Out"
+    },
+    "overview": {
+      "dashboardAriaLabel": "HauxHunt renter dashboard",
+      "heroTitle": "Find a home that fits your life.",
+      "heroImageAlt": "Modern home standing in an open field",
+      "searchAria": "Search homes",
+      "searchPlaceholder": "Try '3-bedroom apartment in Kacyiru under USD 800'",
+      "exploreTitle": "Explore houses on HauxHunt",
+      "viewAllProperties": "View all properties",
+      "filters": {
+        "location": "Location",
+        "locationPlaceholder": "Search city, town, or district",
+        "propertyType": "Property type",
+        "priceRange": "Price range",
+        "bedrooms": "Bedrooms",
+        "bathrooms": "Bathrooms",
+        "any": "Any",
+        "anyType": "Any Type",
+        "anyPrice": "Any Price",
+        "house": "House",
+        "apartment": "Apartment",
+        "villa": "Villa",
+        "land": "Land"
+      },
+      "noResults": {
+        "imageAlt": "No houses found",
+        "title": "No houses match these filters",
+        "description": "Try another location or broaden your property preferences.",
+        "clearFilters": "Clear filters"
+      },
+      "pagination": {
+        "ariaLabel": "Property pagination",
+        "previous": "Previous page",
+        "next": "Next page"
+      },
+      "favourites": {
+        "title": "Your favourite homes",
+        "subtitle": "Keep your strongest options close while you compare.",
+        "viewAll": "View favourite homes"
+      },
+      "activity": {
+        "visitsTitle": "Upcoming visits",
+        "visitsDescription": "Two property visits are scheduled this week.",
+        "visitsUpdate": "Tue, 11 Aug · 4:30 PM · Visit scheduled",
+        "visitsAction": "View visits",
+        "applicationsTitle": "Application updates",
+        "applicationsDescription": "Stay on top of decisions and requested information.",
+        "applicationsUpdate": "Under review · Updated today",
+        "applicationsAction": "View applications"
+      },
+      "ctaRequest": {
+        "title": "Still looking for the right home?",
+        "description": "Tell us what you need and let verified property managers and agents respond with relevant options.",
+        "action": "Create a property request"
+      },
+      "ctaAgent": {
+        "title": "Become an agent",
+        "description": "Join HauxHunt and help renters find homes across Rwanda, Nigeria, and Kenya.",
+        "action": "Apply now"
+      },
+      "listings": {
+        "brightTwoBedroom": "Bright two-bedroom apartment",
+        "quietCompoundApartment": "Quiet compound apartment",
+        "gardenFamilyResidence": "Garden family residence",
+        "secureCompoundTownhouse": "Secure compound townhouse",
+        "cityViewApartment": "City-view apartment",
+        "furnishedExecutiveStudio": "Furnished executive studio",
+        "spaciousFamilyHouse": "Spacious family house",
+        "hillsideHomeWithViews": "Hillside home with views"
+      }
+    },
+    "notificationsDrawer": {
+      "title": "Notifications",
+      "settingsAria": "Notification settings",
+      "closeAria": "Close notifications",
+      "filterAll": "All",
+      "filterUnread": "Unread",
+      "markAllRead": "Mark all as read",
+      "clearAll": "Clear all",
+      "viewAll": "View all notifications",
+      "notificationCleared": "Notification cleared",
+      "markedAsRead": "Marked as read",
+      "clearAria": "Clear notification",
+      "markReadAria": "Mark as read",
+      "browseHomes": "Browse Homes",
+      "groupToday": "Today",
+      "groupYesterday": "Yesterday",
+      "groupEarlier": "Earlier",
+      "emptyAllTitle": "You're all caught up",
+      "emptyAllDescription": "Important updates about your HauxHunt activity will appear here.",
+      "emptyUnreadTitle": "No unread notifications",
+      "emptyUnreadDescription": "You've seen all your latest updates."
+    }
   }
 }

@@ -292,5 +292,133 @@
         "titleB": "Commencez du bon pied."
       }
     }
+  },
+  "renterDashboard": {
+    "nav": {
+      "homeAria": "HauxHunt — accueil locataire",
+      "messages": "Messages",
+      "groups": {
+        "findHome": {
+          "label": "Trouver un logement",
+          "listings": "Annonces",
+          "myFavourites": "Mes favoris",
+          "savedSearches": "Recherches enregistrées",
+          "myViewings": "Mes visites",
+          "applications": "Candidatures"
+        },
+        "myHome": {
+          "label": "Mon logement",
+          "myRentals": "Mes locations",
+          "payments": "Paiements",
+          "maintenance": "Maintenance"
+        },
+        "findFlatmate": {
+          "label": "Trouver un colocataire",
+          "browseFlatmates": "Parcourir les colocataires",
+          "myFlatmateProfile": "Mon profil de colocataire",
+          "matches": "Correspondances / Personnes intéressées"
+        }
+      }
+    },
+    "notificationsAria": "Notifications",
+    "notificationsAriaUnread": "Notifications, {{count}} non lues",
+    "profileMenu": {
+      "myAccount": "Mon compte",
+      "helpCenter": "Centre d'aide",
+      "sendFeedback": "Envoyer un avis",
+      "logOut": "Déconnexion"
+    },
+    "overview": {
+      "dashboardAriaLabel": "Tableau de bord locataire HauxHunt",
+      "heroTitle": "Trouvez un logement qui correspond à votre vie.",
+      "heroImageAlt": "Une maison moderne isolée dans un champ ouvert",
+      "searchAria": "Rechercher des logements",
+      "searchPlaceholder": "Essayez « appartement 3 chambres à Kacyiru sous 800 USD »",
+      "exploreTitle": "Explorez les maisons sur HauxHunt",
+      "viewAllProperties": "Voir tous les biens",
+      "filters": {
+        "location": "Lieu",
+        "locationPlaceholder": "Rechercher une ville, un quartier ou un district",
+        "propertyType": "Type de bien",
+        "priceRange": "Fourchette de prix",
+        "bedrooms": "Chambres",
+        "bathrooms": "Salles de bain",
+        "any": "Indifférent",
+        "anyType": "Tous types",
+        "anyPrice": "Tous les prix",
+        "house": "Maison",
+        "apartment": "Appartement",
+        "villa": "Villa",
+        "land": "Terrain"
+      },
+      "noResults": {
+        "imageAlt": "Aucune maison trouvée",
+        "title": "Aucune maison ne correspond à ces filtres",
+        "description": "Essayez un autre lieu ou élargissez vos préférences de bien.",
+        "clearFilters": "Réinitialiser les filtres"
+      },
+      "pagination": {
+        "ariaLabel": "Pagination des biens",
+        "previous": "Page précédente",
+        "next": "Page suivante"
+      },
+      "favourites": {
+        "title": "Vos logements favoris",
+        "subtitle": "Gardez vos meilleures options à portée de main pour comparer.",
+        "viewAll": "Voir les logements favoris"
+      },
+      "activity": {
+        "visitsTitle": "Visites à venir",
+        "visitsDescription": "Deux visites de biens sont prévues cette semaine.",
+        "visitsUpdate": "Mar. 11 août · 16 h 30 · Visite programmée",
+        "visitsAction": "Voir les visites",
+        "applicationsTitle": "Suivi des candidatures",
+        "applicationsDescription": "Restez informé des décisions et des informations demandées.",
+        "applicationsUpdate": "En cours d'examen · Mis à jour aujourd'hui",
+        "applicationsAction": "Voir les candidatures"
+      },
+      "ctaRequest": {
+        "title": "Vous cherchez toujours le bon logement ?",
+        "description": "Dites-nous ce dont vous avez besoin et laissez des gestionnaires immobiliers et agents vérifiés vous répondre avec des options pertinentes.",
+        "action": "Créer une demande de bien"
+      },
+      "ctaAgent": {
+        "title": "Devenir agent",
+        "description": "Rejoignez HauxHunt et aidez les locataires à trouver un logement au Rwanda, au Nigéria et au Kenya.",
+        "action": "Postuler maintenant"
+      },
+      "listings": {
+        "brightTwoBedroom": "Appartement lumineux deux chambres",
+        "quietCompoundApartment": "Appartement paisible en enceinte sécurisée",
+        "gardenFamilyResidence": "Résidence familiale avec jardin",
+        "secureCompoundTownhouse": "Maison de ville sécurisée en enceinte",
+        "cityViewApartment": "Appartement avec vue sur la ville",
+        "furnishedExecutiveStudio": "Studio meublé haut de gamme",
+        "spaciousFamilyHouse": "Grande maison familiale",
+        "hillsideHomeWithViews": "Maison à flanc de colline avec vue"
+      }
+    },
+    "notificationsDrawer": {
+      "title": "Notifications",
+      "settingsAria": "Paramètres des notifications",
+      "closeAria": "Fermer les notifications",
+      "filterAll": "Toutes",
+      "filterUnread": "Non lues",
+      "markAllRead": "Tout marquer comme lu",
+      "clearAll": "Tout effacer",
+      "viewAll": "Voir toutes les notifications",
+      "notificationCleared": "Notification effacée",
+      "markedAsRead": "Marquée comme lue",
+      "clearAria": "Effacer la notification",
+      "markReadAria": "Marquer comme lue",
+      "browseHomes": "Parcourir les logements",
+      "groupToday": "Aujourd'hui",
+      "groupYesterday": "Hier",
+      "groupEarlier": "Plus tôt",
+      "emptyAllTitle": "Vous êtes à jour",
+      "emptyAllDescription": "Les mises à jour importantes sur votre activité HauxHunt apparaîtront ici.",
+      "emptyUnreadTitle": "Aucune notification non lue",
+      "emptyUnreadDescription": "Vous avez vu toutes vos dernières mises à jour."
+    }
   }
 }

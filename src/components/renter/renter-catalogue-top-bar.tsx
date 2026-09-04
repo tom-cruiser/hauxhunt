@@ -9,6 +9,8 @@ import { NotificationsDrawer } from "@/components/renter/notifications-drawer";
 
 import { Wordmark } from "@/components/layout/wordmark";
 import { CurrencySelector } from "@/components/currency/currency-selector";
+import { LanguageSwitcher } from "@/components/language/language-switcher";
+import { useTranslation } from "@/components/language/use-translation";
 import { getTotalUnreadCount } from "@/lib/message-threads";
 import {
   getUnreadNotificationCount,
@@ -23,40 +25,41 @@ function subscribeToStorage(callback: () => void) {
 
 const RENTER_NAV_GROUPS = [
   {
-    label: "Find a Home",
+    labelKey: "renterDashboard.nav.groups.findHome.label",
     links: [
-      ["Listings", "/renter-dashboard/properties"],
-      ["My Favourites", "/renter-dashboard/saved"],
-      ["Saved Searches", "/renter-dashboard/saved-searches"],
-      ["My Viewings", "/renter-dashboard/visits"],
-      ["Applications", "/renter-dashboard/applications"],
+      ["renterDashboard.nav.groups.findHome.listings", "/renter-dashboard/properties"],
+      ["renterDashboard.nav.groups.findHome.myFavourites", "/renter-dashboard/saved"],
+      ["renterDashboard.nav.groups.findHome.savedSearches", "/renter-dashboard/saved-searches"],
+      ["renterDashboard.nav.groups.findHome.myViewings", "/renter-dashboard/visits"],
+      ["renterDashboard.nav.groups.findHome.applications", "/renter-dashboard/applications"],
     ],
   },
   {
-    label: "My Home",
+    labelKey: "renterDashboard.nav.groups.myHome.label",
     links: [
-      ["My Rentals", "/renter-dashboard/rentals"],
-      ["Payments", "/renter-dashboard/payments"],
-      ["Maintenance", "/renter-dashboard/maintenance"],
+      ["renterDashboard.nav.groups.myHome.myRentals", "/renter-dashboard/rentals"],
+      ["renterDashboard.nav.groups.myHome.payments", "/renter-dashboard/payments"],
+      ["renterDashboard.nav.groups.myHome.maintenance", "/renter-dashboard/maintenance"],
     ],
   },
   {
-    label: "Find a Flatmate",
+    labelKey: "renterDashboard.nav.groups.findFlatmate.label",
     links: [
-      ["Browse Flatmates", "/flatmates?from=renter"],
-      ["My Flatmate Profile", "/renter-dashboard/flatmates/profile"],
-      ["Matches / Interested People", "/renter-dashboard/flatmates/matches"],
+      ["renterDashboard.nav.groups.findFlatmate.browseFlatmates", "/flatmates?from=renter"],
+      ["renterDashboard.nav.groups.findFlatmate.myFlatmateProfile", "/renter-dashboard/flatmates/profile"],
+      ["renterDashboard.nav.groups.findFlatmate.matches", "/renter-dashboard/flatmates/matches"],
     ],
   },
 ] as const;
 
 const PROFILE_LINKS = [
-  ["My Account", "/renter-dashboard/account"],
-  ["Help Center", "/renter-dashboard/help"],
-  ["Send Feedback", "/feedback"],
+  ["renterDashboard.profileMenu.myAccount", "/renter-dashboard/account"],
+  ["renterDashboard.profileMenu.helpCenter", "/renter-dashboard/help"],
+  ["renterDashboard.profileMenu.sendFeedback", "/feedback"],
 ] as const;
 
 export function RenterCatalogueTopBar() {
+  const { t } = useTranslation();
   const [profileOpen, setProfileOpen] = useState(false);
   const [openNavMenu, setOpenNavMenu] = useState<string | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -91,19 +94,19 @@ export function RenterCatalogueTopBar() {
   return (
     <header className="nav-surface border-border-subtle fixed inset-x-0 top-0 z-50 h-16 border-b text-black">
       <div className="mx-auto grid h-full w-[calc(100%-2.5rem)] max-w-[1562px] grid-cols-[auto_1fr_auto] items-center gap-4 sm:w-[calc(100%-3rem)] lg:w-[calc(100%-5.5rem)] lg:grid-cols-[1fr_auto_1fr] lg:gap-10 xl:w-[calc(100%-6.5rem)]">
-        <Link href="/renter-dashboard" aria-label="HauxHunt renter home">
+        <Link href="/renter-dashboard" aria-label={t("renterDashboard.nav.homeAria")}>
           <Wordmark height={38} />
         </Link>
         <nav className="hidden h-full items-center gap-5 justify-self-center text-sm font-medium lg:flex xl:gap-7">
           {RENTER_NAV_GROUPS.map((group) => {
-            const open = openNavMenu === group.label;
+            const open = openNavMenu === group.labelKey;
             return (
               <div
-                key={group.label}
+                key={group.labelKey}
                 className="relative"
-                onMouseEnter={() => setOpenNavMenu(group.label)}
+                onMouseEnter={() => setOpenNavMenu(group.labelKey)}
                 onMouseLeave={() => setOpenNavMenu(null)}
-                onFocus={() => setOpenNavMenu(group.label)}
+                onFocus={() => setOpenNavMenu(group.labelKey)}
                 onBlur={(event) => {
                   if (!event.currentTarget.contains(event.relatedTarget))
                     setOpenNavMenu(null);
@@ -111,12 +114,12 @@ export function RenterCatalogueTopBar() {
               >
                 <button
                   type="button"
-                  onClick={() => setOpenNavMenu(open ? null : group.label)}
+                  onClick={() => setOpenNavMenu(open ? null : group.labelKey)}
                   aria-expanded={open}
                   aria-haspopup="menu"
                   className="relative inline-flex items-center gap-1.5 transition-opacity hover:opacity-55"
                 >
-                  {group.label}
+                  {t(group.labelKey)}
                   <ChevronDown
                     className={`size-3.5 transition-transform ${open ? "rotate-180" : ""}`}
                   />
@@ -127,14 +130,14 @@ export function RenterCatalogueTopBar() {
                       role="menu"
                       className="overflow-hidden rounded-2xl bg-white p-2 text-black shadow-[0_24px_70px_rgba(0,0,0,0.18)]"
                     >
-                      {group.links.map(([label, href]) => (
+                      {group.links.map(([labelKey, href]) => (
                         <Link
-                          key={label}
+                          key={labelKey}
                           href={href}
                           role="menuitem"
                           className="flex min-h-11 items-center rounded-xl px-3 text-sm font-normal transition-colors hover:bg-black/[0.055] focus:bg-black/[0.055] focus:outline-none"
                         >
-                          {label}
+                          {t(labelKey)}
                         </Link>
                       ))}
                     </div>
@@ -147,7 +150,7 @@ export function RenterCatalogueTopBar() {
             href="/renter-dashboard/messages"
             className="relative inline-flex items-center transition-opacity hover:opacity-55"
           >
-            Messages
+            {t("renterDashboard.nav.messages")}
             {unreadMessageCount > 0 && (
               <span className="absolute -top-1.5 -right-3.5 flex size-4 items-center justify-center rounded-full bg-black text-[0.55rem] font-bold text-white">
                 {unreadMessageCount}
@@ -160,7 +163,7 @@ export function RenterCatalogueTopBar() {
               is the minimal mobile entry point into Messages. */}
           <Link
             href="/renter-dashboard/messages"
-            aria-label="Messages"
+            aria-label={t("renterDashboard.nav.messages")}
             className="relative flex size-11 items-center justify-center rounded-full hover:bg-black/[0.055] lg:hidden"
           >
             <MessageCircle className="size-5" />
@@ -170,11 +173,18 @@ export function RenterCatalogueTopBar() {
               </span>
             )}
           </Link>
+          <LanguageSwitcher />
           <CurrencySelector openOnHover />
           <button
             type="button"
             onClick={() => setNotifOpen((v) => !v)}
-            aria-label={`Notifications${unreadNotificationCount > 0 ? `, ${unreadNotificationCount} unread` : ""}`}
+            aria-label={
+              unreadNotificationCount > 0
+                ? t("renterDashboard.notificationsAriaUnread", {
+                    count: unreadNotificationCount,
+                  })
+                : t("renterDashboard.notificationsAria")
+            }
             aria-expanded={notifOpen}
             className="relative flex size-11 items-center justify-center rounded-full hover:bg-black/[0.055]"
           >
@@ -234,14 +244,14 @@ export function RenterCatalogueTopBar() {
                     <p className="text-carbon-500 text-sm">renter@gmail.com</p>
                   </div>
                   <div className="p-2">
-                    {PROFILE_LINKS.map(([label, href]) => (
+                    {PROFILE_LINKS.map(([labelKey, href]) => (
                       <Link
-                        key={label}
+                        key={labelKey}
                         href={href}
                         role="menuitem"
                         className="flex h-11 items-center rounded-xl px-3 text-sm hover:bg-black/[0.055]"
                       >
-                        {label}
+                        {t(labelKey)}
                       </Link>
                     ))}
                   </div>
@@ -256,7 +266,7 @@ export function RenterCatalogueTopBar() {
                       }}
                       className="flex h-11 items-center rounded-xl px-3 text-sm hover:bg-black/[0.055]"
                     >
-                      Log Out
+                      {t("renterDashboard.profileMenu.logOut")}
                     </Link>
                   </div>
                 </div>
