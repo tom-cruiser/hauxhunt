@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 import emptyIllustration from "@/assets/images/empty.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
 import { type SavedSearch, useSavedSearches } from "@/hooks/use-saved-searches";
+import type { AlertFrequency } from "@/hooks/use-saved-searches";
 import { PropertyRequestForm } from "@/components/properties/property-request-form";
 import { isPaidTier, useTier } from "@/hooks/use-tier";
 import { LockedFeature } from "@/components/tier/locked-feature";
@@ -28,6 +29,7 @@ import {
   type PropertyRequest,
   usePropertyRequests,
 } from "@/hooks/use-property-requests";
+import { useTranslation } from "@/components/language/use-translation";
 
 type Tab = "searches" | "requests";
 type DialogState = {
@@ -36,6 +38,7 @@ type DialogState = {
 } | null;
 
 export default function SavedSearchesPage() {
+  const { t } = useTranslation();
   const { searches, updateSearch, deleteSearch } = useSavedSearches();
   const { requests, addRequest, removeRequest } = usePropertyRequests();
   const [dialog, setDialog] = useState<DialogState>(null);
@@ -44,8 +47,8 @@ export default function SavedSearchesPage() {
   const [formKey, setFormKey] = useState(0);
 
   useEffect(() => {
-    const t = new URLSearchParams(window.location.search).get("tab");
-    if (t === "requests") setTab("requests");
+    const tabParam = new URLSearchParams(window.location.search).get("tab");
+    if (tabParam === "requests") setTab("requests");
   }, []);
 
   return (
@@ -57,12 +60,14 @@ export default function SavedSearchesPage() {
             <div className="flex flex-wrap items-center justify-between gap-5 border-b border-black/10 pb-0">
               <div className="pb-5">
                 <h1 className="dashboard-page-title text-carbon-900">
-                  {tab === "searches" ? "Saved Searches" : "My Requests"}
+                  {tab === "searches"
+                    ? t("renterDashboard.nav.groups.findHome.savedSearches")
+                    : t("renterDashboard.savedSearches.myRequestsHeading")}
                 </h1>
                 <p className="text-carbon-500 mt-3 max-w-2xl text-sm leading-6">
                   {tab === "searches"
-                    ? "Keep track of the searches that matter to you and get notified when new homes match your preferences."
-                    : "Tell us what you need and let verified property partners respond with relevant options."}
+                    ? t("renterDashboard.savedSearches.searchesSubtitle")
+                    : t("renterDashboard.savedSearches.requestsSubtitle")}
                 </p>
               </div>
               {tab === "searches" ? (
@@ -70,7 +75,7 @@ export default function SavedSearchesPage() {
                   href="/renter-dashboard/properties"
                   className="inline-flex h-11 items-center gap-2 rounded-full bg-black px-5 text-sm font-medium text-white"
                 >
-                  <Plus className="size-4" /> New Search
+                  <Plus className="size-4" /> {t("renterDashboard.savedSearches.newSearch")}
                 </Link>
               ) : !creating ? (
                 <button
@@ -78,23 +83,25 @@ export default function SavedSearchesPage() {
                   onClick={() => setCreating(true)}
                   className="inline-flex h-11 items-center gap-2 rounded-full bg-black px-5 text-sm font-medium text-white"
                 >
-                  <Plus className="size-4" /> Create a property request
+                  <Plus className="size-4" /> {t("renterDashboard.savedSearches.createRequest")}
                 </button>
               ) : null}
             </div>
             {/* Tabs */}
             <div className="flex gap-7">
-              {(["searches", "requests"] as Tab[]).map((t) => (
+              {(["searches", "requests"] as Tab[]).map((tabValue) => (
                 <button
-                  key={t}
+                  key={tabValue}
                   type="button"
-                  onClick={() => { setTab(t); setCreating(false); }}
+                  onClick={() => { setTab(tabValue); setCreating(false); }}
                   className={`relative flex h-12 items-center text-sm font-medium capitalize ${
-                    tab === t ? "text-black" : "text-black/45"
+                    tab === tabValue ? "text-black" : "text-black/45"
                   }`}
                 >
-                  {t === "searches" ? "Saved Searches" : "My Requests"}
-                  {tab === t && <span className="absolute inset-x-0 bottom-0 h-0.5 bg-black" />}
+                  {tabValue === "searches"
+                    ? t("renterDashboard.nav.groups.findHome.savedSearches")
+                    : t("renterDashboard.savedSearches.myRequestsHeading")}
+                  {tab === tabValue && <span className="absolute inset-x-0 bottom-0 h-0.5 bg-black" />}
                 </button>
               ))}
             </div>
@@ -147,18 +154,17 @@ export default function SavedSearchesPage() {
                       className="h-44 w-auto object-contain"
                     />
                     <h2 className="font-bricolage mt-6 text-3xl font-medium tracking-[-0.035em]">
-                      No property requests yet
+                      {t("renterDashboard.savedSearches.emptyRequests.title")}
                     </h2>
                     <p className="text-carbon-500 mt-3 max-w-xl text-sm leading-6">
-                      Tell us what you need and let verified property partners
-                      respond with relevant options.
+                      {t("renterDashboard.savedSearches.requestsSubtitle")}
                     </p>
                     <button
                       type="button"
                       onClick={() => setCreating(true)}
                       className="mt-7 inline-flex h-12 items-center gap-2 rounded-full bg-black px-6 text-sm font-medium text-white"
                     >
-                      <Plus className="size-4" /> Create a property request
+                      <Plus className="size-4" /> {t("renterDashboard.savedSearches.createRequest")}
                     </button>
                   </div>
                 )}
@@ -191,7 +197,7 @@ export default function SavedSearchesPage() {
                   ))}
                 </div>
                 <p className="text-carbon-400 mt-3 text-right text-[10px]">
-                  © OpenStreetMap contributors
+                  {t("renterDashboard.savedSearches.mapAttribution")}
                 </p>
               </>
             ) : (
@@ -202,18 +208,16 @@ export default function SavedSearchesPage() {
                   className="h-44 w-auto object-contain"
                 />
                 <h2 className="font-bricolage mt-6 text-3xl font-medium tracking-[-0.035em]">
-                  Save a search and let HauxHunt keep looking
+                  {t("renterDashboard.savedSearches.emptySearches.title")}
                 </h2>
                 <p className="text-carbon-500 mt-3 max-w-xl text-sm leading-6">
-                  Save your preferred location, budget and property preferences
-                  so you can easily return to them and discover new matching
-                  homes.
+                  {t("renterDashboard.savedSearches.emptySearches.description")}
                 </p>
                 <Link
                   href="/renter-dashboard/properties"
                   className="mt-7 inline-flex h-12 items-center gap-2 rounded-full bg-black px-6 text-sm font-medium text-white"
                 >
-                  <Search className="size-4" /> Find a Home
+                  <Search className="size-4" /> {t("renterDashboard.savedSearches.emptySearches.action")}
                 </Link>
               </div>
             )}
@@ -245,6 +249,7 @@ function RequestCard({
   request: PropertyRequest;
   onDelete: () => void;
 }) {
+  const { t } = useTranslation();
   const tier = useTier();
   const date = new Date(request.submittedAt).toLocaleDateString("en-US", {
     month: "short",
@@ -252,10 +257,27 @@ function RequestCard({
     year: "numeric",
   });
   const chips = [
-    { icon: Bed, label: `${request.bedrooms} bed${request.bedrooms === "1" ? "" : "s"}` },
+    {
+      icon: Bed,
+      label: t(
+        request.bedrooms === "1"
+          ? "renterDashboard.savedSearches.request.bedOne"
+          : "renterDashboard.savedSearches.request.bedOther",
+        { count: request.bedrooms },
+      ),
+    },
     { icon: DollarSign, label: `$${request.minimumBudget}–$${request.maximumBudget}/mo` },
     ...(request.furnishing ? [{ icon: Sofa, label: request.furnishing }] : []),
-    ...(request.moveInDate ? [{ icon: CalendarDays, label: `Move-in ${request.moveInDate}` }] : []),
+    ...(request.moveInDate
+      ? [
+          {
+            icon: CalendarDays,
+            label: t("renterDashboard.savedSearches.request.moveIn", {
+              date: request.moveInDate,
+            }),
+          },
+        ]
+      : []),
   ];
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-black/[0.07] bg-white shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-shadow hover:shadow-[0_8px_28px_rgba(0,0,0,0.11)]">
@@ -264,7 +286,10 @@ function RequestCard({
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="font-bricolage text-lg font-medium leading-tight tracking-[-0.02em]">
-              {request.propertyType} in {request.city}
+              {t("renterDashboard.savedSearches.request.titleTemplate", {
+                type: request.propertyType,
+                city: request.city,
+              })}
             </h2>
             {request.neighbourhood ? (
               <p className="text-carbon-400 mt-0.5 text-xs">{request.neighbourhood}, {request.country}</p>
@@ -274,17 +299,17 @@ function RequestCard({
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             <span className="rounded-full border border-black/10 bg-black/[0.04] px-2.5 py-1 text-[11px] font-medium text-black/50">
-              Pending
+              {t("renterDashboard.savedSearches.request.pendingBadge")}
             </span>
             {isPaidTier(tier) ? (
               <span className="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 text-[11px] font-medium text-red-600">
-                Priority alert sent
+                {t("renterDashboard.savedSearches.request.priorityAlertSent")}
               </span>
             ) : (
               <LockedFeature
                 feature="tenant.redAlert"
                 variant="badge"
-                label="Priority alert"
+                label={t("renterDashboard.savedSearches.request.priorityAlertLabel")}
               />
             )}
           </div>
@@ -310,13 +335,15 @@ function RequestCard({
 
         {/* Footer */}
         <div className="mt-auto flex items-center justify-between border-t border-black/[0.06] pt-4">
-          <span className="text-carbon-400 text-xs">Submitted {date}</span>
+          <span className="text-carbon-400 text-xs">
+            {t("renterDashboard.savedSearches.request.submitted", { date })}
+          </span>
           <button
             type="button"
             onClick={onDelete}
             className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-black/35 transition-colors hover:bg-red-50 hover:text-red-600"
           >
-            <Trash2 className="size-3" /> Delete
+            <Trash2 className="size-3" /> {t("renterDashboard.savedSearches.request.delete")}
           </button>
         </div>
       </div>
@@ -337,9 +364,16 @@ function SavedSearchCard({
   onDelete: () => void;
   onToggleAlerts: () => void;
 }) {
+  const { t } = useTranslation();
   const [latitude, longitude] = getSearchCoordinates(search.location);
   const mapDelta = 0.035;
   const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${longitude - mapDelta}%2C${latitude - mapDelta}%2C${longitude + mapDelta}%2C${latitude + mapDelta}&layer=mapnik`;
+  const alertStatusKeys: Record<AlertFrequency, string> = {
+    instant: "renterDashboard.savedSearches.card.alertStatus.instant",
+    daily: "renterDashboard.savedSearches.card.alertStatus.daily",
+    weekly: "renterDashboard.savedSearches.card.alertStatus.weekly",
+    paused: "renterDashboard.savedSearches.card.alertStatus.paused",
+  };
   const params = new URLSearchParams({
     location: search.location.split(",")[0].replace(" / nearby", ""),
     type: search.type,
@@ -353,7 +387,9 @@ function SavedSearchCard({
     <article className="grid overflow-hidden rounded-2xl border border-white/80 bg-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.08)] ring-1 ring-white/70 backdrop-blur-xl sm:grid-cols-[220px_minmax(0,1fr)]">
       <div className="relative min-h-32 overflow-hidden bg-[#d9e5df]">
         <iframe
-          title={`Map of ${search.location}`}
+          title={t("renterDashboard.savedSearches.card.mapTitle", {
+            location: search.location,
+          })}
           src={mapUrl}
           loading="lazy"
           className="absolute -top-24 right-0 left-0 h-[calc(100%+12rem)] w-full border-0"
@@ -379,7 +415,9 @@ function SavedSearchCard({
               type="button"
               onClick={onToggleAlerts}
               aria-label={
-                search.alert === "paused" ? "Resume alerts" : "Pause alerts"
+                search.alert === "paused"
+                  ? t("renterDashboard.savedSearches.card.resumeAlertsAria")
+                  : t("renterDashboard.savedSearches.card.pauseAlertsAria")
               }
               className="flex size-9 items-center justify-center rounded-full text-black/60 hover:bg-black/[0.055] hover:text-black"
             >
@@ -392,7 +430,9 @@ function SavedSearchCard({
             <button
               type="button"
               onClick={onRename}
-              aria-label={`Rename ${search.name}`}
+              aria-label={t("renterDashboard.savedSearches.card.renameAria", {
+                name: search.name,
+              })}
               className="flex size-9 items-center justify-center rounded-full text-black/60 hover:bg-black/[0.055] hover:text-black"
             >
               <Pencil className="size-4" />
@@ -402,25 +442,30 @@ function SavedSearchCard({
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
           <span className="text-carbon-500">
             {search.matches
-              ? `${search.matches} matching homes`
-              : "No matching homes right now"}
+              ? t(
+                  search.matches === 1
+                    ? "renterDashboard.savedSearches.card.matchesOne"
+                    : "renterDashboard.savedSearches.card.matchesOther",
+                  { count: search.matches },
+                )
+              : t("renterDashboard.savedSearches.card.noMatches")}
           </span>
           {search.newMatches > 0 ? (
             <span className="rounded-full bg-black px-2.5 py-1 text-xs font-medium text-white">
-              {search.newMatches} new
+              {t("renterDashboard.savedSearches.card.newBadge", {
+                count: search.newMatches,
+              })}
             </span>
           ) : null}
           <span className="text-carbon-500">
-            {search.alert === "paused"
-              ? "Alerts paused"
-              : `${search.alert[0].toUpperCase()}${search.alert.slice(1)} alerts`}
+            {t(alertStatusKeys[search.alert])}
           </span>
           <button
             type="button"
             onClick={onEdit}
             className="text-xs underline decoration-black/25 underline-offset-4 hover:decoration-black"
           >
-            Edit criteria
+            {t("renterDashboard.savedSearches.card.editCriteria")}
           </button>
         </div>
         <div className="mt-auto flex flex-wrap items-center justify-end gap-5 pt-3">
@@ -429,13 +474,13 @@ function SavedSearchCard({
             onClick={onDelete}
             className="text-sm font-medium text-red-600 transition-opacity hover:opacity-65"
           >
-            Delete Search
+            {t("renterDashboard.savedSearches.card.deleteSearch")}
           </button>
           <Link
             href={`/renter-dashboard/properties?${params.toString()}`}
             className="inline-flex items-center gap-1 text-sm font-medium transition-opacity hover:opacity-60"
           >
-            See Results <ChevronRight className="size-4" />
+            {t("renterDashboard.savedSearches.card.seeResults")} <ChevronRight className="size-4" />
           </Link>
         </div>
       </div>
@@ -463,16 +508,17 @@ function SearchDialog({
   onSave: (updates: Partial<SavedSearch>) => void;
   onDelete: () => void;
 }) {
+  const { t } = useTranslation();
   const [name, setName] = useState(state.search.name);
   const [location, setLocation] = useState(state.search.location);
   const [type, setType] = useState(state.search.type);
   const [bedrooms, setBedrooms] = useState(state.search.bedrooms);
   const title =
     state.type === "delete"
-      ? "Delete saved search?"
+      ? t("renterDashboard.savedSearches.dialog.deleteTitle")
       : state.type === "rename"
-        ? "Rename saved search"
-        : "Edit Search";
+        ? t("renterDashboard.savedSearches.dialog.renameTitle")
+        : t("renterDashboard.savedSearches.dialog.editTitle");
 
   return (
     <div
@@ -495,7 +541,7 @@ function SearchDialog({
           </h2>
           <button
             type="button"
-            aria-label="Close"
+            aria-label={t("common.close")}
             onClick={onClose}
             className="flex size-9 items-center justify-center rounded-full border border-black/15"
           >
@@ -507,23 +553,30 @@ function SearchDialog({
             <strong className="font-medium text-black">
               “{state.search.name}”
             </strong>{" "}
-            will be removed from your saved searches and you will stop receiving
-            alerts for it.
+            {t("renterDashboard.savedSearches.dialog.deleteConfirmText")}
           </p>
         ) : (
           <div className="mt-7 space-y-4">
-            <Field label="Search name" value={name} onChange={setName} />
+            <Field
+              label={t("renterDashboard.savedSearches.dialog.searchNameLabel")}
+              value={name}
+              onChange={setName}
+            />
             {state.type === "edit" ? (
               <>
                 <Field
-                  label="Location"
+                  label={t("renterDashboard.overview.filters.location")}
                   value={location}
                   onChange={setLocation}
                 />
                 <div className="grid grid-cols-2 gap-3">
-                  <Field label="Home type" value={type} onChange={setType} />
                   <Field
-                    label="Bedrooms"
+                    label={t("renterDashboard.savedSearches.dialog.homeTypeLabel")}
+                    value={type}
+                    onChange={setType}
+                  />
+                  <Field
+                    label={t("renterDashboard.overview.filters.bedrooms")}
                     value={bedrooms}
                     onChange={setBedrooms}
                   />
@@ -538,7 +591,7 @@ function SearchDialog({
             onClick={onClose}
             className="h-11 rounded-full border border-black/15 px-5 text-sm font-medium"
           >
-            Cancel
+            {t("renterDashboard.savedSearches.dialog.cancel")}
           </button>
           {state.type === "delete" ? (
             <button
@@ -546,7 +599,7 @@ function SearchDialog({
               onClick={onDelete}
               className="h-11 rounded-full bg-red-600 px-6 text-sm font-medium text-white"
             >
-              Delete Search
+              {t("renterDashboard.savedSearches.card.deleteSearch")}
             </button>
           ) : (
             <button
@@ -561,7 +614,9 @@ function SearchDialog({
               }
               className="h-11 rounded-full bg-black px-6 text-sm font-medium text-white"
             >
-              {state.type === "rename" ? "Save" : "Save Changes"}
+              {state.type === "rename"
+                ? t("renterDashboard.savedSearches.dialog.save")
+                : t("renterDashboard.savedSearches.dialog.saveChanges")}
             </button>
           )}
         </div>

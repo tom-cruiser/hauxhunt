@@ -28,6 +28,7 @@ import cancelIllustration from "@/assets/images/cancel.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
 import { VoiceInputButton } from "@/components/listings/voice-input-button";
 import { useViewingRequests } from "@/hooks/use-viewing-requests";
+import { useTranslation } from "@/components/language/use-translation";
 
 type Tab = "upcoming" | "pending" | "past";
 type ViewingStatus =
@@ -42,18 +43,27 @@ type ViewingStatus =
 type Viewing = {
   id: string;
   propertyId: string;
+  /** Literal display text — always present. Real (non-mock) viewings built
+   * from a saved request only ever have this, since their title comes from
+   * the property the renter actually requested. */
   title: string;
+  /** Present on the seeded demo viewings only: a dictionary key that takes
+   * priority over `title` for display, so demo copy is translatable while
+   * `title` still carries the plain-English fallback used for search
+   * matching and outgoing links. */
+  titleKey?: string;
   location: string;
   date: string;
   time: string;
   status: ViewingStatus;
   tab: Tab;
   host: string;
-  role: string;
+  roleKey: string;
   image: StaticImageData;
   suggestedTime?: string;
   cancelledBy?: string;
   note?: string;
+  noteKey?: string;
 };
 type StatusFilter = "all" | ViewingStatus;
 const STATUS_OPTIONS: StatusFilter[] = [
@@ -67,6 +77,34 @@ const STATUS_OPTIONS: StatusFilter[] = [
   "Viewing unavailable",
   "Not interested",
 ];
+// Internal status/tab values stay in English (compared with `===`, used to
+// filter, and passed as URL params) — these maps resolve each one to its
+// translated display label instead of deriving it by parsing the value.
+const STATUS_LABEL_KEYS: Record<ViewingStatus, string> = {
+  Confirmed: "renterDashboard.visits.status.confirmed",
+  "Awaiting Confirmation": "renterDashboard.visits.status.awaitingConfirmation",
+  "New Time Suggested": "renterDashboard.visits.status.newTimeSuggested",
+  "Reschedule Requested": "renterDashboard.visits.status.rescheduleRequested",
+  Completed: "renterDashboard.visits.status.completed",
+  Cancelled: "renterDashboard.visits.status.cancelled",
+  "Viewing unavailable": "renterDashboard.visits.status.viewingUnavailable",
+  "Not interested": "renterDashboard.visits.status.notInterested",
+};
+const TAB_LABEL_KEYS: Record<Tab, string> = {
+  upcoming: "renterDashboard.visits.tabs.upcoming",
+  pending: "renterDashboard.visits.tabs.pending",
+  past: "renterDashboard.visits.tabs.past",
+};
+const ROLES = {
+  propertyManager: "renterDashboard.visits.roles.propertyManager",
+  verifiedAgent: "renterDashboard.visits.roles.verifiedAgent",
+  agent: "renterDashboard.visits.roles.agent",
+};
+/** Resolves a viewing's title for display: the seeded demo viewings carry a
+ * `titleKey` that wins, real viewings fall back to their plain-text title. */
+function viewingTitle(viewing: Viewing, t: (key: string) => string) {
+  return viewing.titleKey ? t(viewing.titleKey) : viewing.title;
+}
 const tabForStatus = (status: ViewingStatus): Tab =>
   status === "Confirmed"
     ? "upcoming"
@@ -83,46 +121,51 @@ const INITIAL_VIEWINGS: Viewing[] = [
     id: "confirmed-kacyiru",
     propertyId: "kacyiru-2br",
     title: "Kacyiru Residence",
+    titleKey: "renterDashboard.visits.listings.kacyiruResidence",
     location: "Kacyiru, Kigali",
     date: "Saturday, 22 August",
     time: "10:30 AM",
     status: "Confirmed",
     tab: "upcoming",
     host: "Jean Mugisha",
-    role: "Property Manager",
+    roleKey: ROLES.propertyManager,
     image: house1,
     note: "Ask about parking and whether utilities are included.",
+    noteKey: "renterDashboard.visits.notes.parkingUtilities",
   },
   {
     id: "confirmed-nyarutarama",
     propertyId: "nyarutarama-2br",
     title: "Nyarutarama Garden Apartment",
+    titleKey: "renterDashboard.visits.listings.nyarutaramaGardenApartment",
     location: "Nyarutarama, Kigali",
     date: "Wednesday, 26 August",
     time: "3:30 PM",
     status: "Confirmed",
     tab: "upcoming",
     host: "Aline Uwase",
-    role: "Verified Agent",
+    roleKey: ROLES.verifiedAgent,
     image: house2,
   },
   {
     id: "pending-kimihurura",
     propertyId: "remera-3br",
     title: "Modern Apartment in Kimihurura",
+    titleKey: "renterDashboard.visits.listings.modernApartmentKimihurura",
     location: "Kimihurura, Kigali",
     date: "Monday, 24 August",
     time: "2:00 PM",
     status: "Awaiting Confirmation",
     tab: "pending",
     host: "Sarah Uwase",
-    role: "Verified Agent",
+    roleKey: ROLES.verifiedAgent,
     image: house3,
   },
   {
     id: "suggested-kacyiru",
     propertyId: "kibagabaga-modern-family-home",
     title: "Kacyiru Heights",
+    titleKey: "renterDashboard.visits.listings.kacyiruHeights",
     location: "Kacyiru, Kigali",
     date: "Tuesday, 25 August",
     time: "11:00 AM",
@@ -130,33 +173,35 @@ const INITIAL_VIEWINGS: Viewing[] = [
     status: "New Time Suggested",
     tab: "pending",
     host: "Jean Mugisha",
-    role: "Property Manager",
+    roleKey: ROLES.propertyManager,
     image: house4,
   },
   {
     id: "completed-kibagabaga",
     propertyId: "kibagabaga-modern-family-home",
     title: "Kibagabaga Apartment",
+    titleKey: "renterDashboard.visits.listings.kibagabagaApartment",
     location: "Kibagabaga, Kigali",
     date: "12 August 2026",
     time: "11:00 AM",
     status: "Completed",
     tab: "past",
     host: "Julien Mugisha",
-    role: "Property Manager",
+    roleKey: ROLES.propertyManager,
     image: house5,
   },
   {
     id: "cancelled-nyarutarama",
     propertyId: "nyarutarama-garden-penthouse",
     title: "Nyarutarama Family Home",
+    titleKey: "renterDashboard.visits.listings.nyarutaramaFamilyHome",
     location: "Nyarutarama, Kigali",
     date: "9 August 2026",
     time: "3:00 PM",
     status: "Cancelled",
     tab: "past",
     host: "Aline Uwase",
-    role: "Agent",
+    roleKey: ROLES.agent,
     image: house6,
     cancelledBy: "Cancelled by you",
   },
@@ -164,13 +209,14 @@ const INITIAL_VIEWINGS: Viewing[] = [
     id: "declined-kimihurura",
     propertyId: "remera-3br",
     title: "Kimihurura Loft",
+    titleKey: "renterDashboard.visits.listings.kimihururaLoft",
     location: "Kimihurura, Kigali",
     date: "7 August 2026",
     time: "1:00 PM",
     status: "Viewing unavailable",
     tab: "past",
     host: "Sarah Uwase",
-    role: "Agent",
+    roleKey: ROLES.agent,
     image: house3,
   },
 ];
@@ -181,6 +227,7 @@ type Dialog = {
 } | null;
 
 export default function MyViewingsPage() {
+  const { t } = useTranslation();
   const requests = useViewingRequests();
   const requestedViewings = useMemo<Viewing[]>(
     () =>
@@ -189,7 +236,7 @@ export default function MyViewingsPage() {
         status: "Awaiting Confirmation",
         tab: "pending",
         host: "Julien Mugisha",
-        role: "Property Manager",
+        roleKey: ROLES.propertyManager,
         image: house1,
       })),
     [requests],
@@ -214,7 +261,7 @@ export default function MyViewingsPage() {
       (filtersActive || viewing.tab === tab) &&
       (statusFilter === "all" || viewing.status === statusFilter) &&
       (!normalizedSearch ||
-        viewing.title.toLocaleLowerCase().includes(normalizedSearch)),
+        viewingTitle(viewing, t).toLocaleLowerCase().includes(normalizedSearch)),
   );
   const counts = {
     upcoming: allViewings.filter((item) => item.tab === "upcoming").length,
@@ -234,10 +281,9 @@ export default function MyViewingsPage() {
       <main className="bg-carbon-50 min-h-svh pt-16 text-black">
         <section className="bg-carbon-50 px-5 pt-9 sm:px-6 lg:px-11 xl:px-[52px]">
           <div className="mx-auto max-w-[1562px]">
-            <h1 className="dashboard-page-title">My Viewings</h1>
+            <h1 className="dashboard-page-title">{t("renterDashboard.visits.heading")}</h1>
             <p className="text-carbon-500 mt-3 max-w-2xl text-sm leading-6">
-              Manage your upcoming property visits and keep track of homes
-              you&apos;ve already viewed.
+              {t("renterDashboard.visits.subtitle")}
             </p>
             <div className="mt-7 flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
               <div className="flex gap-7 overflow-x-auto">
@@ -252,7 +298,7 @@ export default function MyViewingsPage() {
                     }}
                     className={`relative flex h-12 items-center gap-2 text-sm font-medium capitalize ${tab === item ? "text-black" : "text-black/45"}`}
                   >
-                    {item}
+                    {t(TAB_LABEL_KEYS[item])}
                     <span className="rounded-full bg-black/[0.06] px-2 py-0.5 text-xs">
                       {counts[item]}
                     </span>
@@ -264,19 +310,19 @@ export default function MyViewingsPage() {
               </div>
               <div className="flex w-full gap-3 pb-2 md:w-auto">
                 <label className="catalogue-location-filter flex min-w-0 flex-1 items-center gap-2 px-4 md:w-72 md:flex-none">
-                  <span className="sr-only">Search by property name</span>
+                  <span className="sr-only">{t("renterDashboard.visits.searchByPropertyName")}</span>
                   <Search aria-hidden="true" className="text-carbon-500 size-4 shrink-0" />
                   <input
                     type="search"
                     value={propertySearch}
                     onChange={(event) => setPropertySearch(event.target.value)}
-                    placeholder="Search by property name"
+                    placeholder={t("renterDashboard.visits.searchByPropertyName")}
                     className="catalogue-filter-control min-w-0 flex-1 bg-transparent text-sm outline-none"
                   />
                   <VoiceInputButton onTranscript={setPropertySearch} />
                 </label>
                 <label className="relative block w-44 sm:w-56">
-                  <span className="sr-only">Filter by viewing status</span>
+                  <span className="sr-only">{t("renterDashboard.visits.statusFilterAria")}</span>
                   <select
                     value={statusFilter}
                     onChange={(event) => {
@@ -288,7 +334,9 @@ export default function MyViewingsPage() {
                   >
                     {STATUS_OPTIONS.map((status) => (
                       <option key={status} value={status}>
-                        {status === "all" ? "All statuses" : status}
+                        {status === "all"
+                          ? t("renterDashboard.visits.allStatuses")
+                          : t(STATUS_LABEL_KEYS[status])}
                       </option>
                     ))}
                   </select>
@@ -335,10 +383,10 @@ export default function MyViewingsPage() {
                   className="h-40 w-auto object-contain"
                 />
                 <h2 className="font-bricolage mt-5 text-2xl font-medium">
-                  No matching viewings
+                  {t("renterDashboard.visits.noMatching.title")}
                 </h2>
                 <p className="text-carbon-500 mt-2 text-sm">
-                  Try another property name or viewing status.
+                  {t("renterDashboard.visits.noMatching.description")}
                 </p>
                 <button
                   type="button"
@@ -348,7 +396,7 @@ export default function MyViewingsPage() {
                   }}
                   className="mt-6 rounded-full border border-black/15 px-5 py-3 text-sm font-medium"
                 >
-                  Clear filters
+                  {t("renterDashboard.visits.noMatching.clearFilters")}
                 </button>
               </div>
             ) : (
@@ -386,12 +434,14 @@ function ViewingCard({
   onNotInterested: () => void;
   onAccept: () => void;
 }) {
-  const messageHref = `/renter-dashboard/messages?host=${encodeURIComponent(viewing.host)}&role=Property%20Manager&ctx=viewing&property=${encodeURIComponent(viewing.title)}&propertyId=${encodeURIComponent(viewing.propertyId)}&status=${encodeURIComponent(viewing.status)}&detail=${encodeURIComponent(`${viewing.date} · ${viewing.time}`)}&refId=${encodeURIComponent(viewing.id)}`;
+  const { t } = useTranslation();
+  const displayTitle = viewingTitle(viewing, t);
+  const messageHref = `/renter-dashboard/messages?host=${encodeURIComponent(viewing.host)}&role=Property%20Manager&ctx=viewing&property=${encodeURIComponent(displayTitle)}&propertyId=${encodeURIComponent(viewing.propertyId)}&status=${encodeURIComponent(viewing.status)}&detail=${encodeURIComponent(`${viewing.date} · ${viewing.time}`)}&refId=${encodeURIComponent(viewing.id)}`;
   return (
     <article className="relative overflow-hidden rounded-2xl border border-white/80 bg-white/70 shadow-[0_10px_30px_rgba(0,0,0,0.08)] ring-1 ring-white/70 backdrop-blur-xl sm:grid sm:grid-cols-[210px_1fr]">
       <Image
         src={viewing.image}
-        alt={viewing.title}
+        alt={displayTitle}
         className="h-40 w-full object-cover sm:h-full"
       />
       <div className="flex min-w-0 flex-col p-4">
@@ -399,7 +449,7 @@ function ViewingCard({
           <div>
             <p className="text-carbon-500 text-sm">{viewing.location}</p>
             <h2 className="font-bricolage mt-1 text-2xl font-medium tracking-[-0.03em]">
-              {viewing.title}
+              {displayTitle}
             </h2>
           </div>
           <Status label={viewing.status} />
@@ -416,7 +466,7 @@ function ViewingCard({
         </div>
         {viewing.status === "New Time Suggested" ? (
           <div className="mt-3 rounded-2xl bg-black/[0.045] p-3 text-sm">
-            <p className="text-carbon-500">New time suggested</p>
+            <p className="text-carbon-500">{t("renterDashboard.visits.card.newTimeSuggestedLabel")}</p>
             <p className="mt-1 font-medium">
               {viewing.date} · {viewing.suggestedTime}
             </p>
@@ -424,7 +474,7 @@ function ViewingCard({
         ) : null}
         {viewing.status === "Awaiting Confirmation" ? (
           <p className="text-carbon-500 mt-3 text-sm">
-            The property representative has not confirmed this viewing yet.
+            {t("renterDashboard.visits.card.awaitingConfirmationNotice")}
           </p>
         ) : null}
         <div className="mt-3 flex items-center gap-3">
@@ -437,7 +487,7 @@ function ViewingCard({
             <p className="text-sm font-medium">{viewing.host}</p>
             <p className="text-carbon-500 flex items-center gap-1 text-xs">
               <BadgeCheck className="size-3.5" />
-              {viewing.role}
+              {t(viewing.roleKey)}
             </p>
           </div>
         </div>
@@ -448,9 +498,9 @@ function ViewingCard({
                 onClick={onDetails}
                 className="h-10 rounded-full bg-black px-4 text-sm font-medium text-white"
               >
-                View Details
+                {t("renterDashboard.visits.card.actions.viewDetails")}
               </button>
-              <ActionLink href={messageHref} label="Message" />
+              <ActionLink href={messageHref} label={t("renterDashboard.visits.card.actions.message")} />
               <a
                 href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(viewing.location)}`}
                 target="_blank"
@@ -458,19 +508,19 @@ function ViewingCard({
                 className="inline-flex h-10 items-center gap-2 rounded-full border border-black/15 px-4 text-sm"
               >
                 <MapPinned className="size-4" />
-                Get Directions
+                {t("renterDashboard.visits.card.actions.getDirections")}
               </a>
               <button
                 onClick={onReschedule}
                 className="h-10 rounded-full border border-black/15 px-4 text-sm"
               >
-                Reschedule
+                {t("renterDashboard.visits.card.actions.reschedule")}
               </button>
               <button
                 onClick={onCancel}
                 className="h-10 px-2 text-sm text-red-600"
               >
-                Cancel Viewing
+                {t("renterDashboard.visits.card.actions.cancelViewing")}
               </button>
             </>
           ) : null}
@@ -479,20 +529,20 @@ function ViewingCard({
             <>
               <ActionLink
                 href={`/properties/${viewing.propertyId}?from=renter`}
-                label="View Listing"
+                label={t("renterDashboard.visits.card.actions.viewListing")}
               />
-              <ActionLink href={messageHref} label="Message" />
+              <ActionLink href={messageHref} label={t("renterDashboard.visits.card.actions.message")} />
               <button
                 onClick={onReschedule}
                 className="h-10 rounded-full border border-black/15 px-4 text-sm"
               >
-                Change Requested Time
+                {t("renterDashboard.visits.card.actions.changeRequestedTime")}
               </button>
               <button
                 onClick={onCancel}
                 className="h-10 px-2 text-sm text-red-600"
               >
-                Cancel Request
+                {t("renterDashboard.visits.card.actions.cancelRequest")}
               </button>
             </>
           ) : null}
@@ -502,30 +552,30 @@ function ViewingCard({
                 onClick={onAccept}
                 className="h-10 rounded-full bg-black px-4 text-sm text-white"
               >
-                Accept New Time
+                {t("renterDashboard.visits.card.actions.acceptNewTime")}
               </button>
               <button
                 onClick={onReschedule}
                 className="h-10 rounded-full border border-black/15 px-4 text-sm"
               >
-                Suggest Another Time
+                {t("renterDashboard.visits.card.actions.suggestAnotherTime")}
               </button>
-              <ActionLink href={messageHref} label="Message" />
+              <ActionLink href={messageHref} label={t("renterDashboard.visits.card.actions.message")} />
             </>
           ) : null}
           {viewing.status === "Completed" ? (
             <>
               <ActionLink
                 href={`/renter-dashboard/applications/new?property=${viewing.propertyId}`}
-                label="Apply Now"
+                label={t("renterDashboard.visits.card.actions.applyNow")}
                 primary
               />
               <ActionLink
                 href={`/properties/${viewing.propertyId}?from=renter`}
-                label="View Listing"
+                label={t("renterDashboard.visits.card.actions.viewListing")}
               />
               <button onClick={onNotInterested} className="h-10 px-3 text-sm">
-                Not Interested
+                {t("renterDashboard.visits.card.actions.notInterested")}
               </button>
             </>
           ) : null}
@@ -535,14 +585,14 @@ function ViewingCard({
             <>
               <ActionLink
                 href={`/properties/${viewing.propertyId}?from=renter`}
-                label="View Listing"
+                label={t("renterDashboard.visits.card.actions.viewListing")}
               />
               {viewing.status === "Viewing unavailable" ? (
                 <button
                   onClick={onReschedule}
                   className="h-10 rounded-full border border-black/15 px-4 text-sm"
                 >
-                  Request Another Time
+                  {t("renterDashboard.visits.card.actions.requestAnotherTime")}
                 </button>
               ) : null}
             </>
@@ -554,12 +604,13 @@ function ViewingCard({
 }
 
 function Status({ label }: { label: ViewingStatus }) {
+  const { t } = useTranslation();
   const dark = label === "Confirmed" || label === "Completed";
   return (
     <span
       className={`rounded-full px-3 py-1.5 text-xs font-medium whitespace-nowrap sm:absolute sm:top-4 sm:right-4 ${dark ? "bg-black text-white" : "bg-black/[0.06] text-black"}`}
     >
-      {label}
+      {t(STATUS_LABEL_KEYS[label])}
     </span>
   );
 }
@@ -583,23 +634,24 @@ function ActionLink({
 }
 
 function EmptyState({ tab }: { tab: Tab }) {
+  const { t } = useTranslation();
   const copy =
     tab === "upcoming"
       ? [
-          "No upcoming viewings",
-          "Found a home you like? Request a viewing to see it in person.",
-          "Browse Listings",
+          t("renterDashboard.visits.emptyState.upcoming.title"),
+          t("renterDashboard.visits.emptyState.upcoming.description"),
+          t("renterDashboard.visits.emptyState.upcoming.action"),
         ]
       : tab === "pending"
         ? [
-            "No viewing requests waiting",
-            "Any viewing requests awaiting confirmation will appear here.",
+            t("renterDashboard.visits.emptyState.pending.title"),
+            t("renterDashboard.visits.emptyState.pending.description"),
             "",
           ]
         : [
-            "No viewing history yet",
-            "Properties you've visited will appear here.",
-            "Find a Home",
+            t("renterDashboard.visits.emptyState.past.title"),
+            t("renterDashboard.visits.emptyState.past.description"),
+            t("renterDashboard.visits.emptyState.past.action"),
           ];
   return (
     <div className="flex min-h-[430px] flex-col items-center justify-center text-center">
@@ -627,15 +679,26 @@ function ViewingDialog({
   onClose: () => void;
   onUpdate: (updates: Partial<Viewing>) => void;
 }) {
+  const { t } = useTranslation();
   const [date, setDate] = useState("2026-08-28");
   const [time, setTime] = useState("10:30 AM");
-  const [note, setNote] = useState(dialog.viewing.note ?? "");
+  const [note, setNote] = useState(
+    dialog.viewing.noteKey ? t(dialog.viewing.noteKey) : (dialog.viewing.note ?? ""),
+  );
   const [reason, setReason] = useState("");
+  const NOT_INTERESTED_REASONS = [
+    { value: "Too expensive", labelKey: "renterDashboard.visits.dialog.reasons.tooExpensive" },
+    { value: "Location", labelKey: "renterDashboard.overview.filters.location" },
+    { value: "Property condition", labelKey: "renterDashboard.visits.dialog.reasons.propertyCondition" },
+    { value: "Size/layout", labelKey: "renterDashboard.visits.dialog.reasons.sizeLayout" },
+    { value: "Found another property", labelKey: "renterDashboard.visits.dialog.reasons.foundAnotherProperty" },
+    { value: "Other", labelKey: "renterDashboard.visits.dialog.reasons.other" },
+  ];
   const titles = {
-    details: "Viewing Details",
-    reschedule: "Choose another date and time",
-    cancel: "Cancel this viewing?",
-    "not-interested": "Mark as not interested?",
+    details: t("renterDashboard.visits.dialog.detailsTitle"),
+    reschedule: t("renterDashboard.visits.dialog.rescheduleTitle"),
+    cancel: t("renterDashboard.visits.dialog.cancelTitle"),
+    "not-interested": t("renterDashboard.visits.dialog.notInterestedTitle"),
   };
   if (dialog.type === "reschedule") {
     return (
@@ -676,7 +739,7 @@ function ViewingDialog({
               {titles[dialog.type]}
             </h2>
             <p className="text-carbon-500 mt-2 text-sm">
-              {dialog.viewing.title} · {dialog.viewing.location}
+              {viewingTitle(dialog.viewing, t)} · {dialog.viewing.location}
             </p>
           </div>
           <button
@@ -694,9 +757,9 @@ function ViewingDialog({
               className="h-48 w-full rounded-2xl object-cover"
             />
             <section>
-              <h3 className="text-sm font-medium">Viewing</h3>
+              <h3 className="text-sm font-medium">{t("renterDashboard.visits.dialog.viewingSectionTitle")}</h3>
               <p className="text-carbon-500 mt-2 text-sm">
-                {dialog.viewing.status} · {dialog.viewing.date} ·{" "}
+                {t(STATUS_LABEL_KEYS[dialog.viewing.status])} · {dialog.viewing.date} ·{" "}
                 {dialog.viewing.time}
               </p>
             </section>
@@ -709,12 +772,12 @@ function ViewingDialog({
               <div>
                 <p className="font-medium">{dialog.viewing.host}</p>
                 <p className="text-carbon-500 text-sm">
-                  {dialog.viewing.role} · Verified
+                  {t(dialog.viewing.roleKey)} · {t("renterDashboard.visits.card.verified")}
                 </p>
               </div>
             </section>
             <label>
-              <span className="mb-2 block text-sm font-medium">Notes</span>
+              <span className="mb-2 block text-sm font-medium">{t("renterDashboard.visits.dialog.notesLabel")}</span>
               <textarea
                 value={note}
                 onChange={(event) => setNote(event.target.value)}
@@ -724,14 +787,14 @@ function ViewingDialog({
             <div className="flex gap-3">
               <ActionLink
                 href={`/properties/${dialog.viewing.propertyId}?from=renter`}
-                label="View Full Listing"
+                label={t("renterDashboard.visits.dialog.viewFullListing")}
                 primary
               />
               <button
                 onClick={() => onUpdate({ note })}
                 className="h-10 rounded-full border border-black/15 px-4 text-sm"
               >
-                Save Note
+                {t("renterDashboard.visits.dialog.saveNote")}
               </button>
             </div>
           </div>
@@ -739,8 +802,7 @@ function ViewingDialog({
         {dialog.type === "not-interested" ? (
           <div className="mt-7">
             <p className="text-carbon-500 text-sm">
-              This helps keep your viewing history organized. A reason is
-              optional.
+              {t("renterDashboard.visits.dialog.notInterestedDescription")}
             </p>
             <span className="relative mt-5 block">
               <select
@@ -748,23 +810,18 @@ function ViewingDialog({
                 onChange={(event) => setReason(event.target.value)}
                 className="h-11 w-full appearance-none rounded-full border border-black/15 pr-11 pl-4 text-sm"
               >
-                <option value="">No reason</option>
-                {[
-                  "Too expensive",
-                  "Location",
-                  "Property condition",
-                  "Size/layout",
-                  "Found another property",
-                  "Other",
-                ].map((item) => (
-                  <option key={item}>{item}</option>
+                <option value="">{t("renterDashboard.visits.dialog.noReason")}</option>
+                {NOT_INTERESTED_REASONS.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {t(item.labelKey)}
+                  </option>
                 ))}
               </select>
               <ChevronDown className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-black/55" />
             </span>
             <DialogActions
               onClose={onClose}
-              action="Mark Not Interested"
+              action={t("renterDashboard.visits.dialog.markNotInterested")}
               onAction={() => onUpdate({ status: "Not interested" })}
             />
           </div>
@@ -783,6 +840,7 @@ function CancelViewingDialog({
   onClose: () => void;
   onUpdate: (updates: Partial<Viewing>) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div
       className="fixed inset-0 z-[180] flex items-center justify-center bg-black/25 p-5"
@@ -799,14 +857,14 @@ function CancelViewingDialog({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close cancel viewing dialog"
+            aria-label={t("renterDashboard.visits.dialog.closeCancelDialogAria")}
             className="absolute top-4 right-4 flex size-9 items-center justify-center rounded-full border border-black/20 text-black/55 hover:border-black/40 hover:text-black"
           >
             <X className="size-5" />
           </button>
           <Image
             src={cancelIllustration}
-            alt="Cancelled appointment illustration"
+            alt={t("renterDashboard.visits.dialog.cancelledIllustrationAlt")}
             className="h-40 w-auto object-contain"
           />
         </div>
@@ -815,18 +873,17 @@ function CancelViewingDialog({
             id="cancel-viewing-title"
             className="font-bricolage text-2xl font-medium"
           >
-            Cancel this viewing?
+            {t("renterDashboard.visits.dialog.cancelTitle")}
           </h2>
           <p className="text-carbon-500 mt-2 text-sm">
-            {viewing.title} · {viewing.date} · {viewing.time}
+            {viewingTitle(viewing, t)} · {viewing.date} · {viewing.time}
           </p>
           <p className="text-carbon-600 mt-5 text-sm leading-6">
-            The property representative will be notified that you can no longer
-            attend.
+            {t("renterDashboard.visits.dialog.cancelNotice")}
           </p>
           <DialogActions
             onClose={onClose}
-            action="Cancel Viewing"
+            action={t("renterDashboard.visits.card.actions.cancelViewing")}
             destructive
             onAction={() =>
               onUpdate({
@@ -859,6 +916,7 @@ function RescheduleDialog({
   onClose: () => void;
   onUpdate: (updates: Partial<Viewing>) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div
       className="fixed inset-0 z-[180] flex items-center justify-center bg-black/25 p-5"
@@ -875,14 +933,14 @@ function RescheduleDialog({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close reschedule dialog"
+            aria-label={t("renterDashboard.visits.dialog.closeRescheduleDialogAria")}
             className="absolute top-4 right-4 flex size-9 items-center justify-center rounded-full border border-black/20 text-black/55 hover:border-black/40 hover:text-black"
           >
             <X className="size-5" />
           </button>
           <Image
             src={scheduleIllustration}
-            alt="Calendar and clock illustration"
+            alt={t("renterDashboard.visits.dialog.scheduleIllustrationAlt")}
             className="h-40 w-auto object-contain"
           />
         </div>
@@ -891,13 +949,16 @@ function RescheduleDialog({
             id="reschedule-viewing-title"
             className="font-bricolage text-2xl font-medium"
           >
-            Choose another date and time
+            {t("renterDashboard.visits.dialog.rescheduleTitle")}
           </h2>
           <p className="text-carbon-500 mt-2 text-sm">
-            {viewing.title} · {viewing.location}
+            {viewingTitle(viewing, t)} · {viewing.location}
           </p>
           <p className="mt-5 bg-black/[0.045] p-4 text-sm">
-            Current: {viewing.date} · {viewing.time}
+            {t("renterDashboard.visits.dialog.currentSlot", {
+              date: viewing.date,
+              time: viewing.time,
+            })}
           </p>
           <input
             type="date"
@@ -917,11 +978,11 @@ function RescheduleDialog({
             ))}
           </div>
           <p className="text-carbon-500 mt-4 text-sm">
-            The property representative will need to confirm the new time.
+            {t("renterDashboard.visits.dialog.rescheduleNotice")}
           </p>
           <DialogActions
             onClose={onClose}
-            action="Request New Time"
+            action={t("renterDashboard.visits.dialog.requestNewTime")}
             onAction={() =>
               onUpdate({
                 date,
@@ -948,13 +1009,14 @@ function DialogActions({
   onAction: () => void;
   destructive?: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="mt-7 flex justify-end gap-3">
       <button
         onClick={onClose}
         className="h-11 rounded-full border border-black/15 px-5 text-sm"
       >
-        Cancel
+        {t("renterDashboard.visits.dialog.cancel")}
       </button>
       <button
         onClick={onAction}

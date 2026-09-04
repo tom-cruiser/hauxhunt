@@ -25,6 +25,7 @@ import deletingIllustration from "@/assets/images/deleting.png";
 import emptyIllustration from "@/assets/images/empty.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
 import { VoiceInputButton } from "@/components/listings/voice-input-button";
+import { useTranslation } from "@/components/language/use-translation";
 import {
   RENTER_APPLICATIONS,
   type ApplicationStatus,
@@ -39,28 +40,40 @@ import { getOwnerApplications, subscribeToOwnerApplications, type OwnerApplicati
 // convention). Drafts and renter-only historical entries with no shared
 // counterpart are left exactly as they were; nothing here rebuilds the
 // existing drafts/withdraw/delete UX.
-function messageForSharedStatus(status: OwnerApplication["status"]): string {
-  switch (status) {
-    case "Submitted":
-      return "Your application has been received.";
-    case "Under Review":
-      return "Your application is currently being reviewed.";
-    case "Action Required":
-      return "Additional information is needed to continue your application.";
-    case "Decision Pending":
-      return "Your review is complete. A decision is pending.";
-    case "Approved":
-      return "Congratulations — your application has been approved.";
-    case "Not Selected":
-      return "This application was not selected for this property.";
-    case "Completed":
-      return "Your lease is signed and your deposit is paid — welcome home.";
-    default:
-      return "";
-  }
-}
+//
+// The translated message text lives in the dictionary, keyed by shared
+// status -- `t` is threaded in from the component (module scope has no hook
+// context) rather than called here.
+const SHARED_STATUS_MESSAGE_KEYS: Partial<Record<OwnerApplication["status"], string>> = {
+  Submitted: "renterDashboard.applicationsList.statusMessages.submitted",
+  "Under Review": "renterDashboard.applicationsList.statusMessages.underReview",
+  "Action Required": "renterDashboard.applicationsList.statusMessages.actionRequired",
+  "Decision Pending": "renterDashboard.applicationsList.statusMessages.decisionPending",
+  Approved: "renterDashboard.applicationsList.statusMessages.approved",
+  "Not Selected": "renterDashboard.applicationsList.statusMessages.notSelected",
+  Completed: "renterDashboard.applicationsList.statusMessages.completed",
+};
 
-function withSharedStatus(base: RenterApplication[]): RenterApplication[] {
+// `ApplicationStatus` stays the internal identifier used for comparisons,
+// styling, and the shared owner-data lookups above -- this is only the
+// translated display label shown to renters (mirrors the `optionLabels`
+// pattern used by the renter dashboard's `FilterSelect`).
+const STATUS_LABEL_KEYS: Record<ApplicationStatus, string> = {
+  Draft: "renterDashboard.applicationsList.statusLabels.draft",
+  Submitted: "renterDashboard.applicationsList.statusLabels.submitted",
+  "Under Review": "renterDashboard.applicationsList.statusLabels.underReview",
+  "Action Required": "renterDashboard.applicationsList.statusLabels.actionRequired",
+  "Decision Pending": "renterDashboard.applicationsList.statusLabels.decisionPending",
+  Approved: "renterDashboard.applicationsList.statusLabels.approved",
+  "Not Selected": "renterDashboard.applicationsList.statusLabels.notSelected",
+  Completed: "renterDashboard.applicationsList.statusLabels.completed",
+  Withdrawn: "renterDashboard.applicationsList.statusLabels.withdrawn",
+};
+
+function withSharedStatus(
+  base: RenterApplication[],
+  t: (key: string) => string,
+): RenterApplication[] {
   const shared = getOwnerApplications();
   return base.map((item) => {
     // "Withdrawn" and "Draft" are renter-only states with no shared
@@ -69,12 +82,13 @@ function withSharedStatus(base: RenterApplication[]): RenterApplication[] {
     if (item.status === "Withdrawn" || item.status === "Draft") return item;
     const match = shared.find((a) => a.id === item.id);
     if (!match) return item;
+    const messageKey = SHARED_STATUS_MESSAGE_KEYS[match.status];
     return {
       ...item,
       status: match.status,
       representative: match.handledBy,
       role: `Verified ${match.handledByRole}`,
-      message: messageForSharedStatus(match.status),
+      message: messageKey ? t(messageKey) : "",
     };
   });
 }
@@ -93,6 +107,25 @@ const STATUS_OPTIONS: StatusFilter[] = [
   "Completed",
   "Withdrawn",
 ];
+const TAB_LABEL_KEYS: Record<Tab, string> = {
+  active: "renterDashboard.applicationsList.tabs.active",
+  drafts: "renterDashboard.applicationsList.tabs.drafts",
+  past: "renterDashboard.applicationsList.tabs.past",
+};
+const EMPTY_COPY: Record<Tab, { titleKey: string; descriptionKey: string }> = {
+  active: {
+    titleKey: "renterDashboard.applicationsList.empty.active.title",
+    descriptionKey: "renterDashboard.applicationsList.empty.active.description",
+  },
+  drafts: {
+    titleKey: "renterDashboard.applicationsList.empty.drafts.title",
+    descriptionKey: "renterDashboard.applicationsList.empty.drafts.description",
+  },
+  past: {
+    titleKey: "renterDashboard.applicationsList.empty.past.title",
+    descriptionKey: "renterDashboard.applicationsList.empty.past.description",
+  },
+};
 const IMAGES: Record<string, StaticImageData> = {
   "kacyiru-2br": house1,
   "nyarutarama-2br": house2,
@@ -117,18 +150,25 @@ export default function ApplicationsPage() {
 }
 
 function ApplicationsPageInner() {
+  const { t } = useTranslation();
   const params = useSearchParams();
   const [tab, setTab] = useState<Tab>(() =>
     params.get("tab") === "drafts" ? "drafts" : "active",
   );
-  const [applications, setApplications] = useState(() => withSharedStatus(RENTER_APPLICATIONS));
+  const [applications, setApplications] = useState(() => withSharedStatus(RENTER_APPLICATIONS, t));
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [propertySearch, setPropertySearch] = useState("");
   const [confirm, setConfirm] = useState<{
     type: "withdraw" | "delete";
     application: RenterApplication;
   } | null>(null);
-  useEffect(() => subscribeToOwnerApplications(() => setApplications((current) => withSharedStatus(current))), []);
+  useEffect(
+    () =>
+      subscribeToOwnerApplications(() =>
+        setApplications((current) => withSharedStatus(current, t)),
+      ),
+    [t],
+  );
   useEffect(() => {
     const savedDrafts: RenterApplication[] = [];
     for (let index = 0; index < localStorage.length; index += 1) {
@@ -195,9 +235,11 @@ function ApplicationsPageInner() {
       <main className="bg-carbon-50 min-h-svh pt-16 text-black">
         <section className="bg-carbon-50 px-5 pt-9 sm:px-6 lg:px-11 xl:px-[52px]">
           <div className="mx-auto max-w-[1562px]">
-            <h1 className="dashboard-page-title">Applications</h1>
+            <h1 className="dashboard-page-title">
+              {t("renterDashboard.applicationsList.heading")}
+            </h1>
             <p className="text-carbon-500 mt-3 text-sm">
-              Track your rental applications and see what needs your attention.
+              {t("renterDashboard.applicationsList.subheading")}
             </p>
             <div className="mt-7 flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
               <div className="flex gap-7">
@@ -211,7 +253,7 @@ function ApplicationsPageInner() {
                     }}
                     className={`relative flex h-12 items-center gap-2 text-sm font-medium capitalize ${tab === item ? "text-black" : "text-black/45"}`}
                   >
-                    {item}
+                    {t(TAB_LABEL_KEYS[item])}
                     <span className="rounded-full bg-black/[0.06] px-2 py-0.5 text-xs">
                       {counts[item]}
                     </span>
@@ -223,19 +265,25 @@ function ApplicationsPageInner() {
               </div>
               <div className="flex w-full gap-3 pb-2 md:w-auto">
                 <label className="catalogue-location-filter flex min-w-0 flex-1 items-center gap-2 px-4 md:w-72 md:flex-none">
-                  <span className="sr-only">Search by property name</span>
+                  <span className="sr-only">
+                    {t("renterDashboard.applicationsList.searchAria")}
+                  </span>
                   <Search aria-hidden="true" className="text-carbon-500 size-4 shrink-0" />
                   <input
                     type="search"
                     value={propertySearch}
                     onChange={(event) => setPropertySearch(event.target.value)}
-                    placeholder="Search by property name"
+                    placeholder={t(
+                      "renterDashboard.applicationsList.searchPlaceholder",
+                    )}
                     className="catalogue-filter-control min-w-0 flex-1 bg-transparent text-sm outline-none"
                   />
                   <VoiceInputButton onTranscript={setPropertySearch} />
                 </label>
                 <label className="relative block w-44 sm:w-52">
-                  <span className="sr-only">Filter by application status</span>
+                  <span className="sr-only">
+                    {t("renterDashboard.applicationsList.statusFilterAria")}
+                  </span>
                   <select
                     value={statusFilter}
                     onChange={(event) => {
@@ -247,7 +295,9 @@ function ApplicationsPageInner() {
                   >
                     {STATUS_OPTIONS.map((status) => (
                       <option key={status} value={status}>
-                        {status === "all" ? "All statuses" : status}
+                        {status === "all"
+                          ? t("renterDashboard.applicationsList.statusLabels.all")
+                          : t(STATUS_LABEL_KEYS[status])}
                       </option>
                     ))}
                   </select>
@@ -279,10 +329,10 @@ function ApplicationsPageInner() {
               <div className="flex min-h-[360px] flex-col items-center justify-center text-center">
                 <Image src={emptyIllustration} alt="" className="h-40 w-auto" />
                 <h2 className="font-bricolage mt-5 text-2xl font-medium">
-                  No matching applications
+                  {t("renterDashboard.applicationsList.noMatches.title")}
                 </h2>
                 <p className="text-carbon-500 mt-2 text-sm">
-                  Try another property name or application status.
+                  {t("renterDashboard.applicationsList.noMatches.description")}
                 </p>
                 <button
                   type="button"
@@ -292,7 +342,7 @@ function ApplicationsPageInner() {
                   }}
                   className="mt-6 rounded-full border border-black/15 px-5 py-3 text-sm font-medium"
                 >
-                  Clear filters
+                  {t("renterDashboard.applicationsList.noMatches.clearFilters")}
                 </button>
               </div>
             ) : (
@@ -321,7 +371,9 @@ function ApplicationsPageInner() {
                     ? {
                         ...item,
                         status: "Withdrawn" as const,
-                        message: "You withdrew this application.",
+                        message: t(
+                          "renterDashboard.applicationsList.withdrawnMessage",
+                        ),
                       }
                     : item,
                 ),
@@ -343,16 +395,17 @@ function ApplicationCard({
   onDelete: () => void;
   onWithdraw: () => void;
 }) {
+  const { t } = useTranslation();
   const primary =
     application.status === "Draft"
-      ? "Continue Application"
+      ? t("renterDashboard.applicationsList.card.primary.continueApplication")
       : application.status === "Action Required"
-        ? "Complete Request"
+        ? t("renterDashboard.applicationsList.card.primary.completeRequest")
         : application.status === "Approved"
-          ? "Start Rental Setup"
+          ? t("renterDashboard.applicationsList.card.primary.startRentalSetup")
           : application.status === "Not Selected"
-            ? "View Similar Homes"
-            : "View Application";
+            ? t("renterDashboard.applicationsList.card.primary.viewSimilarHomes")
+            : t("renterDashboard.applicationsList.card.primary.viewApplication");
   const primaryHref =
     application.status === "Draft"
       ? `/renter-dashboard/applications/new?property=${application.propertyId}&draft=${application.id}`
@@ -381,7 +434,7 @@ function ApplicationCard({
           <span
             className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium ${application.status === "Action Required" ? "bg-black text-white" : "bg-black/[0.06]"}`}
           >
-            {application.status}
+            {t(STATUS_LABEL_KEYS[application.status])}
           </span>
         </div>
         <p className="text-carbon-500 mt-2 text-xs">{application.date}</p>
@@ -390,8 +443,10 @@ function ApplicationCard({
           <div className="flex justify-between text-xs">
             <span>
               {application.status === "Draft"
-                ? `${application.progress}% complete`
-                : "Application progress"}
+                ? t("renterDashboard.applicationsList.card.progressComplete", {
+                    progress: application.progress,
+                  })
+                : t("renterDashboard.applicationsList.card.applicationProgress")}
             </span>
             <span>{application.progress}%</span>
           </div>
@@ -417,18 +472,20 @@ function ApplicationCard({
             href={`/renter-dashboard/messages?host=${encodeURIComponent(application.representative)}&role=${encodeURIComponent(application.role.replace(/^Verified /, ""))}&verified=${application.role.startsWith("Verified") ? "1" : "0"}&ctx=application&property=${encodeURIComponent(application.title)}&propertyId=${encodeURIComponent(application.propertyId)}&status=${encodeURIComponent(application.status)}&refId=${encodeURIComponent(application.id)}`}
             className="inline-flex h-10 items-center rounded-full border border-black/15 px-4 text-sm"
           >
-            Message
+            {t("renterDashboard.applicationsList.card.message")}
           </Link>
           <Link
             href={`/properties/${application.propertyId}?from=renter`}
             className="inline-flex h-10 items-center px-2 text-sm"
           >
-            View Listing
+            {t("renterDashboard.applicationsList.card.viewListing")}
           </Link>
           {application.status === "Draft" ? (
             <button
               onClick={onDelete}
-              aria-label="Delete draft"
+              aria-label={t(
+                "renterDashboard.applicationsList.card.deleteDraftAria",
+              )}
               className="ml-auto flex size-9 items-center justify-center text-red-600"
             >
               <Trash2 className="size-4" />
@@ -436,7 +493,9 @@ function ApplicationCard({
           ) : tabFor(application.status) === "active" ? (
             <button
               onClick={onWithdraw}
-              aria-label="Withdraw application"
+              aria-label={t(
+                "renterDashboard.applicationsList.card.withdrawApplicationAria",
+              )}
               className="ml-auto flex size-9 items-center justify-center"
             >
               <MoreHorizontal className="size-5" />
@@ -449,31 +508,20 @@ function ApplicationCard({
 }
 
 function Empty({ tab }: { tab: Tab }) {
-  const copy =
-    tab === "active"
-      ? [
-          "Nothing under review right now",
-          "Applications you're actively tracking will appear here.",
-        ]
-      : tab === "drafts"
-        ? [
-            "No application drafts",
-            "Applications you start and save for later will appear here.",
-          ]
-        : [
-            "No past applications",
-            "Completed, withdrawn, or unsuccessful applications will appear here.",
-          ];
+  const { t } = useTranslation();
+  const copy = EMPTY_COPY[tab];
   return (
     <div className="flex min-h-[450px] flex-col items-center justify-center text-center">
       <Image src={emptyIllustration} alt="" className="h-40 w-auto" />
-      <h2 className="font-bricolage mt-5 text-2xl font-medium">{copy[0]}</h2>
-      <p className="text-carbon-500 mt-2 text-sm">{copy[1]}</p>
+      <h2 className="font-bricolage mt-5 text-2xl font-medium">
+        {t(copy.titleKey)}
+      </h2>
+      <p className="text-carbon-500 mt-2 text-sm">{t(copy.descriptionKey)}</p>
       <Link
         href="/renter-dashboard/properties"
         className="mt-6 rounded-full bg-black px-5 py-3 text-sm text-white"
       >
-        Browse Listings
+        {t("renterDashboard.applicationsList.empty.browseListings")}
       </Link>
     </div>
   );
@@ -487,6 +535,7 @@ function ConfirmDialog({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const { t } = useTranslation();
   const withdraw = state.type === "withdraw";
   return (
     <div
@@ -503,7 +552,7 @@ function ConfirmDialog({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close dialog"
+            aria-label={t("renterDashboard.applicationsList.confirmDialog.closeAria")}
             className="absolute top-4 right-4 flex size-9 items-center justify-center rounded-full border border-black/20 text-black/55 hover:border-black/40 hover:text-black"
           >
             <X className="size-5" />
@@ -512,34 +561,46 @@ function ConfirmDialog({
             src={withdraw ? cancelIllustration : deletingIllustration}
             alt={
               withdraw
-                ? "Withdraw application illustration"
-                : "Delete draft illustration"
+                ? t(
+                    "renterDashboard.applicationsList.confirmDialog.withdrawIllustrationAlt",
+                  )
+                : t(
+                    "renterDashboard.applicationsList.confirmDialog.deleteIllustrationAlt",
+                  )
             }
             className="h-36 w-auto object-contain"
           />
         </div>
         <div className="px-7 pt-7">
           <h2 className="font-bricolage text-2xl font-medium">
-            {withdraw ? "Withdraw application?" : "Delete draft?"}
+            {withdraw
+              ? t("renterDashboard.applicationsList.confirmDialog.withdrawTitle")
+              : t("renterDashboard.applicationsList.confirmDialog.deleteTitle")}
           </h2>
         </div>
         <p className="text-carbon-500 mt-4 px-7 text-sm leading-6">
           {withdraw
-            ? `Your application for ${state.application.title} will no longer be considered.`
-            : "Your progress on this application will be removed."}
+            ? t("renterDashboard.applicationsList.confirmDialog.withdrawBody", {
+                title: state.application.title,
+              })
+            : t("renterDashboard.applicationsList.confirmDialog.deleteBody")}
         </p>
         <div className="mt-7 flex justify-end gap-3 px-7 pb-7">
           <button
             onClick={onClose}
             className="h-11 rounded-full border border-black/15 px-5 text-sm"
           >
-            {withdraw ? "Keep Application" : "Keep Draft"}
+            {withdraw
+              ? t("renterDashboard.applicationsList.confirmDialog.keepApplication")
+              : t("renterDashboard.applicationsList.confirmDialog.keepDraft")}
           </button>
           <button
             onClick={onConfirm}
             className="h-11 rounded-full bg-red-600 px-6 text-sm font-medium text-white"
           >
-            {withdraw ? "Withdraw" : "Delete Draft"}
+            {withdraw
+              ? t("renterDashboard.applicationsList.confirmDialog.withdraw")
+              : t("renterDashboard.applicationsList.confirmDialog.deleteDraft")}
           </button>
         </div>
       </div>

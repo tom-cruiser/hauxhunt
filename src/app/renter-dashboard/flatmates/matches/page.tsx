@@ -322,34 +322,34 @@ export default function RenterFlatmateMatchesPage() {
                               </div>
 
                               <div className="border-green-150 mt-4 inline-flex items-center gap-1 rounded-full border bg-green-50 px-2.5 py-0.5 text-[10px] font-semibold text-green-700">
-                                Matched today
+                                {t("renterDashboard.flatmateMatches.card.matchedToday")}
                               </div>
 
                               {/* Overlap parameters */}
                               <div className="mt-4 space-y-2.5 rounded-xl bg-neutral-50 p-4.5 text-xs">
                                 <div className="flex justify-between gap-2">
                                   <span className="text-neutral-450">
-                                    Housing Plan
+                                    {t("renterDashboard.flatmateMatches.card.housingPlan")}
                                   </span>
                                   <span className="font-medium text-neutral-800">
                                     {flatmate.situation === "looking"
-                                      ? "Looking for a place"
-                                      : "Already has a place"}
+                                      ? t("renterDashboard.flatmateMatches.card.situation.looking")
+                                      : t("renterDashboard.flatmateMatches.card.situation.hasPlace")}
                                   </span>
                                 </div>
                                 <div className="flex justify-between gap-2">
                                   <span className="text-neutral-450">
-                                    Monthly Budget
+                                    {t("renterDashboard.flatmateMatches.card.monthlyBudget")}
                                   </span>
                                   <span className="text-neutral-850 font-medium">
                                     {flatmate.situation === "looking"
                                       ? `${formatRwf(flatmate.budgetMin)}–${formatRwf(flatmate.budgetMax)}`
-                                      : `${formatRwf(flatmate.budgetMin)} / month`}
+                                      : `${formatRwf(flatmate.budgetMin)} ${t("renterDashboard.flatmateMatches.card.perMonth")}`}
                                   </span>
                                 </div>
                                 <div className="flex justify-between gap-2">
                                   <span className="text-neutral-450">
-                                    Move-in Date
+                                    {t("renterDashboard.flatmateMatches.card.moveInDate")}
                                   </span>
                                   <span className="text-neutral-855 font-medium">
                                     {flatmate.moveIn}
@@ -364,7 +364,7 @@ export default function RenterFlatmateMatchesPage() {
                                 className="flex h-10 w-full items-center justify-center gap-1.5 rounded-full bg-black text-xs font-semibold text-white shadow-sm transition-colors hover:bg-neutral-800"
                               >
                                 <MessageSquare className="size-3.5" />
-                                <span>Message</span>
+                                <span>{t("renterDashboard.flatmateMatches.card.message")}</span>
                               </Link>
                               {isBothLooking ? (
                                 <button
@@ -373,7 +373,7 @@ export default function RenterFlatmateMatchesPage() {
                                   }
                                   className="flex h-10 w-full items-center justify-center rounded-full border border-black/15 bg-white text-xs font-semibold text-neutral-800 transition-colors hover:bg-neutral-50"
                                 >
-                                  Browse Homes Together
+                                  {t("renterDashboard.flatmateMatches.card.browseHomesTogether")}
                                 </button>
                               ) : (
                                 <button
@@ -382,7 +382,7 @@ export default function RenterFlatmateMatchesPage() {
                                   }
                                   className="flex h-10 w-full items-center justify-center rounded-full border border-black/15 bg-white text-xs font-semibold text-neutral-800 transition-colors hover:bg-neutral-50"
                                 >
-                                  Discuss Living Arrangement
+                                  {t("renterDashboard.flatmateMatches.card.discussLivingArrangement")}
                                 </button>
                               )}
                             </div>
@@ -433,7 +433,7 @@ export default function RenterFlatmateMatchesPage() {
                             <p className="border-neutral-150 mt-4 flex items-center gap-1.5 rounded-xl border bg-neutral-50 px-3 py-2 text-xs font-medium text-black/75">
                               <Info className="size-3.5 shrink-0 text-neutral-500" />
                               <span>
-                                Interested in being flatmates with you
+                                {t("renterDashboard.flatmateMatches.card.interestedInYouNote")}
                               </span>
                             </p>
                           </div>
@@ -443,20 +443,20 @@ export default function RenterFlatmateMatchesPage() {
                               href={`/flatmates/${flatmate.id}?from=renter`}
                               className="flex h-10 w-full items-center justify-center rounded-full border border-black/15 bg-white text-xs font-semibold text-neutral-800 transition-colors hover:bg-neutral-50"
                             >
-                              View Profile
+                              {t("renterDashboard.flatmateMatches.card.viewProfile")}
                             </Link>
                             <div className="grid grid-cols-2 gap-2.5">
                               <button
                                 onClick={() => handleLike(flatmate)}
                                 className="flex h-10 items-center justify-center rounded-full bg-black text-xs font-semibold text-white transition-colors hover:bg-neutral-800"
                               >
-                                I&apos;m Interested Too
+                                {t("renterDashboard.flatmateMatches.card.imInterestedToo")}
                               </button>
                               <button
                                 onClick={() => handlePass(flatmate.id)}
                                 className="flex h-10 items-center justify-center rounded-full border border-black/15 bg-white text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-50"
                               >
-                                Not for Me
+                                {t("renterDashboard.flatmateMatches.card.notForMe")}
                               </button>
                             </div>
                           </div>
@@ -505,7 +505,7 @@ export default function RenterFlatmateMatchesPage() {
 
                             <p className="mt-4 flex items-center gap-1.5 rounded-xl border border-neutral-100 bg-neutral-50 px-3 py-2 text-xs font-medium text-neutral-500">
                               <HelpCircle className="size-3.5 shrink-0 text-neutral-400" />
-                              <span>Waiting for response</span>
+                              <span>{t("renterDashboard.flatmateMatches.card.waitingForResponse")}</span>
                             </p>
                           </div>
 
@@ -514,14 +514,14 @@ export default function RenterFlatmateMatchesPage() {
                               href={`/flatmates/${flatmate.id}?from=renter`}
                               className="flex h-10 items-center justify-center rounded-full border border-black/15 bg-white text-xs font-semibold text-neutral-800 transition-colors hover:bg-neutral-50"
                             >
-                              View Profile
+                              {t("renterDashboard.flatmateMatches.card.viewProfile")}
                             </Link>
                             <button
                               type="button"
                               onClick={() => handleRemoveInterest(flatmate.id)}
                               className="text-red-650 flex h-10 items-center justify-center rounded-full border border-red-200 bg-red-50/50 text-xs font-semibold transition-colors hover:bg-red-50"
                             >
-                              Remove Interest
+                              {t("renterDashboard.flatmateMatches.card.removeInterest")}
                             </button>
                           </div>
                         </div>
@@ -543,28 +543,29 @@ export default function RenterFlatmateMatchesPage() {
               <button
                 type="button"
                 onClick={() => setShowMatchModal(false)}
-                aria-label="Close"
+                aria-label={t("common.close")}
                 className="absolute top-4 right-4 flex size-9 items-center justify-center rounded-full border border-black/20 text-black/55 hover:border-black/40 hover:text-black"
               >
                 <X className="size-5" />
               </button>
               <Image
                 src={matchImage}
-                alt="You're a match illustration"
+                alt={t("renterDashboard.flatmateMatches.modal.imageAlt")}
                 className="h-40 w-auto object-contain"
               />
             </div>
 
             <div className="p-8">
               <span className="block text-[10px] font-extrabold tracking-[0.15em] text-neutral-400 uppercase">
-                Co-living Connection
+                {t("renterDashboard.flatmateMatches.modal.eyebrow")}
               </span>
               <h2 className="font-bricolage mt-2 text-3xl font-bold tracking-tight text-neutral-900">
-                You&apos;re a Match!
+                {t("renterDashboard.flatmateMatches.modal.title")}
               </h2>
               <p className="mt-3.5 text-sm leading-relaxed text-neutral-600">
-                You and {modalFlatmate.firstName} are both interested in
-                exploring living together.
+                {t("renterDashboard.flatmateMatches.modal.description", {
+                  name: modalFlatmate.firstName,
+                })}
               </p>
 
               {/* Context Details Card */}
@@ -574,7 +575,7 @@ export default function RenterFlatmateMatchesPage() {
                   <>
                     <div>
                       <span className="text-neutral-450 block text-[9px] font-bold tracking-wider uppercase">
-                        Preferred Areas Overlap
+                        {t("renterDashboard.flatmateMatches.modal.preferredAreasOverlap")}
                       </span>
                       <span className="mt-1 block text-sm font-semibold text-neutral-800">
                         {userAreas
@@ -585,16 +586,17 @@ export default function RenterFlatmateMatchesPage() {
                     </div>
                     <div className="border-t border-neutral-100 pt-3">
                       <span className="text-neutral-450 block text-[9px] font-bold tracking-wider uppercase">
-                        Potential Combined Budget
+                        {t("renterDashboard.flatmateMatches.modal.potentialCombinedBudget")}
                       </span>
                       <span className="font-bricolage mt-1 block text-xl font-extrabold text-black">
-                        {formatRwf(userBudget + modalFlatmate.budgetMax)} /
-                        month
+                        {formatRwf(userBudget + modalFlatmate.budgetMax)}{" "}
+                        {t("renterDashboard.flatmateMatches.card.perMonth")}
                       </span>
                       <span className="mt-0.5 block text-[10px] font-normal text-neutral-400">
-                        Combined discovery estimate (RWF{" "}
-                        {userBudget.toLocaleString()} + RWF{" "}
-                        {modalFlatmate.budgetMax.toLocaleString()})
+                        {t("renterDashboard.flatmateMatches.modal.combinedEstimate", {
+                          min: userBudget.toLocaleString(),
+                          max: modalFlatmate.budgetMax.toLocaleString(),
+                        })}
                       </span>
                     </div>
                   </>
@@ -602,7 +604,7 @@ export default function RenterFlatmateMatchesPage() {
                   <>
                     <div>
                       <span className="text-neutral-450 block text-[9px] font-bold tracking-wider uppercase">
-                        Living Arrangement Area
+                        {t("renterDashboard.flatmateMatches.modal.livingArrangementArea")}
                       </span>
                       <span className="mt-1 block text-sm font-semibold text-neutral-800">
                         {modalFlatmate.areas[0] || modalFlatmate.city}
@@ -610,10 +612,11 @@ export default function RenterFlatmateMatchesPage() {
                     </div>
                     <div className="border-t border-neutral-100 pt-3">
                       <span className="text-neutral-450 block text-[9px] font-bold tracking-wider uppercase">
-                        Expected Monthly Share
+                        {t("renterDashboard.flatmateMatches.modal.expectedMonthlyShare")}
                       </span>
                       <span className="font-bricolage mt-1 block text-xl font-extrabold text-black">
-                        {formatRwf(modalFlatmate.budgetMin)} / month
+                        {formatRwf(modalFlatmate.budgetMin)}{" "}
+                        {t("renterDashboard.flatmateMatches.card.perMonth")}
                       </span>
                     </div>
                   </>
@@ -627,7 +630,7 @@ export default function RenterFlatmateMatchesPage() {
                   onClick={() => setShowMatchModal(false)}
                   className="flex h-12 items-center justify-center rounded-full bg-black font-semibold text-white shadow-md transition-all hover:bg-neutral-800 active:scale-95"
                 >
-                  Start Chat
+                  {t("renterDashboard.flatmateMatches.modal.startChat")}
                 </Link>
                 {modalFlatmate.situation === "looking" &&
                 userSituation === "looking" ? (
@@ -636,14 +639,14 @@ export default function RenterFlatmateMatchesPage() {
                     onClick={() => setShowMatchModal(false)}
                     className="flex h-12 items-center justify-center rounded-full border border-black/15 bg-white font-semibold text-black transition-all hover:bg-neutral-50 active:scale-95"
                   >
-                    Browse Homes Together
+                    {t("renterDashboard.flatmateMatches.card.browseHomesTogether")}
                   </Link>
                 ) : (
                   <button
                     onClick={() => setShowMatchModal(false)}
                     className="flex h-12 items-center justify-center rounded-full border border-black/15 bg-white font-semibold text-black transition-all hover:bg-neutral-50 active:scale-95"
                   >
-                    Close
+                    {t("common.close")}
                   </button>
                 )}
               </div>
@@ -662,12 +665,13 @@ function EmptyState({
   title: string;
   description: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center border-none bg-transparent px-6 py-12 text-center">
       <div className="relative mb-4 h-44 w-44">
         <Image
           src={emptyImage}
-          alt="No results found"
+          alt={t("renterDashboard.flatmateMatches.empty.imageAlt")}
           fill
           className="object-contain"
         />
@@ -682,7 +686,7 @@ function EmptyState({
         href="/flatmates?from=renter"
         className="mt-6 inline-flex h-10 items-center justify-center rounded-full bg-black px-5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-neutral-800"
       >
-        Browse Flatmates
+        {t("renterDashboard.nav.groups.findFlatmate.browseFlatmates")}
       </Link>
     </div>
   );

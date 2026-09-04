@@ -16,9 +16,39 @@ import { useEffect, useState } from "react";
 import { Suspense } from "react";
 
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
-import { RENTER_APPLICATIONS } from "@/data/renter-applications";
+import { useTranslation } from "@/components/language/use-translation";
+import { RENTER_APPLICATIONS, type ApplicationStatus } from "@/data/renter-applications";
 import { OWNER } from "@/lib/owner-data";
 import { getCurrentReviewerFor } from "@/lib/professional-work";
+
+// `ApplicationStatus` (and the raw document/status strings below) stay the
+// internal identifiers used for comparisons and styling -- these maps only
+// resolve the translated display label, mirroring the `optionLabels`
+// pattern used by the renter dashboard's `FilterSelect`.
+const STATUS_LABEL_KEYS: Record<ApplicationStatus, string> = {
+  Draft: "renterDashboard.applicationDetail.statusLabels.draft",
+  Submitted: "renterDashboard.applicationDetail.statusLabels.submitted",
+  "Under Review": "renterDashboard.applicationDetail.statusLabels.underReview",
+  "Action Required": "renterDashboard.applicationDetail.statusLabels.actionRequired",
+  "Decision Pending": "renterDashboard.applicationDetail.statusLabels.decisionPending",
+  Approved: "renterDashboard.applicationDetail.statusLabels.approved",
+  "Not Selected": "renterDashboard.applicationDetail.statusLabels.notSelected",
+  Completed: "renterDashboard.applicationDetail.statusLabels.completed",
+  Withdrawn: "renterDashboard.applicationDetail.statusLabels.withdrawn",
+};
+
+const DOCUMENT_LABEL_KEYS: Record<string, string> = {
+  "Identity document": "renterDashboard.applicationDetail.documents.identityDocument",
+  "Reference document": "renterDashboard.applicationDetail.documents.referenceDocument",
+};
+
+const DOCUMENT_STATUS_LABEL_KEYS: Record<string, string> = {
+  Verified: "renterDashboard.applicationDetail.documents.statusVerified",
+  Received: "renterDashboard.applicationDetail.documents.statusReceived",
+  Selected: "renterDashboard.applicationDetail.documents.statusSelected",
+  Requested: "renterDashboard.applicationDetail.documents.statusRequested",
+  Pending: "renterDashboard.applicationDetail.documents.statusPending",
+};
 
 export default function ApplicationDetailPage() {
   return (
@@ -29,6 +59,7 @@ export default function ApplicationDetailPage() {
 }
 
 function ApplicationDetailPageInner() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const query = useSearchParams();
   const storedApplication = RENTER_APPLICATIONS.find((item) => item.id === id);
@@ -38,14 +69,14 @@ function ApplicationDetailPageInner() {
     title: query.get("title") ?? "Submitted property",
     location: query.get("location") ?? "",
     status: "Submitted" as const,
-    date: "Submitted today",
+    date: t("renterDashboard.applicationDetail.fallback.date"),
     // Falls back to the real Kacyiru Residence property manager (matching
     // the default propertyId above) instead of a generic placeholder name,
     // so "Message" always opens a real, findable conversation.
     representative: "Jean Mugisha",
     role: "Verified Property Manager",
     progress: 42,
-    message: "Your application has been received.",
+    message: t("renterDashboard.applicationDetail.fallback.message"),
   };
   const assignedReviewer = getCurrentReviewerFor(application.propertyId);
   const reviewer =
@@ -53,7 +84,9 @@ function ApplicationDetailPageInner() {
     (application.role.includes("Property Manager")
       ? {
           name: application.representative,
-          roleLabel: "Property Manager",
+          roleLabel: t(
+            "renterDashboard.applicationDetail.reviewer.propertyManagerFallbackRole",
+          ),
         }
       : { name: OWNER.name, roleLabel: OWNER.role });
   const reviewerVerified =
@@ -93,10 +126,14 @@ function ApplicationDetailPageInner() {
           ? 2
           : 1;
   const steps = [
-    "Application submitted",
-    "Documents received",
-    actionRequired ? "Action required" : "Under review",
-    displayedStatus === "Decision Pending" ? "Decision pending" : "Decision",
+    t("renterDashboard.applicationDetail.progressSteps.applicationSubmitted"),
+    t("renterDashboard.applicationDetail.progressSteps.documentsReceived"),
+    actionRequired
+      ? t("renterDashboard.applicationDetail.progressSteps.actionRequired")
+      : t("renterDashboard.applicationDetail.progressSteps.underReview"),
+    displayedStatus === "Decision Pending"
+      ? t("renterDashboard.applicationDetail.progressSteps.decisionPending")
+      : t("renterDashboard.applicationDetail.progressSteps.decision"),
   ];
   const documentRows = !storedApplication
     ? submittedDocuments.map(({ name }) => [name, "Received"])
@@ -158,6 +195,11 @@ function ApplicationDetailPageInner() {
     window.setTimeout(() => setToast(""), 3000);
   }
 
+  function documentDisplayName(name: string) {
+    const key = DOCUMENT_LABEL_KEYS[name];
+    return key ? t(key) : name;
+  }
+
   function openDocument(name: string) {
     const submittedDocument = submittedDocuments.find(
       (document) => document.name === name,
@@ -181,6 +223,7 @@ function ApplicationDetailPageInner() {
     }
     setPreview({ name });
   }
+  const previewDisplayName = preview ? documentDisplayName(preview.name) : "";
   return (
     <>
       <RenterCatalogueTopBar />
@@ -192,20 +235,23 @@ function ApplicationDetailPageInner() {
               className="mb-6 inline-flex items-center gap-1 text-sm text-black/65 transition-colors hover:text-black"
             >
               <ChevronLeft aria-hidden="true" className="size-4" />
-              Back to Applications
+              {t("renterDashboard.applicationDetail.backToApplications")}
             </Link>
             <div className="flex items-center justify-between gap-5">
               <h1 className="font-bricolage text-3xl font-medium tracking-[-0.04em] sm:text-4xl">
-                Application for {application.title}
+                {t("renterDashboard.applicationDetail.heading", {
+                  title: application.title,
+                })}
               </h1>
               <span className="shrink-0 rounded-full bg-black px-3 py-1.5 text-xs font-medium text-white">
-                {displayedStatus}
+                {t(STATUS_LABEL_KEYS[displayedStatus])}
               </span>
             </div>
             <p className="text-carbon-500 mt-2">{application.location}</p>
             <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm">
               <span>
-                Application ID: <strong>{application.id}</strong>
+                {t("renterDashboard.applicationDetail.applicationIdLabel")}{" "}
+                <strong>{application.id}</strong>
               </span>
               <span>{application.date}</span>
             </div>
@@ -214,7 +260,7 @@ function ApplicationDetailPageInner() {
                 href={`/properties/${application.propertyId}?from=renter`}
                 className="font-bricolage border-carbon-900 text-carbon-900 hover:bg-muted inline-flex h-11 items-center justify-center gap-2 rounded-full border bg-transparent px-5 text-base font-medium transition-colors duration-150"
               >
-                View Property
+                {t("renterDashboard.applicationDetail.viewProperty")}
                 <ArrowUpRight aria-hidden="true" className="size-4" />
               </Link>
             </div>
@@ -226,15 +272,23 @@ function ApplicationDetailPageInner() {
               {actionRequired ? (
                 <section className="border border-black bg-white p-6">
                   <h2 className="font-bricolage text-2xl font-medium">
-                    Action required
+                    {t("renterDashboard.applicationDetail.actionRequired.heading")}
                   </h2>
                   <p className="mt-3 text-sm">
-                    {application.representative} requested an updated{" "}
-                    {selectedDocumentType.toLowerCase()}.
+                    {t("renterDashboard.applicationDetail.actionRequired.body", {
+                      representative: application.representative,
+                      documentType: documentDisplayName(
+                        selectedDocumentType,
+                      ).toLowerCase(),
+                    })}
                   </p>
                   <div className="text-carbon-500 mt-3 flex gap-5 text-xs">
-                    <span>Requested: 14 August 2026</span>
-                    <span>Due: 17 August 2026</span>
+                    <span>
+                      {t("renterDashboard.applicationDetail.actionRequired.requestedOn")}
+                    </span>
+                    <span>
+                      {t("renterDashboard.applicationDetail.actionRequired.dueOn")}
+                    </span>
                   </div>
                   {selectedDocument ? (
                     <div className="mt-5 flex items-center justify-between gap-4 border-y border-black/10 py-3">
@@ -255,7 +309,9 @@ function ApplicationDetailPageInner() {
                       <button
                         type="button"
                         onClick={() => setSelectedDocument(null)}
-                        aria-label="Remove selected document"
+                        aria-label={t(
+                          "renterDashboard.applicationDetail.actionRequired.removeSelectedDocumentAria",
+                        )}
                         className="flex size-8 shrink-0 items-center justify-center rounded-full hover:bg-black/[0.05]"
                       >
                         <X className="size-4" />
@@ -275,30 +331,45 @@ function ApplicationDetailPageInner() {
                           if (file) {
                             setSelectedDocumentType("Reference document");
                             setSelectedDocument(file);
-                            showToast(`${file.name} is ready to submit.`);
+                            showToast(
+                              t(
+                                "renterDashboard.applicationDetail.toasts.readyToSubmit",
+                                { fileName: file.name },
+                              ),
+                            );
                           }
                         }}
                       />
                       {selectedDocument
-                        ? "Replace Document"
-                        : "Upload Document"}
+                        ? t(
+                            "renterDashboard.applicationDetail.actionRequired.replaceDocument",
+                          )
+                        : t(
+                            "renterDashboard.applicationDetail.actionRequired.uploadDocument",
+                          )}
                     </label>
                     {selectedDocument ? (
                       <button
                         type="button"
                         onClick={() => {
                           setRequestComplete(true);
-                          showToast("Document uploaded successfully.");
+                          showToast(
+                            t(
+                              "renterDashboard.applicationDetail.toasts.documentUploaded",
+                            ),
+                          );
                         }}
                         className="h-10 rounded-full bg-black px-5 text-sm text-white"
                       >
-                        Submit Document
+                        {t(
+                          "renterDashboard.applicationDetail.actionRequired.submitDocument",
+                        )}
                       </button>
                     ) : null}
                   </div>
                 </section>
               ) : null}
-              <Section title="Application progress">
+              <Section title={t("renterDashboard.applicationDetail.sections.progress")}>
                 <div className="space-y-0">
                   {steps.map((step, index) => (
                     <div key={step} className="flex gap-3">
@@ -320,53 +391,100 @@ function ApplicationDetailPageInner() {
                         <p className="text-sm font-medium">{step}</p>
                         <p className="text-carbon-500 mt-0.5 text-xs">
                           {index < completedSteps
-                            ? "10 Aug · Complete"
+                            ? t(
+                                "renterDashboard.applicationDetail.progressCaption.completeOn",
+                              )
                             : index ===
                                 Math.min(completedSteps, steps.length - 1)
-                              ? "Current"
-                              : "Pending"}
+                              ? t(
+                                  "renterDashboard.applicationDetail.progressCaption.current",
+                                )
+                              : t(
+                                  "renterDashboard.applicationDetail.progressCaption.pending",
+                                )}
                         </p>
                       </div>
                     </div>
                   ))}
                 </div>
               </Section>
-              <Section title="Application summary">
+              <Section title={t("renterDashboard.applicationDetail.sections.summary")}>
                 <div className="grid gap-5 sm:grid-cols-2">
                   <Summary
-                    title="Applicant"
+                    title={t("renterDashboard.applicationDetail.summary.applicant")}
                     rows={[
                       submittedValues.fullName || "Julien Mugisha",
                       submittedValues.email || "renter@gmail.com",
                       submittedValues.phone || "+250 788 000 000",
-                      "Primary applicant",
+                      t(
+                        "renterDashboard.applicationDetail.summary.primaryApplicant",
+                      ),
                     ]}
                   />
                   <Summary
-                    title="Rental preferences"
+                    title={t(
+                      "renterDashboard.applicationDetail.summary.rentalPreferences",
+                    )}
                     rows={[
-                      `Move-in: ${submittedValues.moveIn || "1 September 2026"}`,
-                      `Lease: ${submittedValues.lease || "12 months"}`,
-                      `${submittedValues.occupants || "2"} occupants`,
-                      submittedValues.pets || "No pets",
+                      t("renterDashboard.applicationDetail.summary.moveInLabel", {
+                        value:
+                          submittedValues.moveIn ||
+                          t(
+                            "renterDashboard.applicationDetail.summary.moveInFallback",
+                          ),
+                      }),
+                      t("renterDashboard.applicationDetail.summary.leaseLabel", {
+                        value:
+                          submittedValues.lease ||
+                          t(
+                            "renterDashboard.applicationDetail.summary.leaseFallback",
+                          ),
+                      }),
+                      t(
+                        "renterDashboard.applicationDetail.summary.occupantsCount",
+                        { count: submittedValues.occupants || "2" },
+                      ),
+                      submittedValues.pets ||
+                        t("renterDashboard.applicationDetail.summary.noPets"),
                     ]}
                   />
                   <Summary
-                    title="Income & Rent Payment"
+                    title={t(
+                      "renterDashboard.applicationDetail.summary.incomeAndRentPayment",
+                    )}
                     rows={[
-                      submittedValues.employment || "Employed",
-                      submittedValues.income || "Income range provided",
-                      submittedValues.incomeSource || "Income source provided",
-                      submittedValues.rentPayment || "Payment method provided",
+                      submittedValues.employment ||
+                        t(
+                          "renterDashboard.applicationDetail.summary.employedFallback",
+                        ),
+                      submittedValues.income ||
+                        t(
+                          "renterDashboard.applicationDetail.summary.incomeRangeProvided",
+                        ),
+                      submittedValues.incomeSource ||
+                        t(
+                          "renterDashboard.applicationDetail.summary.incomeSourceProvided",
+                        ),
+                      submittedValues.rentPayment ||
+                        t(
+                          "renterDashboard.applicationDetail.summary.paymentMethodProvided",
+                        ),
                     ]}
                   />
                   <Summary
-                    title="Co-applicant"
-                    rows={[submittedValues.coApplicant || "No co-applicant"]}
+                    title={t(
+                      "renterDashboard.applicationDetail.summary.coApplicant",
+                    )}
+                    rows={[
+                      submittedValues.coApplicant ||
+                        t(
+                          "renterDashboard.applicationDetail.summary.noCoApplicant",
+                        ),
+                    ]}
                   />
                 </div>
               </Section>
-              <Section title="Documents">
+              <Section title={t("renterDashboard.applicationDetail.sections.documents")}>
                 {documentRows.length ? (
                   <div className="divide-y divide-black/10">
                     {documentRows.map(([name, status]) => (
@@ -376,11 +494,11 @@ function ApplicationDetailPageInner() {
                       >
                         <span className="flex items-center gap-2 text-sm">
                           <FileText className="size-4" />
-                          {name}
+                          {documentDisplayName(name)}
                         </span>
                         <div className="flex items-center gap-3">
                           <span className="text-carbon-500 text-xs">
-                            {status}
+                            {t(DOCUMENT_STATUS_LABEL_KEYS[status])}
                           </span>
                           {status === "Pending" || status === "Requested" ? (
                             <label className="cursor-pointer text-xs underline underline-offset-4">
@@ -394,7 +512,10 @@ function ApplicationDetailPageInner() {
                                     setSelectedDocumentType(name);
                                     setSelectedDocument(file);
                                     showToast(
-                                      `${file.name} is ready to submit.`,
+                                      t(
+                                        "renterDashboard.applicationDetail.toasts.readyToSubmit",
+                                        { fileName: file.name },
+                                      ),
                                     );
                                     window.scrollTo({
                                       top: 0,
@@ -403,7 +524,7 @@ function ApplicationDetailPageInner() {
                                   }
                                 }}
                               />
-                              Upload
+                              {t("renterDashboard.applicationDetail.documents.upload")}
                             </label>
                           ) : (
                             <button
@@ -411,7 +532,7 @@ function ApplicationDetailPageInner() {
                               onClick={() => openDocument(name)}
                               className="text-xs underline underline-offset-4"
                             >
-                              View
+                              {t("renterDashboard.applicationDetail.documents.view")}
                             </button>
                           )}
                         </div>
@@ -420,28 +541,61 @@ function ApplicationDetailPageInner() {
                   </div>
                 ) : (
                   <div className="border-y border-black/10 py-6 text-sm">
-                    <p className="font-medium">No documents available</p>
+                    <p className="font-medium">
+                      {t(
+                        "renterDashboard.applicationDetail.documents.noneAvailableTitle",
+                      )}
+                    </p>
                     <p className="text-carbon-500 mt-1">
-                      No uploaded files are attached to this application.
+                      {t(
+                        "renterDashboard.applicationDetail.documents.noneAvailableDescription",
+                      )}
                     </p>
                   </div>
                 )}
               </Section>
-              <Section title="Activity">
+              <Section title={t("renterDashboard.applicationDetail.sections.activity")}>
                 <div className="space-y-4 text-sm">
                   {[
                     ...(requestComplete
                       ? [
                           [
-                            "Today",
-                            `${selectedDocument?.name ?? "Reference document"} uploaded and submitted`,
+                            t("renterDashboard.applicationDetail.activity.today"),
+                            t(
+                              "renterDashboard.applicationDetail.activity.documentUploadedAndSubmitted",
+                              {
+                                documentName:
+                                  selectedDocument?.name ??
+                                  documentDisplayName("Reference document"),
+                              },
+                            ),
                           ],
                         ]
                       : []),
-                    ["14 Aug", "Additional document requested"],
-                    ["12 Aug", "Application moved to Under Review"],
-                    ["10 Aug", "Application submitted"],
-                    ["10 Aug", "Documents uploaded"],
+                    [
+                      t("renterDashboard.applicationDetail.activity.dates.aug14"),
+                      t(
+                        "renterDashboard.applicationDetail.activity.additionalDocumentRequested",
+                      ),
+                    ],
+                    [
+                      t("renterDashboard.applicationDetail.activity.dates.aug12"),
+                      t(
+                        "renterDashboard.applicationDetail.activity.movedToUnderReview",
+                      ),
+                    ],
+                    [
+                      t("renterDashboard.applicationDetail.activity.dates.aug10"),
+                      t(
+                        "renterDashboard.applicationDetail.activity.applicationSubmitted",
+                      ),
+                    ],
+                    [
+                      t("renterDashboard.applicationDetail.activity.dates.aug10"),
+                      t(
+                        "renterDashboard.applicationDetail.activity.documentsUploaded",
+                      ),
+                    ],
                   ].map(([date, text]) => (
                     <div
                       key={`${date}-${text}`}
@@ -456,7 +610,7 @@ function ApplicationDetailPageInner() {
             </div>
             <aside className="h-fit bg-white p-6 shadow-[0_3px_12px_rgba(0,0,0,0.03)] lg:sticky lg:top-20">
               <h2 className="font-bricolage text-xl font-medium">
-                Reviewed by
+                {t("renterDashboard.applicationDetail.reviewer.heading")}
               </h2>
               <p className="mt-5 flex items-center gap-1.5 font-medium">
                 <span>{reviewer.name}</span>
@@ -471,7 +625,7 @@ function ApplicationDetailPageInner() {
                 href={`/renter-dashboard/messages?host=${encodeURIComponent(reviewer.name)}&role=${encodeURIComponent(reviewer.roleLabel)}&verified=${reviewerVerified ? "1" : "0"}&ctx=application&property=${encodeURIComponent(application.title)}&propertyId=${encodeURIComponent(application.propertyId)}&status=${encodeURIComponent(application.status)}&refId=${encodeURIComponent(application.id)}`}
                 className="mt-5 inline-flex h-10 items-center rounded-full bg-black px-5 text-sm text-white"
               >
-                Message
+                {t("renterDashboard.applicationDetail.reviewer.message")}
               </Link>
             </aside>
           </div>
@@ -481,7 +635,9 @@ function ApplicationDetailPageInner() {
         <div
           role="dialog"
           aria-modal="true"
-          aria-label={`Preview ${preview.name}`}
+          aria-label={t("renterDashboard.applicationDetail.preview.ariaLabel", {
+            name: previewDisplayName,
+          })}
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-4"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) setPreview(null);
@@ -490,13 +646,19 @@ function ApplicationDetailPageInner() {
           <div className="flex h-[min(760px,90svh)] w-full max-w-3xl flex-col overflow-hidden bg-white shadow-2xl">
             <header className="flex items-center justify-between border-b border-black/10 px-5 py-4">
               <div className="min-w-0">
-                <p className="text-carbon-500 text-xs">Document preview</p>
-                <h2 className="truncate font-medium">{preview.name}</h2>
+                <p className="text-carbon-500 text-xs">
+                  {t(
+                    "renterDashboard.applicationDetail.preview.documentPreviewLabel",
+                  )}
+                </p>
+                <h2 className="truncate font-medium">{previewDisplayName}</h2>
               </div>
               <button
                 type="button"
                 onClick={() => setPreview(null)}
-                aria-label="Close document preview"
+                aria-label={t(
+                  "renterDashboard.applicationDetail.preview.closeAria",
+                )}
                 className="flex size-9 shrink-0 items-center justify-center rounded-full hover:bg-black/[0.05]"
               >
                 <X className="size-4" />
@@ -508,7 +670,7 @@ function ApplicationDetailPageInner() {
               <div className="bg-carbon-50 relative min-h-0 flex-1 p-6">
                 <Image
                   src={preview.url}
-                  alt={preview.name}
+                  alt={previewDisplayName}
                   fill
                   unoptimized
                   className="object-contain p-6"
@@ -517,17 +679,22 @@ function ApplicationDetailPageInner() {
             ) : preview.url ? (
               <iframe
                 src={preview.url}
-                title={preview.name}
+                title={previewDisplayName}
                 className="bg-carbon-50 min-h-0 flex-1"
               />
             ) : (
               <div className="bg-carbon-50 flex flex-1 flex-col items-center justify-center p-8 text-center">
                 <FileText className="size-14 stroke-1" />
                 <h3 className="font-bricolage mt-5 text-2xl font-medium">
-                  Preview unavailable
+                  {t(
+                    "renterDashboard.applicationDetail.preview.unavailableTitle",
+                  )}
                 </h3>
                 <p className="text-carbon-500 mt-2 max-w-sm text-sm leading-6">
-                  There is no file available to preview for {preview.name}.
+                  {t(
+                    "renterDashboard.applicationDetail.preview.unavailableDescription",
+                    { name: previewDisplayName },
+                  )}
                 </p>
               </div>
             )}

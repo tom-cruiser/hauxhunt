@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
 import { VoiceInputButton } from "@/components/listings/voice-input-button";
+import { useTranslation } from "@/components/language/use-translation";
 import { PUBLIC_FLATMATES, formatRwf } from "@/data/public-flatmates";
 import {
   getStoredThreads,
@@ -50,6 +51,10 @@ import {
   type Conversation as SharedConversation,
   type ConversationContextType as SharedContextType,
 } from "@/lib/messages-data";
+
+// Shape of useTranslation()'s `t` — threaded as a plain parameter into the
+// several module-level (non-hook) helper functions below that need it.
+type Translate = (key: string, vars?: Record<string, string | number>) => string;
 
 type Attachment = {
   kind: "image" | "document";
@@ -120,20 +125,28 @@ function demoPhoneNumber(seed: string, countryCode: string) {
   return `${countryCode} ${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6, 9)}`;
 }
 
-const INBOX_TABS = [
-  { key: "inbox", label: "All" },
-  { key: "unread", label: "Unread" },
-  { key: "read", label: "Read" },
-] as const;
+const INBOX_TABS = ["inbox", "unread", "read"] as const;
 
-type InboxTab = (typeof INBOX_TABS)[number]["key"];
+type InboxTab = (typeof INBOX_TABS)[number];
 
-const MORE_FILTERS: Array<[ConversationType, string]> = [
-  ["flatmate", "Flatmate Matches"],
-  ["manager", "Listing Enquiries"],
-  ["landlord", "My Rental"],
-  ["support", "Property Search"],
-];
+// Translation-KEY map (not resolved text) — this sits at module scope,
+// outside the component, so it can't call useTranslation() itself; the key
+// is resolved with t() wherever a tab is actually rendered.
+const INBOX_TAB_LABEL_KEYS: Record<InboxTab, string> = {
+  inbox: "renterDashboard.messages.sidebar.tabs.all",
+  unread: "renterDashboard.messages.sidebar.tabs.unread",
+  read: "renterDashboard.messages.sidebar.tabs.read",
+};
+
+const MORE_FILTERS: ConversationType[] = ["flatmate", "manager", "landlord", "support"];
+
+// Same translation-key-map pattern as INBOX_TAB_LABEL_KEYS above.
+const MORE_FILTER_LABEL_KEYS: Record<ConversationType, string> = {
+  flatmate: "renterDashboard.messages.sidebar.filters.flatmateMatches",
+  manager: "renterDashboard.messages.sidebar.filters.listingEnquiries",
+  landlord: "renterDashboard.messages.sidebar.filters.myRental",
+  support: "renterDashboard.messages.sidebar.filters.propertySearch",
+};
 
 // Short, restrained badge label per context type — shown on the conversation
 // list row and used to build the fuller "Viewing · Confirmed" status line in
@@ -183,17 +196,19 @@ function toLocalContextType(type: SharedContextType | undefined): ConversationCo
 // (Today/Yesterday/relative) the rest of this file's demo data already
 // uses, computed once here rather than inventing a second time-formatting
 // convention.
-function relativeTimestamp(ts: number): string {
+function relativeTimestamp(ts: number, t: Translate): string {
   const diff = Date.now() - ts;
   const HOUR = 3_600_000;
   const DAY = 24 * HOUR;
-  if (diff < HOUR) return "Just now";
+  if (diff < HOUR) return t("renterDashboard.messages.time.justNow");
+  // A same-day clock time already follows the browser locale via
+  // toLocaleTimeString — left alone, unrelated to this app's language switcher.
   if (diff < DAY) return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  if (diff < 2 * DAY) return "Yesterday";
-  return `${Math.floor(diff / DAY)} days ago`;
+  if (diff < 2 * DAY) return t("renterDashboard.notificationsDrawer.groupYesterday");
+  return t("renterDashboard.messages.time.daysAgo", { count: Math.floor(diff / DAY) });
 }
 
-function adaptSharedConversation(conversation: SharedConversation): Conversation {
+function adaptSharedConversation(conversation: SharedConversation, t: Translate): Conversation {
   const other = getParticipant(conversation.participantIds.find((id) => id !== RENTER_PARTICIPANT_ID) ?? "");
   const name = other?.name ?? "Unknown";
   const role = other?.role ?? "";
@@ -224,7 +239,7 @@ function adaptSharedConversation(conversation: SharedConversation): Conversation
     messages: conversation.messages.map((m) => ({
       sender: m.senderId === RENTER_PARTICIPANT_ID ? "user" : "them",
       text: m.text,
-      timestamp: relativeTimestamp(m.ts),
+      timestamp: relativeTimestamp(m.ts, t),
       ts: m.ts,
       kind: "chat",
     })),
@@ -233,37 +248,41 @@ function adaptSharedConversation(conversation: SharedConversation): Conversation
 }
 
 // The one contextual action a conversation offers — at most one primary CTA,
-// intentionally not a toolbar of actions.
-function contextCta(context: ConversationContext): { label: string; href: string } | null {
+// intentionally not a toolbar of actions. Returns a translation key rather
+// than resolved text (this function sits outside the component, so it can't
+// call useTranslation() itself) — resolved with t() at the render site.
+function contextCta(context: ConversationContext): { labelKey: string; href: string } | null {
   switch (context.type) {
     case "property-enquiry":
       return context.propertyId
-        ? { label: "View Property", href: `/properties/${context.propertyId}?from=renter` }
+        ? { labelKey: "renterDashboard.messages.contextActions.viewProperty", href: `/properties/${context.propertyId}?from=renter` }
         : null;
     case "viewing":
-      return { label: "View Viewing", href: "/renter-dashboard/visits" };
+      return { labelKey: "renterDashboard.messages.contextActions.viewViewing", href: "/renter-dashboard/visits" };
     case "application":
       return {
-        label: "View Application",
+        labelKey: "renterDashboard.messages.contextActions.viewApplication",
         href: context.refId ? `/renter-dashboard/applications/${context.refId}` : "/renter-dashboard/applications",
       };
     case "rental-setup":
       return {
-        label: "Continue Setup",
+        labelKey: "renterDashboard.messages.contextActions.continueSetup",
         href: context.refId ? `/renter-dashboard/rental-setup/${context.refId}` : "/renter-dashboard/rentals",
       };
     case "active-rental":
       return {
-        label: "View Rental",
+        labelKey: "renterDashboard.messages.contextActions.viewRental",
         href: context.refId ? `/renter-dashboard/rentals/${context.refId}` : "/renter-dashboard/rentals",
       };
     case "maintenance":
       return {
-        label: "View Request",
+        labelKey: "renterDashboard.messages.contextActions.viewRequest",
         href: context.refId ? `/renter-dashboard/maintenance/${context.refId}` : "/renter-dashboard/maintenance",
       };
     case "flatmate":
-      return context.refId ? { label: "View Profile", href: `/flatmates/${context.refId}?from=renter` } : null;
+      return context.refId
+        ? { labelKey: "renterDashboard.messages.contextActions.viewProfile", href: `/flatmates/${context.refId}?from=renter` }
+        : null;
     default:
       return null;
   }
@@ -301,12 +320,13 @@ function ConversationAvatar({
   );
 }
 
-function messagePreview(message?: Message) {
-  if (!message) return "No messages yet";
+function messagePreview(message: Message | undefined, t: Translate) {
+  if (!message) return t("renterDashboard.messages.sidebar.noMessagesYet");
   if (message.text) return message.text;
-  if (message.attachment?.kind === "image") return "📷 Photo";
-  if (message.attachment?.kind === "document") return `📄 ${message.attachment.name}`;
-  return "No messages yet";
+  if (message.attachment?.kind === "image") return t("renterDashboard.messages.sidebar.photoPreview");
+  if (message.attachment?.kind === "document")
+    return t("renterDashboard.messages.sidebar.documentPreview", { name: message.attachment.name });
+  return t("renterDashboard.messages.sidebar.noMessagesYet");
 }
 
 // Most recent message in the thread, sent or received — used to sort the
@@ -320,14 +340,16 @@ function lastActivity(conversation: Conversation) {
 }
 
 // "Today" / "Yesterday" / "15 Aug" — used for the thread's date separators.
-function dateLabel(ts: number) {
+function dateLabel(ts: number, t: Translate) {
   const d = new Date(ts);
   const today = new Date();
   const yesterday = new Date();
   yesterday.setDate(today.getDate() - 1);
   const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
-  if (sameDay(d, today)) return "Today";
-  if (sameDay(d, yesterday)) return "Yesterday";
+  if (sameDay(d, today)) return t("renterDashboard.notificationsDrawer.groupToday");
+  if (sameDay(d, yesterday)) return t("renterDashboard.notificationsDrawer.groupYesterday");
+  // A plain calendar date already follows the browser locale via
+  // toLocaleDateString — left alone, unrelated to this app's language switcher.
   return d.toLocaleDateString([], { day: "numeric", month: "short" });
 }
 
@@ -393,6 +415,7 @@ function highlightMatch(text: string, query: string) {
 }
 
 export default function RenterDashboardMessagesPage() {
+  const { t } = useTranslation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeChatId, setActiveChatId] = useState<string>("");
   const [newMessage, setNewMessage] = useState("");
@@ -437,7 +460,7 @@ export default function RenterDashboardMessagesPage() {
       })
       .catch(() => {
         if (!cancelled) {
-          setCameraError("Couldn't access your camera. Check your browser's camera permission and try again.");
+          setCameraError(t("renterDashboard.messages.camera.permissionError"));
         }
       });
 
@@ -446,7 +469,7 @@ export default function RenterDashboardMessagesPage() {
       cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
       cameraStreamRef.current = null;
     };
-  }, [cameraOpen]);
+  }, [cameraOpen, t]);
 
   // Load and sync co-living matches
   useEffect(() => {
@@ -540,7 +563,7 @@ export default function RenterDashboardMessagesPage() {
               {
                 sender: "them",
                 text: "Hello Julien, your viewing request for Saturday at 10:00 AM has been confirmed. See you there!",
-                timestamp: "Yesterday",
+                timestamp: t("renterDashboard.notificationsDrawer.groupYesterday"),
                 ts: now - DAY
               }
             ]
@@ -580,13 +603,13 @@ export default function RenterDashboardMessagesPage() {
               {
                 sender: "them",
                 text: "Hi Julien, thanks for submitting your application. We are currently verifying references and will get back to you by Friday.",
-                timestamp: "15 days ago",
+                timestamp: t("renterDashboard.messages.time.daysAgo", { count: 15 }),
                 ts: now - 15 * DAY,
               },
               {
                 sender: "them",
                 text: "Just a reminder that rent for Kacyiru Residence is due on the 1st. Let me know if you have any questions about your payment.",
-                timestamp: "Yesterday",
+                timestamp: t("renterDashboard.notificationsDrawer.groupYesterday"),
                 ts: now - DAY + 2 * HOUR
               }
             ]
@@ -621,7 +644,7 @@ export default function RenterDashboardMessagesPage() {
             {
               sender: "them",
               text: "Hi Julien, I'm scheduled to fix the leaking kitchen tap tomorrow at 10:00–11:00 AM. See you then!",
-              timestamp: "Today",
+              timestamp: t("renterDashboard.notificationsDrawer.groupToday"),
               ts: now - 3 * HOUR
             }
           ]
@@ -654,7 +677,7 @@ export default function RenterDashboardMessagesPage() {
               {
                 sender: "them",
                 text: "Hi Julien, thanks for your interest in Nyarutarama Garden Apartment — it's still available. Would you like to schedule a viewing?",
-                timestamp: "2 days ago",
+                timestamp: t("renterDashboard.messages.time.daysAgo", { count: 2 }),
                 ts: now - 2 * DAY,
               }
             ]
@@ -681,7 +704,7 @@ export default function RenterDashboardMessagesPage() {
             {
               sender: "them",
               text: "Hi Julien, we found 3 homes matching your search for a two-bedroom apartment in Kacyiru or Nyarutarama, USD 500–800/month. Check them out in your dashboard!",
-              timestamp: "Today",
+              timestamp: t("renterDashboard.notificationsDrawer.groupToday"),
               ts: now - 5 * HOUR
             }
           ]
@@ -714,7 +737,7 @@ export default function RenterDashboardMessagesPage() {
         // name-keyed record; sending/reading these still goes straight
         // through messages-data.ts (see handleSendMessage/selectChat).
         sharedConversationsForRenter.forEach((c) => {
-          chats.push(adaptSharedConversation(c));
+          chats.push(adaptSharedConversation(c, t));
         });
 
         // Resolve which chat to open from the URL, and build a
@@ -789,7 +812,7 @@ export default function RenterDashboardMessagesPage() {
                 label: incomingContext?.title ?? "Property Enquiry",
               });
               if (shared) {
-                const adapted = adaptSharedConversation(shared);
+                const adapted = adaptSharedConversation(shared, t);
                 chats.push(adapted);
                 initialId = adapted.id;
               }
@@ -889,13 +912,17 @@ export default function RenterDashboardMessagesPage() {
   useEffect(() => {
     return subscribeToMessages(() => {
       setConversations((prev) => {
-        const freshShared = getSharedConversationsFor(RENTER_PARTICIPANT_ID).map(adaptSharedConversation);
+        const freshShared = getSharedConversationsFor(RENTER_PARTICIPANT_ID).map((c) =>
+          adaptSharedConversation(c, t),
+        );
         const freshSharedIds = new Set(freshShared.map((c) => c.id));
         const legacyOnly = prev.filter((c) => c.source !== "shared" && !freshSharedIds.has(c.id));
         return [...legacyOnly, ...freshShared];
       });
     });
-  }, []);
+    // Re-subscribes on locale change so a shared message arriving after a
+    // language switch is adapted with the new locale's `t`, not a stale one.
+  }, [t]);
 
   // Close the "More..." dropdown on outside click
   useEffect(() => {
@@ -1002,13 +1029,13 @@ export default function RenterDashboardMessagesPage() {
         }
         lastDateLabel = null;
       } else {
-        const label = dateLabel(msg.ts);
+        const label = dateLabel(msg.ts, t);
         items.push({ kind: "chat", message: msg, showDate: label !== lastDateLabel, dateLabel: label });
         lastDateLabel = label;
       }
     });
     return items;
-  }, [threadMessages]);
+  }, [threadMessages, t]);
 
   // Jump to the latest message whenever a chat is opened or a new message
   // arrives — same as WhatsApp, the most recent message sits just above the
@@ -1018,27 +1045,36 @@ export default function RenterDashboardMessagesPage() {
   }, [activeChatId, threadMessages.length]);
 
   const emptyStateCopy = (() => {
-    if (searchQuery.trim()) {
+    const query = searchQuery.trim();
+    if (query) {
       return {
-        title: `No results found for "${searchQuery.trim()}"`,
-        body: "Try a different name or property, or clear your search.",
+        title: t("renterDashboard.messages.sidebar.emptyState.noResultsTitle", { query }),
+        body: t("renterDashboard.messages.sidebar.emptyState.noResultsBody"),
       };
     }
     if (typeFilter) {
       return {
-        title: "No Messages",
-        body: `No conversations under ${MORE_FILTERS.find(([t]) => t === typeFilter)?.[1]} yet.`,
+        title: t("renterDashboard.messages.sidebar.emptyState.noMessagesTitle"),
+        body: t("renterDashboard.messages.sidebar.emptyState.noConversationsUnderFilter", {
+          filter: t(MORE_FILTER_LABEL_KEYS[typeFilter]),
+        }),
       };
     }
     if (activeTab === "unread") {
-      return { title: "No Unread Messages", body: "You're all caught up. New messages will appear here." };
+      return {
+        title: t("renterDashboard.messages.sidebar.emptyState.noUnreadTitle"),
+        body: t("renterDashboard.messages.sidebar.emptyState.noUnreadBody"),
+      };
     }
     if (activeTab === "read") {
-      return { title: "No Read Messages", body: "Messages you've opened will appear here." };
+      return {
+        title: t("renterDashboard.messages.sidebar.emptyState.noReadTitle"),
+        body: t("renterDashboard.messages.sidebar.emptyState.noReadBody"),
+      };
     }
     return {
-      title: "No Messages",
-      body: "You don't have any messages yet. When you receive a message, it will appear here.",
+      title: t("renterDashboard.messages.sidebar.emptyState.noMessagesTitle"),
+      body: t("renterDashboard.messages.sidebar.emptyState.noMessagesBody"),
     };
   })();
 
@@ -1179,24 +1215,24 @@ export default function RenterDashboardMessagesPage() {
             <div className="flex items-center justify-between gap-3 px-5 pt-5 pb-4">
               <Link
                 href="/flatmates?from=renter"
-                aria-label="Back to Flatmates"
+                aria-label={t("renterDashboard.messages.backToFlatmatesAria")}
                 className="text-black/50 transition-colors hover:text-black"
               >
                 <ChevronLeft aria-hidden="true" className="size-5" />
               </Link>
               <h1 className="font-bricolage flex-1 text-2xl font-bold tracking-tight">
-                Messages
+                {t("renterDashboard.nav.messages")}
               </h1>
             </div>
 
             <div className="px-5 pb-4">
               <label className="catalogue-location-filter flex items-center gap-2 px-4">
-                <span className="sr-only">Search messages</span>
+                <span className="sr-only">{t("renterDashboard.messages.sidebar.searchAriaLabel")}</span>
                 <Search aria-hidden="true" className="text-carbon-500 size-4 shrink-0" />
                 <input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search"
+                  placeholder={t("renterDashboard.messages.sidebar.searchPlaceholder")}
                   className="catalogue-filter-control min-w-0 flex-1 bg-transparent text-sm outline-none"
                 />
               </label>
@@ -1208,13 +1244,13 @@ export default function RenterDashboardMessagesPage() {
                 style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
               >
                 {INBOX_TABS.map((tab) => {
-                  const isActive = !typeFilter && activeTab === tab.key;
+                  const isActive = !typeFilter && activeTab === tab;
                   return (
                     <button
-                      key={tab.key}
+                      key={tab}
                       type="button"
                       onClick={() => {
-                        setActiveTab(tab.key);
+                        setActiveTab(tab);
                         setTypeFilter(null);
                       }}
                       className={`h-9 shrink-0 rounded-full border px-3 text-sm font-medium transition-colors ${
@@ -1223,7 +1259,7 @@ export default function RenterDashboardMessagesPage() {
                           : "border-black/15 bg-white text-black/70 hover:border-black/30 hover:text-black"
                       }`}
                     >
-                      {tab.label}
+                      {t(INBOX_TAB_LABEL_KEYS[tab])}
                     </button>
                   );
                 })}
@@ -1239,12 +1275,14 @@ export default function RenterDashboardMessagesPage() {
                       : "border-black/15 bg-white text-black/70 hover:border-black/30 hover:text-black"
                   }`}
                 >
-                  {typeFilter ? MORE_FILTERS.find(([t]) => t === typeFilter)?.[1] : "More..."}
+                  {typeFilter
+                    ? t(MORE_FILTER_LABEL_KEYS[typeFilter])
+                    : t("renterDashboard.messages.sidebar.filters.more")}
                   <ChevronDown aria-hidden="true" className="size-3.5" />
                 </button>
                 {moreOpen && (
                   <div className="absolute top-[calc(100%+0.5rem)] left-0 z-20 w-56 rounded-2xl border border-black/10 bg-white p-1.5 shadow-[0_20px_60px_rgba(0,0,0,0.16)]">
-                    {MORE_FILTERS.map(([type, label]) => (
+                    {MORE_FILTERS.map((type) => (
                       <button
                         key={type}
                         type="button"
@@ -1256,7 +1294,7 @@ export default function RenterDashboardMessagesPage() {
                           typeFilter === type ? "bg-black text-white" : "text-black/75 hover:bg-black/5"
                         }`}
                       >
-                        {label}
+                        {t(MORE_FILTER_LABEL_KEYS[type])}
                       </button>
                     ))}
                     {typeFilter && (
@@ -1268,7 +1306,7 @@ export default function RenterDashboardMessagesPage() {
                         }}
                         className="mt-1 block w-full rounded-xl border-t border-black/5 px-3.5 py-2.5 text-left text-sm font-medium text-black/50 hover:bg-black/5"
                       >
-                        Clear filter
+                        {t("renterDashboard.messages.sidebar.filters.clearFilter")}
                       </button>
                     )}
                   </div>
@@ -1296,7 +1334,7 @@ export default function RenterDashboardMessagesPage() {
                       onClick={() => setSearchQuery("")}
                       className="mt-4 rounded-full border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:border-black/30 hover:text-black"
                     >
-                      Clear search
+                      {t("renterDashboard.messages.sidebar.emptyState.clearSearch")}
                     </button>
                   )}
                 </div>
@@ -1329,7 +1367,7 @@ export default function RenterDashboardMessagesPage() {
                               <span className="truncate">{convo.name}</span>
                               {convo.verified && (
                                 <BadgeCheck
-                                  aria-label="Verified"
+                                  aria-label={t("renterDashboard.messages.verifiedAria")}
                                   className="size-3.5 shrink-0 fill-black text-white"
                                 />
                               )}
@@ -1344,7 +1382,7 @@ export default function RenterDashboardMessagesPage() {
 
                           <div className="mt-2 flex items-center justify-between gap-2">
                             <p className={`text-xs truncate flex-1 ${convo.unreadCount > 0 ? "text-black" : "text-neutral-600"}`}>
-                              {messagePreview(lastMsg)}
+                              {messagePreview(lastMsg, t)}
                             </p>
                             {convo.unreadCount > 0 && (
                               <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-black text-[10px] font-bold text-white">
@@ -1367,7 +1405,7 @@ export default function RenterDashboardMessagesPage() {
           <div
             role="separator"
             aria-orientation="vertical"
-            aria-label="Resize conversation list"
+            aria-label={t("renterDashboard.messages.sidebar.resizeAria")}
             aria-valuenow={sidebarWidth}
             aria-valuemin={SIDEBAR_MIN_WIDTH}
             aria-valuemax={SIDEBAR_MAX_WIDTH}
@@ -1396,13 +1434,15 @@ export default function RenterDashboardMessagesPage() {
                         autoFocus
                         value={threadSearchQuery}
                         onChange={(e) => setThreadSearchQuery(e.target.value)}
-                        placeholder={`Search in conversation with ${activeChat.name}`}
+                        placeholder={t("renterDashboard.messages.thread.searchPlaceholder", {
+                          name: activeChat.name,
+                        })}
                         className="catalogue-filter-control min-w-0 flex-1 bg-transparent text-sm outline-none"
                       />
                     </span>
                     <button
                       type="button"
-                      aria-label="Close search"
+                      aria-label={t("renterDashboard.messages.thread.closeSearchAria")}
                       onClick={() => {
                         setThreadSearchOpen(false);
                         setThreadSearchQuery("");
@@ -1417,7 +1457,7 @@ export default function RenterDashboardMessagesPage() {
                     <button
                       type="button"
                       onClick={backToList}
-                      aria-label="Back to conversations"
+                      aria-label={t("renterDashboard.messages.thread.backAria")}
                       className="-ml-1 flex size-9 shrink-0 items-center justify-center rounded-full text-black/60 transition-colors hover:bg-black/5 hover:text-black md:hidden"
                     >
                       <ChevronLeft aria-hidden="true" className="size-5" />
@@ -1428,7 +1468,7 @@ export default function RenterDashboardMessagesPage() {
                         <span className="truncate">{activeChat.name}</span>
                         {activeChat.verified && (
                           <BadgeCheck
-                            aria-label="Verified"
+                            aria-label={t("renterDashboard.messages.verifiedAria")}
                             className="size-3.5 shrink-0 fill-black text-white"
                           />
                         )}
@@ -1438,7 +1478,7 @@ export default function RenterDashboardMessagesPage() {
                     {activeChat.showPhone && (
                       <a
                         href={`tel:${activeChat.phone.replace(/\s+/g, "")}`}
-                        aria-label={`Call ${activeChat.name}`}
+                        aria-label={t("renterDashboard.messages.thread.callAria", { name: activeChat.name })}
                         title={activeChat.phone}
                         className="flex size-9 shrink-0 items-center justify-center rounded-full text-black/60 transition-colors hover:bg-black/5 hover:text-black"
                       >
@@ -1447,7 +1487,7 @@ export default function RenterDashboardMessagesPage() {
                     )}
                     <button
                       type="button"
-                      aria-label="Search in conversation"
+                      aria-label={t("renterDashboard.messages.thread.searchAria")}
                       onClick={() => setThreadSearchOpen(true)}
                       className="flex size-9 shrink-0 items-center justify-center rounded-full text-black/60 transition-colors hover:bg-black/5 hover:text-black"
                     >
@@ -1457,7 +1497,7 @@ export default function RenterDashboardMessagesPage() {
                       <div ref={chatMenuRef} className="relative shrink-0">
                         <button
                           type="button"
-                          aria-label="More options"
+                          aria-label={t("renterDashboard.messages.thread.moreOptionsAria")}
                           onClick={() => setChatMenuOpen((open) => !open)}
                           className="flex size-9 shrink-0 items-center justify-center rounded-full text-black/60 transition-colors hover:bg-black/5 hover:text-black"
                         >
@@ -1470,7 +1510,7 @@ export default function RenterDashboardMessagesPage() {
                               onClick={() => setChatMenuOpen(false)}
                               className="block w-full rounded-xl px-3.5 py-2.5 text-left text-sm font-medium text-black/75 transition-colors hover:bg-black/5"
                             >
-                              {activeChatCta.label}
+                              {t(activeChatCta.labelKey)}
                             </Link>
                           </div>
                         )}
@@ -1485,9 +1525,11 @@ export default function RenterDashboardMessagesPage() {
             {activeChat ? (
               threadQuery && threadMessages.length === 0 ? (
                 <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
-                  <p className="font-bricolage text-lg font-bold text-black">No messages found</p>
+                  <p className="font-bricolage text-lg font-bold text-black">
+                    {t("renterDashboard.messages.thread.noResultsTitle")}
+                  </p>
                   <p className="text-sm text-black/50">
-                    Nothing matches &quot;{threadQuery}&quot; in this conversation.
+                    {t("renterDashboard.messages.thread.noResultsBody", { query: threadQuery })}
                   </p>
                 </div>
               ) : (
@@ -1554,15 +1596,21 @@ export default function RenterDashboardMessagesPage() {
             ) : conversations.length > 0 ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
                 <MessageCircle aria-hidden="true" className="size-14 text-black" strokeWidth={1.5} />
-                <h2 className="font-bricolage text-xl font-bold text-black">Select a conversation</h2>
-                <p className="text-sm text-black/50">Choose a conversation from the list to view messages.</p>
+                <h2 className="font-bricolage text-xl font-bold text-black">
+                  {t("renterDashboard.messages.thread.selectConversationTitle")}
+                </h2>
+                <p className="text-sm text-black/50">
+                  {t("renterDashboard.messages.thread.selectConversationBody")}
+                </p>
               </div>
             ) : (
               <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
                 <MessageCircle aria-hidden="true" className="size-14 text-black/30" strokeWidth={1.5} />
-                <h2 className="font-bricolage text-xl font-bold text-black">No Messages</h2>
+                <h2 className="font-bricolage text-xl font-bold text-black">
+                  {t("renterDashboard.messages.sidebar.emptyState.noMessagesTitle")}
+                </h2>
                 <p className="text-sm text-black/50">
-                  You don&apos;t have any messages yet. When you receive a message, it will appear here.
+                  {t("renterDashboard.messages.sidebar.emptyState.noMessagesBody")}
                 </p>
               </div>
             )}
@@ -1593,7 +1641,7 @@ export default function RenterDashboardMessagesPage() {
               <div ref={attachMenuRef} className="relative shrink-0">
                 <button
                   type="button"
-                  aria-label="Attach"
+                  aria-label={t("renterDashboard.messages.composer.attachAria")}
                   disabled={!activeChat}
                   onClick={() => setAttachMenuOpen((open) => !open)}
                   className="flex size-11 shrink-0 items-center justify-center rounded-full border border-black/15 text-black/60 transition-colors hover:border-black/30 hover:text-black disabled:cursor-not-allowed disabled:opacity-40"
@@ -1611,7 +1659,7 @@ export default function RenterDashboardMessagesPage() {
                       className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-sm font-medium text-black/75 transition-colors hover:bg-black/5"
                     >
                       <ImagePlus aria-hidden="true" className="size-4.5 text-black/60" />
-                      Photo
+                      {t("renterDashboard.messages.composer.photo")}
                     </button>
                     <button
                       type="button"
@@ -1622,7 +1670,7 @@ export default function RenterDashboardMessagesPage() {
                       className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-sm font-medium text-black/75 transition-colors hover:bg-black/5"
                     >
                       <FileText aria-hidden="true" className="size-4.5 text-black/60" />
-                      Document
+                      {t("renterDashboard.messages.composer.document")}
                     </button>
                     <button
                       type="button"
@@ -1630,7 +1678,7 @@ export default function RenterDashboardMessagesPage() {
                       className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-sm font-medium text-black/75 transition-colors hover:bg-black/5"
                     >
                       <Camera aria-hidden="true" className="size-4.5 text-black/60" />
-                      Camera
+                      {t("renterDashboard.messages.composer.camera")}
                     </button>
                   </div>
                 )}
@@ -1641,16 +1689,16 @@ export default function RenterDashboardMessagesPage() {
                   type="text"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type a message"
+                  placeholder={t("renterDashboard.messages.composer.placeholder")}
                   disabled={!activeChat}
                   className="message-composer-control min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-black/40 disabled:cursor-not-allowed"
                 />
-                <VoiceInputButton onTranscript={(t) => setNewMessage((prev) => (prev ? `${prev} ${t}` : t))} />
+                <VoiceInputButton onTranscript={(transcript) => setNewMessage((prev) => (prev ? `${prev} ${transcript}` : transcript))} />
               </div>
               <button
                 type="submit"
                 disabled={!activeChat || !newMessage.trim()}
-                aria-label="Send message"
+                aria-label={t("renterDashboard.messages.composer.sendAria")}
                 className="flex size-11 shrink-0 items-center justify-center rounded-full bg-black text-white transition-all hover:bg-neutral-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
               >
                 <Send className="size-4" />
@@ -1665,13 +1713,13 @@ export default function RenterDashboardMessagesPage() {
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Take a photo"
+          aria-label={t("renterDashboard.messages.camera.dialogAria")}
           className="fixed inset-0 z-100 flex flex-col items-center justify-center bg-black"
         >
           <button
             type="button"
             onClick={closeCamera}
-            aria-label="Close camera"
+            aria-label={t("renterDashboard.messages.camera.closeAria")}
             autoFocus
             className="absolute top-4 right-4 z-20 flex size-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-md transition-colors hover:bg-white/20"
           >
@@ -1687,7 +1735,7 @@ export default function RenterDashboardMessagesPage() {
                 onClick={closeCamera}
                 className="rounded-full border border-white/30 px-5 py-2 text-sm font-medium transition-colors hover:bg-white/10"
               >
-                Close
+                {t("common.close")}
               </button>
             </div>
           ) : (
@@ -1702,7 +1750,7 @@ export default function RenterDashboardMessagesPage() {
               <button
                 type="button"
                 onClick={capturePhoto}
-                aria-label="Take photo"
+                aria-label={t("renterDashboard.messages.camera.captureAria")}
                 className="absolute bottom-8 flex size-16 shrink-0 items-center justify-center rounded-full border-4 border-white bg-white/10 transition-transform active:scale-90"
               >
                 <span className="size-12 rounded-full bg-white" />

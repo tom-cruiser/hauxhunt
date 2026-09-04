@@ -29,6 +29,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
+import { useTranslation } from "@/components/language/use-translation";
 import julienPhoto from "@/assets/images/julien.jpg";
 import phoneImage from "@/assets/images/phone.png";
 import macbookImage from "@/assets/images/macbook.png";
@@ -71,6 +72,7 @@ const AVAILABLE_TAGS = [
 ];
 
 export default function RenterFlatmateProfilePage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"edit" | "preview">("edit");
   const [savedToast, setSavedToast] = useState(false);
   const [mockView, setMockView] = useState<"card" | "detail">("card");
@@ -258,6 +260,19 @@ export default function RenterFlatmateProfilePage() {
     return num.toString();
   };
 
+  // Lifestyle tags are matching identifiers (kept in English, stored as-is);
+  // this maps each known identifier to a translated display label while
+  // leaving any user-typed custom tag to fall back to its raw text.
+  const tagLabels: Record<string, string> = {
+    "Non-smoker": t("renterDashboard.flatmateProfile.tags.nonSmoker"),
+    "Hybrid professional": t("renterDashboard.flatmateProfile.tags.hybridProfessional"),
+    "Respectful of privacy": t("renterDashboard.flatmateProfile.tags.respectfulOfPrivacy"),
+    "Fitness enthusiast": t("renterDashboard.flatmateProfile.tags.fitnessEnthusiast"),
+    "Cooks at home": t("renterDashboard.flatmateProfile.tags.cooksAtHome"),
+    "Remote worker": t("renterDashboard.flatmateProfile.tags.remoteWorker"),
+    Vegetarian: t("renterDashboard.flatmateProfile.tags.vegetarian"),
+  };
+
   return (
     <>
       <RenterCatalogueTopBar />
@@ -271,13 +286,13 @@ export default function RenterFlatmateProfilePage() {
                 className="mb-6 inline-flex items-center gap-1 text-sm text-black/65 transition-colors hover:text-black"
               >
                 <ChevronLeft aria-hidden="true" className="size-4" />
-                Back to Browse Flatmates
+                {t("renterDashboard.flatmateProfile.backToBrowse")}
               </Link>
               <h1 className="font-bricolage text-3xl font-semibold tracking-tight sm:text-4xl">
-                My Flatmate Profile
+                {t("renterDashboard.flatmateProfile.heading")}
               </h1>
               <p className="text-carbon-600 mt-1 text-sm">
-                Set up your housing preferences and lifestyle compatibility so potential flatmates can find you.
+                {t("renterDashboard.flatmateProfile.subheading")}
               </p>
             </div>
 
@@ -292,7 +307,7 @@ export default function RenterFlatmateProfilePage() {
                       : "text-black/70 hover:text-black"
                     }`}
                 >
-                  Edit Profile
+                  {t("renterDashboard.flatmateProfile.tabs.edit")}
                 </button>
                 <button
                   type="button"
@@ -303,7 +318,7 @@ export default function RenterFlatmateProfilePage() {
                     }`}
                 >
                   <Eye className="size-3.5" />
-                  Live Preview
+                  {t("renterDashboard.flatmateProfile.tabs.preview")}
                 </button>
               </div>
 
@@ -313,7 +328,7 @@ export default function RenterFlatmateProfilePage() {
                 className="font-bricolage inline-flex h-11 items-center gap-2 rounded-full bg-black px-6 text-sm font-semibold text-white shadow-lg shadow-black/10 hover:bg-neutral-800 active:scale-95 transition-all"
               >
                 <Save className="size-4" />
-                Publish Profile
+                {t("renterDashboard.flatmateProfile.publishProfile")}
               </button>
             </div>
           </div>
@@ -328,7 +343,7 @@ export default function RenterFlatmateProfilePage() {
                 exit={{ opacity: 0, y: 20, x: "-50%" }}
                 className="feedback-toast flex items-center justify-center z-[250]"
               >
-                <span>Your Flatmate Profile is published and active!</span>
+                <span>{t("renterDashboard.flatmateProfile.toast.published")}</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -343,7 +358,7 @@ export default function RenterFlatmateProfilePage() {
               <section className="rounded-3xl border border-white/80 bg-white/75 p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] ring-1 ring-white/60 backdrop-blur-xl sm:p-8">
                 <div>
                   <h2 className="font-bricolage text-xl font-medium tracking-tight">
-                    Personal Profile
+                    {t("renterDashboard.flatmateProfile.form.personal.heading")}
                   </h2>
                 </div>
 
@@ -354,7 +369,9 @@ export default function RenterFlatmateProfilePage() {
                   >
                     <Image
                       src={profileImage}
-                      alt="Julien's photo"
+                      alt={t("renterDashboard.flatmateProfile.form.personal.photoAlt", {
+                        name: "Julien",
+                      })}
                       fill
                       className="object-cover"
                     />
@@ -376,7 +393,9 @@ export default function RenterFlatmateProfilePage() {
                       <BadgeCheck className="size-5 shrink-0 text-[#242424] fill-white" />
                     </h3>
                     <p className="text-carbon-500 text-xs mt-1">
-                      Verified renter profile photo · Kigali, Rwanda
+                      {t("renterDashboard.flatmateProfile.form.personal.verifiedPhoto", {
+                        location: "Kigali, Rwanda",
+                      })}
                     </p>
                   </div>
                 </div>
@@ -384,31 +403,35 @@ export default function RenterFlatmateProfilePage() {
                 <div className="mt-8 grid gap-5 sm:grid-cols-2">
                   <div>
                     <label className="text-carbon-700 text-xs font-semibold">
-                      First Name
+                      {t("renterDashboard.flatmateProfile.form.personal.firstName")}
                     </label>
                     <input
                       type="text"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       className="profile-field-control mt-1.5 h-11 w-full rounded-xl border border-black/15 bg-white px-3.5 text-sm font-normal outline-none focus:border-black transition-colors"
-                      placeholder="e.g. Julien"
+                      placeholder={t("renterDashboard.flatmateProfile.form.example", {
+                        value: "Julien",
+                      })}
                     />
                   </div>
                   <div>
                     <label className="text-carbon-700 text-xs font-semibold">
-                      Age
+                      {t("renterDashboard.flatmateProfile.form.personal.age")}
                     </label>
                     <input
                       type="number"
                       value={age}
                       onChange={(e) => setAge(e.target.value)}
                       className="profile-field-control mt-1.5 h-11 w-full rounded-xl border border-black/15 bg-white px-3.5 text-sm font-normal outline-none focus:border-black transition-colors"
-                      placeholder="e.g. 26"
+                      placeholder={t("renterDashboard.flatmateProfile.form.example", {
+                        value: "26",
+                      })}
                     />
                   </div>
                   <div>
                     <label className="text-carbon-700 text-xs font-semibold">
-                      Your Gender
+                      {t("renterDashboard.flatmateProfile.form.personal.gender")}
                     </label>
                     <span className="relative block mt-1.5">
                       <select
@@ -416,27 +439,29 @@ export default function RenterFlatmateProfilePage() {
                         onChange={(e) => setGender(e.target.value)}
                         className="profile-field-control h-11 w-full rounded-xl border border-black/15 bg-white pl-3.5 pr-10 text-sm font-normal outline-none focus:border-black appearance-none transition-colors"
                       >
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
+                        <option value="male">{t("renterDashboard.flatmateProfile.form.common.male")}</option>
+                        <option value="female">{t("renterDashboard.flatmateProfile.form.common.female")}</option>
                       </select>
                       <ChevronDown className="text-black/40 pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2" />
                     </span>
                   </div>
                   <div>
                     <label className="text-carbon-700 text-xs font-semibold">
-                      Occupation
+                      {t("renterDashboard.flatmateProfile.form.personal.occupation")}
                     </label>
                     <input
                       type="text"
                       value={occupation}
                       onChange={(e) => setOccupation(e.target.value)}
                       className="profile-field-control mt-1.5 h-11 w-full rounded-xl border border-black/15 bg-white px-3.5 text-sm font-normal outline-none focus:border-black transition-colors"
-                      placeholder="e.g. Product Designer"
+                      placeholder={t("renterDashboard.flatmateProfile.form.example", {
+                        value: "Product Designer",
+                      })}
                     />
                   </div>
                   <div>
                     <label className="text-carbon-700 text-xs font-semibold">
-                      Country
+                      {t("renterDashboard.flatmateProfile.form.personal.country")}
                     </label>
                     <span className="relative block mt-1.5">
                       <select
@@ -453,14 +478,16 @@ export default function RenterFlatmateProfilePage() {
                   </div>
                   <div>
                     <label className="text-carbon-700 text-xs font-semibold">
-                      Current City
+                      {t("renterDashboard.flatmateProfile.form.personal.city")}
                     </label>
                     <input
                       type="text"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       className="profile-field-control mt-1.5 h-11 w-full rounded-xl border border-black/15 bg-white px-3.5 text-sm font-normal outline-none focus:border-black transition-colors"
-                      placeholder="e.g. Kigali"
+                      placeholder={t("renterDashboard.flatmateProfile.form.example", {
+                        value: "Kigali",
+                      })}
                     />
                   </div>
                 </div>
@@ -470,16 +497,16 @@ export default function RenterFlatmateProfilePage() {
               <section className="rounded-3xl border border-white/80 bg-white/75 p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] ring-1 ring-white/60 backdrop-blur-xl sm:p-8">
                 <div>
                   <h2 className="font-bricolage text-xl font-medium tracking-tight">
-                    Housing Situation & Budget
+                    {t("renterDashboard.flatmateProfile.form.housing.heading")}
                   </h2>
                   <p className="text-carbon-500 text-xs">
-                    What kind of living arrangement are you looking for?
+                    {t("renterDashboard.flatmateProfile.form.housing.subheading")}
                   </p>
                 </div>
 
                 <div className="mt-8">
                   <label className="text-carbon-700 text-xs font-semibold">
-                    Your Current Situation
+                    {t("renterDashboard.flatmateProfile.form.housing.currentSituation")}
                   </label>
                   <div className="mt-2.5 grid gap-4 sm:grid-cols-2">
                     <button
@@ -492,14 +519,14 @@ export default function RenterFlatmateProfilePage() {
                     >
                       <div className="flex w-full items-center justify-between">
                         <span className="font-bricolage text-base font-semibold">
-                          Looking for a place
+                          {t("renterDashboard.flatmateProfile.form.housing.situation.looking.label")}
                         </span>
                         <div className={`flex size-4 items-center justify-center rounded-full border transition-colors ${situation === "looking" ? "border-white bg-white text-black" : "border-black/20"}`}>
                           {situation === "looking" && <Check className="size-2.5 stroke-[3]" />}
                         </div>
                       </div>
                       <span className={`mt-2.5 text-xs leading-5 ${situation === "looking" ? "text-white/70" : "text-carbon-500"}`}>
-                        I want to find flatmates and search for a home together.
+                        {t("renterDashboard.flatmateProfile.form.housing.situation.looking.description")}
                       </span>
                     </button>
 
@@ -513,14 +540,14 @@ export default function RenterFlatmateProfilePage() {
                     >
                       <div className="flex w-full items-center justify-between">
                         <span className="font-bricolage text-base font-semibold">
-                          Already have a place
+                          {t("renterDashboard.flatmateProfile.form.housing.situation.hasPlace.label")}
                         </span>
                         <div className={`flex size-4 items-center justify-center rounded-full border transition-colors ${situation === "has-place" ? "border-white bg-white text-black" : "border-black/20"}`}>
                           {situation === "has-place" && <Check className="size-2.5 stroke-[3]" />}
                         </div>
                       </div>
                       <span className={`mt-2.5 text-xs leading-5 ${situation === "has-place" ? "text-white/70" : "text-carbon-500"}`}>
-                        I currently rent a place and have a room available.
+                        {t("renterDashboard.flatmateProfile.form.housing.situation.hasPlace.description")}
                       </span>
                     </button>
                   </div>
@@ -529,7 +556,7 @@ export default function RenterFlatmateProfilePage() {
                 {situation === "has-place" && (
                   <div className="mt-6 border-t border-black/5 pt-6">
                     <label className="text-carbon-700 text-xs font-semibold">
-                      Which of your current rentals are you sharing?
+                      {t("renterDashboard.flatmateProfile.form.housing.sharingRental.label")}
                     </label>
                     <span className="relative block mt-1.5 max-w-md">
                       <select
@@ -537,16 +564,16 @@ export default function RenterFlatmateProfilePage() {
                         onChange={(e) => setSelectedRentalId(e.target.value)}
                         className="profile-field-control h-11 w-full rounded-xl border border-black/15 bg-white pl-3.5 pr-10 text-sm font-normal outline-none focus:border-black appearance-none transition-colors"
                       >
-                        <option value="kibagabaga-modern-family-home">Modern family home (Kibagabaga, Kigali)</option>
-                        <option value="nyarutarama-2br">Modern 2-bedroom (Nyarutarama, Kigali)</option>
-                        <option value="remera-3br">3-bedroom family home with garden (Remera, Kigali)</option>
-                        <option value="lekki-2br">2-bedroom apartment with private parking (Lekki, Lagos)</option>
-                        <option value="lekki-contemporary-duplex">Contemporary duplex (Lekki, Lagos)</option>
+                        <option value="kibagabaga-modern-family-home">{t("featuredListings.listings.modernFamilyHome")} (Kibagabaga, Kigali)</option>
+                        <option value="nyarutarama-2br">{t("renterDashboard.flatmateProfile.form.housing.rentals.modern2br")} (Nyarutarama, Kigali)</option>
+                        <option value="remera-3br">{t("renterDashboard.flatmateProfile.form.housing.rentals.familyHomeGarden")} (Remera, Kigali)</option>
+                        <option value="lekki-2br">{t("renterDashboard.flatmateProfile.form.housing.rentals.apartmentPrivateParking")} (Lekki, Lagos)</option>
+                        <option value="lekki-contemporary-duplex">{t("featuredListings.listings.contemporaryDuplex")} (Lekki, Lagos)</option>
                       </select>
                       <ChevronDown className="text-black/40 pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2" />
                     </span>
                     <p className="mt-2 text-xs text-carbon-450 leading-normal font-normal">
-                      Associates your flatmate profile with your current rental (will not be publicly listed again).
+                      {t("renterDashboard.flatmateProfile.form.housing.sharingRental.helper")}
                     </p>
                   </div>
                 )}
@@ -554,24 +581,28 @@ export default function RenterFlatmateProfilePage() {
                 <div className="mt-8 grid gap-5 sm:grid-cols-3">
                   <div>
                     <label className="text-carbon-700 text-xs font-semibold">
-                      {situation === "looking" ? "Monthly Budget (RWF)" : "Expected Share (RWF)"}
+                      {situation === "looking"
+                        ? t("renterDashboard.flatmateProfile.form.housing.budget.labelLooking")
+                        : t("renterDashboard.flatmateProfile.form.housing.budget.labelHasPlace")}
                     </label>
                     <input
                       type="number"
                       value={budget}
                       onChange={(e) => setBudget(e.target.value)}
                       className="profile-field-control mt-1.5 h-11 w-full rounded-xl border border-black/15 bg-white px-3.5 text-sm font-normal outline-none focus:border-black transition-colors"
-                      placeholder="e.g. 450000"
+                      placeholder={t("renterDashboard.flatmateProfile.form.example", {
+                        value: "450000",
+                      })}
                     />
                     <p className="mt-1 text-[10px] text-carbon-450 leading-normal">
                       {situation === "looking"
-                        ? "Maximum rent you are willing to contribute."
-                        : "Monthly rent you expect the flatmate to pay."}
+                        ? t("renterDashboard.flatmateProfile.form.housing.budget.helperLooking")
+                        : t("renterDashboard.flatmateProfile.form.housing.budget.helperHasPlace")}
                     </p>
                   </div>
                   <div>
                     <label className="text-carbon-700 text-xs font-semibold">
-                      Target Move-In
+                      {t("renterDashboard.flatmateProfile.form.housing.moveIn.label")}
                     </label>
                     <span className="relative block mt-1.5">
                       <select
@@ -579,17 +610,17 @@ export default function RenterFlatmateProfilePage() {
                         onChange={(e) => setMoveIn(e.target.value)}
                         className="profile-field-control h-11 w-full rounded-xl border border-black/15 bg-white pl-3.5 pr-10 text-sm font-normal outline-none focus:border-black appearance-none transition-colors"
                       >
-                        <option value="Available now">Available now</option>
-                        <option value="September 2026">September 2026</option>
-                        <option value="October 2026">October 2026</option>
-                        <option value="November 2026">November 2026</option>
+                        <option value="Available now">{t("renterDashboard.flatmateProfile.form.housing.moveIn.options.availableNow")}</option>
+                        <option value="September 2026">{t("renterDashboard.flatmateProfile.form.housing.moveIn.options.sep2026")}</option>
+                        <option value="October 2026">{t("renterDashboard.flatmateProfile.form.housing.moveIn.options.oct2026")}</option>
+                        <option value="November 2026">{t("renterDashboard.flatmateProfile.form.housing.moveIn.options.nov2026")}</option>
                       </select>
                       <ChevronDown className="text-black/40 pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2" />
                     </span>
                   </div>
                   <div>
                     <label className="text-carbon-700 text-xs font-semibold">
-                      Preferred Stay
+                      {t("renterDashboard.flatmateProfile.form.housing.stay.label")}
                     </label>
                     <span className="relative block mt-1.5">
                       <select
@@ -597,9 +628,9 @@ export default function RenterFlatmateProfilePage() {
                         onChange={(e) => setStay(e.target.value)}
                         className="profile-field-control h-11 w-full rounded-xl border border-black/15 bg-white pl-3.5 pr-10 text-sm font-normal outline-none focus:border-black appearance-none transition-colors"
                       >
-                        <option value="6–12 months">6–12 months</option>
-                        <option value="12+ months">12+ months</option>
-                        <option value="Flexible">Flexible</option>
+                        <option value="6–12 months">{t("renterDashboard.flatmateProfile.form.housing.stay.options.sixToTwelve")}</option>
+                        <option value="12+ months">{t("renterDashboard.flatmateProfile.form.housing.stay.options.twelvePlus")}</option>
+                        <option value="Flexible">{t("renterDashboard.flatmateProfile.form.common.flexible")}</option>
                       </select>
                       <ChevronDown className="text-black/40 pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2" />
                     </span>
@@ -611,7 +642,7 @@ export default function RenterFlatmateProfilePage() {
                     <>
                       <div>
                         <label className="text-carbon-700 text-xs font-semibold">
-                          Preferred Property Type
+                          {t("renterDashboard.flatmateProfile.form.housing.propertyType.label")}
                         </label>
                         <span className="relative block mt-1.5">
                           <select
@@ -619,17 +650,17 @@ export default function RenterFlatmateProfilePage() {
                             onChange={(e) => setPreferredProperty(e.target.value)}
                             className="profile-field-control h-11 w-full rounded-xl border border-black/15 bg-white pl-3.5 pr-10 text-sm font-normal outline-none focus:border-black appearance-none transition-colors"
                           >
-                            <option value="Apartment">Apartment</option>
-                            <option value="House / Villa">House / Villa</option>
-                            <option value="Shared Duplex">Shared Duplex</option>
-                            <option value="Penthouse">Penthouse</option>
+                            <option value="Apartment">{t("renterDashboard.overview.filters.apartment")}</option>
+                            <option value="House / Villa">{t("renterDashboard.flatmateProfile.form.housing.propertyType.options.houseVilla")}</option>
+                            <option value="Shared Duplex">{t("renterDashboard.flatmateProfile.form.housing.propertyType.options.sharedDuplex")}</option>
+                            <option value="Penthouse">{t("renterDashboard.flatmateProfile.form.housing.propertyType.options.penthouse")}</option>
                           </select>
                           <ChevronDown className="text-black/40 pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2" />
                         </span>
                       </div>
                       <div>
                         <label className="text-carbon-700 text-xs font-semibold">
-                          Furnishing
+                          {t("renterDashboard.flatmateProfile.form.housing.furnishing.label")}
                         </label>
                         <span className="relative block mt-1.5">
                           <select
@@ -637,16 +668,16 @@ export default function RenterFlatmateProfilePage() {
                             onChange={(e) => setFurnishing(e.target.value)}
                             className="profile-field-control h-11 w-full rounded-xl border border-black/15 bg-white pl-3.5 pr-10 text-sm font-normal outline-none focus:border-black appearance-none transition-colors"
                           >
-                            <option value="Furnished">Furnished preferred</option>
-                            <option value="Semi-furnished">Semi-furnished</option>
-                            <option value="Unfurnished">Unfurnished</option>
+                            <option value="Furnished">{t("renterDashboard.flatmateProfile.form.housing.furnishing.options.furnishedPreferred")}</option>
+                            <option value="Semi-furnished">{t("renterDashboard.flatmateProfile.form.housing.furnishing.options.semiFurnished")}</option>
+                            <option value="Unfurnished">{t("listingCard.unfurnished")}</option>
                           </select>
                           <ChevronDown className="text-black/40 pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2" />
                         </span>
                       </div>
                       <div>
                         <label className="text-carbon-700 text-xs font-semibold">
-                          Gender Preference
+                          {t("renterDashboard.flatmateProfile.form.housing.genderPreference.label")}
                         </label>
                         <span className="relative block mt-1.5">
                           <select
@@ -654,9 +685,9 @@ export default function RenterFlatmateProfilePage() {
                             onChange={(e) => setGenderPreference(e.target.value)}
                             className="profile-field-control h-11 w-full rounded-xl border border-black/15 bg-white pl-3.5 pr-10 text-sm font-normal outline-none focus:border-black appearance-none transition-colors"
                           >
-                            <option value="any">Any</option>
-                            <option value="female">Female</option>
-                            <option value="male">Male</option>
+                            <option value="any">{t("renterDashboard.overview.filters.any")}</option>
+                            <option value="female">{t("renterDashboard.flatmateProfile.form.common.female")}</option>
+                            <option value="male">{t("renterDashboard.flatmateProfile.form.common.male")}</option>
                           </select>
                           <ChevronDown className="text-black/40 pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2" />
                         </span>
@@ -665,7 +696,7 @@ export default function RenterFlatmateProfilePage() {
                   ) : (
                     <div>
                       <label className="text-carbon-700 text-xs font-semibold">
-                        Gender Preference
+                        {t("renterDashboard.flatmateProfile.form.housing.genderPreference.label")}
                       </label>
                       <span className="relative block mt-1.5">
                         <select
@@ -673,9 +704,9 @@ export default function RenterFlatmateProfilePage() {
                           onChange={(e) => setGenderPreference(e.target.value)}
                           className="profile-field-control h-11 w-full rounded-xl border border-black/15 bg-white pl-3.5 pr-10 text-sm font-normal outline-none focus:border-black appearance-none transition-colors"
                         >
-                          <option value="any">Any</option>
-                          <option value="female">Female</option>
-                          <option value="male">Male</option>
+                          <option value="any">{t("renterDashboard.overview.filters.any")}</option>
+                          <option value="female">{t("renterDashboard.flatmateProfile.form.common.female")}</option>
+                          <option value="male">{t("renterDashboard.flatmateProfile.form.common.male")}</option>
                         </select>
                         <ChevronDown className="text-black/40 pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2" />
                       </span>
@@ -687,7 +718,7 @@ export default function RenterFlatmateProfilePage() {
                 {situation === "looking" && (
                   <div className="mt-8">
                     <label className="text-carbon-700 text-xs font-semibold">
-                      Preferred Areas / Neighborhoods
+                      {t("renterDashboard.flatmateProfile.form.housing.areas.label")}
                     </label>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {Array.from(new Set([...AVAILABLE_AREAS, ...selectedAreas])).map((area) => {
@@ -719,7 +750,7 @@ export default function RenterFlatmateProfilePage() {
                     <div className="mt-4 flex gap-2 max-w-sm">
                       <input
                         type="text"
-                        placeholder="Add other area/neighborhood..."
+                        placeholder={t("renterDashboard.flatmateProfile.form.housing.areas.addPlaceholder")}
                         value={customArea}
                         onChange={(e) => setCustomArea(e.target.value)}
                         onKeyDown={(e) => {
@@ -736,7 +767,7 @@ export default function RenterFlatmateProfilePage() {
                         className="inline-flex h-10 items-center gap-1 rounded-xl bg-black px-4 text-xs font-semibold text-white hover:bg-neutral-800 active:scale-95 transition-all"
                       >
                         <Plus className="size-3.5" />
-                        Add
+                        {t("renterDashboard.flatmateProfile.form.common.add")}
                       </button>
                     </div>
                   </div>
@@ -747,10 +778,10 @@ export default function RenterFlatmateProfilePage() {
               <section className="rounded-3xl border border-white/80 bg-white/75 p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] ring-1 ring-white/60 backdrop-blur-xl sm:p-8">
                 <div>
                   <h2 className="font-bricolage text-xl font-medium tracking-tight">
-                    What Best Describes You
+                    {t("renterDashboard.flatmateProfile.form.lifestyle.heading")}
                   </h2>
                   <p className="text-carbon-500 text-xs font-normal">
-                    Choose the tags that best describe your lifestyle, routines, and habits (maximum three). These tags will be shown on your profile card.
+                    {t("renterDashboard.flatmateProfile.form.lifestyle.description")}
                   </p>
                 </div>
 
@@ -774,7 +805,7 @@ export default function RenterFlatmateProfilePage() {
                             <Plus className="size-3 text-black/40 group-hover:text-black" />
                           )}
                         </span>
-                        {tag}
+                        {tagLabels[tag] ?? tag}
                       </button>
                     );
                   })}
@@ -784,7 +815,7 @@ export default function RenterFlatmateProfilePage() {
                 <div className="mt-4 flex gap-2 max-w-sm">
                   <input
                     type="text"
-                    placeholder="Add other lifestyle tag..."
+                    placeholder={t("renterDashboard.flatmateProfile.form.lifestyle.addTagPlaceholder")}
                     value={customTag}
                     onChange={(e) => setCustomTag(e.target.value)}
                     onKeyDown={(e) => {
@@ -801,7 +832,7 @@ export default function RenterFlatmateProfilePage() {
                     className="inline-flex h-10 items-center gap-1 rounded-xl bg-black px-4 text-xs font-semibold text-white hover:bg-neutral-800 active:scale-95 transition-all"
                   >
                     <Plus className="size-3.5" />
-                    Add
+                    {t("renterDashboard.flatmateProfile.form.common.add")}
                   </button>
                 </div>
 
@@ -809,16 +840,16 @@ export default function RenterFlatmateProfilePage() {
                 <div className="mt-8 border-t border-black/5 pt-8">
                   <div>
                     <h3 className="font-bricolage text-lg font-medium tracking-tight text-neutral-900">
-                      Lifestyle & Compatibility Details
+                      {t("renterDashboard.flatmateProfile.form.lifestyle.detailsHeading")}
                     </h3>
                     <p className="text-carbon-450 text-xs font-normal">
-                      Set your routines and preferences to find compatible roommate matches.
+                      {t("renterDashboard.flatmateProfile.form.lifestyle.detailsSubheading")}
                     </p>
                   </div>
                   <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                     <div>
                       <label className="text-carbon-700 text-xs font-semibold">
-                        Cleanliness
+                        {t("renterDashboard.flatmateProfile.form.lifestyle.cleanliness.label")}
                       </label>
                       <span className="relative block mt-1.5">
                         <select
@@ -826,9 +857,9 @@ export default function RenterFlatmateProfilePage() {
                           onChange={(e) => setCleanliness(e.target.value)}
                           className="profile-field-control h-11 w-full rounded-xl border border-black/15 bg-white pl-3.5 pr-10 text-sm font-normal outline-none focus:border-black appearance-none transition-colors"
                         >
-                          <option value="Very tidy">Very tidy</option>
-                          <option value="Clean shared spaces">Clean shared spaces</option>
-                          <option value="Flexible">Flexible</option>
+                          <option value="Very tidy">{t("renterDashboard.flatmateProfile.form.lifestyle.cleanliness.options.veryTidy")}</option>
+                          <option value="Clean shared spaces">{t("renterDashboard.flatmateProfile.form.lifestyle.cleanliness.options.cleanSharedSpaces")}</option>
+                          <option value="Flexible">{t("renterDashboard.flatmateProfile.form.common.flexible")}</option>
                         </select>
                         <ChevronDown className="text-black/40 pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2" />
                       </span>
@@ -836,7 +867,7 @@ export default function RenterFlatmateProfilePage() {
 
                     <div>
                       <label className="text-carbon-700 text-xs font-semibold">
-                        Pets Preference
+                        {t("renterDashboard.flatmateProfile.form.lifestyle.pets.label")}
                       </label>
                       <span className="relative block mt-1.5">
                         <select
@@ -844,10 +875,10 @@ export default function RenterFlatmateProfilePage() {
                           onChange={(e) => setPets(e.target.value)}
                           className="profile-field-control h-11 w-full rounded-xl border border-black/15 bg-white pl-3.5 pr-10 text-sm font-normal outline-none focus:border-black appearance-none transition-colors"
                         >
-                          <option value="Okay with small pets">Okay with small pets</option>
-                          <option value="Okay with cats">Okay with cats</option>
-                          <option value="Okay with dogs">Okay with dogs</option>
-                          <option value="No pets">No pets</option>
+                          <option value="Okay with small pets">{t("renterDashboard.flatmateProfile.form.lifestyle.pets.options.smallPets")}</option>
+                          <option value="Okay with cats">{t("renterDashboard.flatmateProfile.form.lifestyle.pets.options.cats")}</option>
+                          <option value="Okay with dogs">{t("renterDashboard.flatmateProfile.form.lifestyle.pets.options.dogs")}</option>
+                          <option value="No pets">{t("renterDashboard.flatmateProfile.form.lifestyle.pets.options.none")}</option>
                         </select>
                         <ChevronDown className="text-black/40 pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2" />
                       </span>
@@ -855,7 +886,7 @@ export default function RenterFlatmateProfilePage() {
 
                     <div>
                       <label className="text-carbon-700 text-xs font-semibold">
-                        Social Style
+                        {t("renterDashboard.flatmateProfile.form.lifestyle.socialStyle.label")}
                       </label>
                       <span className="relative block mt-1.5">
                         <select
@@ -863,10 +894,10 @@ export default function RenterFlatmateProfilePage() {
                           onChange={(e) => setSocialStyle(e.target.value)}
                           className="profile-field-control h-11 w-full rounded-xl border border-black/15 bg-white pl-3.5 pr-10 text-sm font-normal outline-none focus:border-black appearance-none transition-colors"
                         >
-                          <option value="Quiet weekdays, social weekends">Quiet weekdays, social weekends</option>
-                          <option value="Quiet home">Quiet home</option>
-                          <option value="Balanced">Balanced</option>
-                          <option value="Social home / Enjoys hosting">Social home / Enjoys hosting</option>
+                          <option value="Quiet weekdays, social weekends">{t("renterDashboard.flatmateProfile.form.lifestyle.socialStyle.options.quietWeekdaysSocialWeekends")}</option>
+                          <option value="Quiet home">{t("renterDashboard.flatmateProfile.form.lifestyle.socialStyle.options.quietHome")}</option>
+                          <option value="Balanced">{t("renterDashboard.flatmateProfile.form.lifestyle.socialStyle.options.balanced")}</option>
+                          <option value="Social home / Enjoys hosting">{t("renterDashboard.flatmateProfile.form.lifestyle.socialStyle.options.socialHome")}</option>
                         </select>
                         <ChevronDown className="text-black/40 pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2" />
                       </span>
@@ -874,7 +905,7 @@ export default function RenterFlatmateProfilePage() {
 
                     <div>
                       <label className="text-carbon-700 text-xs font-semibold">
-                        Sleep Schedule
+                        {t("renterDashboard.flatmateProfile.form.lifestyle.sleepSchedule.label")}
                       </label>
                       <span className="relative block mt-1.5">
                         <select
@@ -882,10 +913,10 @@ export default function RenterFlatmateProfilePage() {
                           onChange={(e) => setSleepSchedule(e.target.value)}
                           className="profile-field-control h-11 w-full rounded-xl border border-black/15 bg-white pl-3.5 pr-10 text-sm font-normal outline-none focus:border-black appearance-none transition-colors"
                         >
-                          <option value="Early sleeper">Early sleeper</option>
-                          <option value="Early riser">Early riser</option>
-                          <option value="Flexible">Flexible</option>
-                          <option value="Night owl">Night owl</option>
+                          <option value="Early sleeper">{t("renterDashboard.flatmateProfile.form.lifestyle.sleepSchedule.options.earlySleeper")}</option>
+                          <option value="Early riser">{t("renterDashboard.flatmateProfile.form.lifestyle.sleepSchedule.options.earlyRiser")}</option>
+                          <option value="Flexible">{t("renterDashboard.flatmateProfile.form.common.flexible")}</option>
+                          <option value="Night owl">{t("renterDashboard.flatmateProfile.form.lifestyle.sleepSchedule.options.nightOwl")}</option>
                         </select>
                         <ChevronDown className="text-black/40 pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2" />
                       </span>
@@ -893,7 +924,7 @@ export default function RenterFlatmateProfilePage() {
 
                     <div>
                       <label className="text-carbon-700 text-xs font-semibold">
-                        Guests Preference
+                        {t("renterDashboard.flatmateProfile.form.lifestyle.guests.label")}
                       </label>
                       <span className="relative block mt-1.5">
                         <select
@@ -901,9 +932,9 @@ export default function RenterFlatmateProfilePage() {
                           onChange={(e) => setGuests(e.target.value)}
                           className="profile-field-control h-11 w-full rounded-xl border border-black/15 bg-white pl-3.5 pr-10 text-sm font-normal outline-none focus:border-black appearance-none transition-colors"
                         >
-                          <option value="Occasional visitors">Occasional visitors</option>
-                          <option value="Friends occasionally">Friends occasionally</option>
-                          <option value="No overnight guests">No overnight guests</option>
+                          <option value="Occasional visitors">{t("renterDashboard.flatmateProfile.form.lifestyle.guests.options.occasionalVisitors")}</option>
+                          <option value="Friends occasionally">{t("renterDashboard.flatmateProfile.form.lifestyle.guests.options.friendsOccasionally")}</option>
+                          <option value="No overnight guests">{t("renterDashboard.flatmateProfile.form.lifestyle.guests.options.noOvernightGuests")}</option>
                         </select>
                         <ChevronDown className="text-black/40 pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2" />
                       </span>

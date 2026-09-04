@@ -13,19 +13,81 @@ import { InternationalPhoneInput } from "@/components/shared/international-phone
 import { PlanToggleCard } from "@/components/tier/plan-toggle-card";
 import { LockedFeature } from "@/components/tier/locked-feature";
 import { isPaidTier, useTier } from "@/hooks/use-tier";
+import { useTranslation } from "@/components/language/use-translation";
 
 type SectionId = "personal" | "security" | "methods" | "preferences" | "plan";
 
-const TENANT_PLAN_FEATURES = [
-  { label: "Listing access", free: "All listings", paid: "All listings" },
-  { label: "Agent/landlord messaging", free: "Up to 3 per month", paid: "Unlimited" },
-  { label: "Map view & location link", free: "Locked", paid: "Included" },
-  { label: "House reviews", free: "Locked", paid: "Included" },
-  { label: "Priority alert on requests", free: "Locked", paid: "Included" },
-  { label: "In-app maintenance requests", free: "Locked", paid: "Included" },
-  { label: "Viewing fee", free: "Market rate", paid: "Capped at 5,000 RWF" },
-  { label: "WhatsApp alerts", free: "Locked", paid: "Included" },
-] as const;
+const SECTION_IDS: SectionId[] = [
+  "personal",
+  "security",
+  "methods",
+  "preferences",
+  "plan",
+];
+
+// Section ids double as the `?section=` query-param value and the internal
+// `openSection` state, so they stay in English — only the tab/Accordion
+// label rendered for each id is translated, via this lookup.
+const SECTION_TAB_KEYS: Record<SectionId, string> = {
+  personal: "renterDashboard.account.tabs.personalInformation",
+  security: "renterDashboard.account.tabs.loginSecurity",
+  methods: "renterDashboard.account.tabs.paymentMethods",
+  preferences: "renterDashboard.account.tabs.notificationsPreferences",
+  plan: "renterDashboard.account.tabs.planBilling",
+};
+
+type PlanFeatureKeys = {
+  labelKey: string;
+  freeKey: string;
+  paidKey: string;
+  paidVars?: Record<string, string>;
+};
+
+const TENANT_PLAN_FEATURE_KEYS: PlanFeatureKeys[] = [
+  {
+    labelKey: "renterDashboard.account.plan.features.listingAccess.label",
+    freeKey: "renterDashboard.account.plan.features.listingAccess.free",
+    paidKey: "renterDashboard.account.plan.features.listingAccess.paid",
+  },
+  {
+    labelKey: "renterDashboard.account.plan.features.messaging.label",
+    freeKey: "renterDashboard.account.plan.features.messaging.free",
+    paidKey: "renterDashboard.account.plan.features.messaging.paid",
+  },
+  {
+    labelKey: "renterDashboard.account.plan.features.mapView.label",
+    freeKey: "renterDashboard.account.plan.features.mapView.free",
+    paidKey: "renterDashboard.account.plan.features.mapView.paid",
+  },
+  {
+    labelKey: "renterDashboard.account.plan.features.houseReviews.label",
+    freeKey: "renterDashboard.account.plan.features.houseReviews.free",
+    paidKey: "renterDashboard.account.plan.features.houseReviews.paid",
+  },
+  {
+    labelKey: "renterDashboard.account.plan.features.priorityAlerts.label",
+    freeKey: "renterDashboard.account.plan.features.priorityAlerts.free",
+    paidKey: "renterDashboard.account.plan.features.priorityAlerts.paid",
+  },
+  {
+    labelKey:
+      "renterDashboard.account.plan.features.maintenanceRequests.label",
+    freeKey: "renterDashboard.account.plan.features.maintenanceRequests.free",
+    paidKey: "renterDashboard.account.plan.features.maintenanceRequests.paid",
+  },
+  {
+    labelKey: "renterDashboard.account.plan.features.viewingFee.label",
+    freeKey: "renterDashboard.account.plan.features.viewingFee.free",
+    paidKey: "renterDashboard.account.plan.features.viewingFee.paid",
+    paidVars: { amount: "5,000 RWF" },
+  },
+  {
+    labelKey: "renterDashboard.account.plan.features.whatsappAlerts.label",
+    freeKey: "renterDashboard.account.plan.features.whatsappAlerts.free",
+    paidKey: "renterDashboard.account.plan.features.whatsappAlerts.paid",
+  },
+];
+
 type Modal =
   | "sessions"
   | "delete-account"
@@ -45,6 +107,15 @@ type PaymentMethod = {
   isDefault: boolean;
 };
 
+// `kind` is the internal, English identifier compared throughout this file
+// (`method.kind === "mobile"`, etc.) — this only maps it to a translated
+// display label, the same defensive split used for `optionLabels` elsewhere.
+const KIND_LABEL_KEYS: Record<MethodKind, string> = {
+  mobile: "renterDashboard.account.modal.addMethod.kinds.mobileMoney",
+  card: "renterDashboard.account.modal.addMethod.kinds.card",
+  bank: "renterDashboard.account.modal.addMethod.kinds.bankAccount",
+};
+
 const INITIAL_PROFILE = {
   name: "Julien Mugisha",
   email: "renter@gmail.com",
@@ -53,47 +124,154 @@ const INITIAL_PROFILE = {
   language: "English",
 };
 
-const PREFERENCE_GROUPS = [
+type PreferenceItem = { id: string; labelKey: string };
+type PreferenceGroupData = { titleKey: string; items: readonly PreferenceItem[] };
+
+// Item `id` is the internal identifier the preferences state is keyed on
+// (`${id}-${channel}`); `labelKey` is only the translated display text, kept
+// separate so switching language never changes which state entries a toggle
+// reads or writes. "new-flatmate-message" is intentionally reused as the id
+// for both its appearance here and in MESSAGE_PREFERENCE_ITEMS below, to
+// preserve the original (pre-i18n) behaviour where both rows shared one
+// underlying preference toggle.
+const PREFERENCE_GROUPS: readonly PreferenceGroupData[] = [
   {
-    title: "Property Search",
+    titleKey: "renterDashboard.account.preferences.groups.propertySearch.title",
     items: [
-      "New matches from Saved Searches",
-      "Price changes on favourite properties",
-      "Property availability changes",
+      {
+        id: "new-matches-saved-searches",
+        labelKey:
+          "renterDashboard.account.preferences.groups.propertySearch.items.newMatches",
+      },
+      {
+        id: "price-changes-favourites",
+        labelKey:
+          "renterDashboard.account.preferences.groups.propertySearch.items.priceChanges",
+      },
+      {
+        id: "property-availability-changes",
+        labelKey:
+          "renterDashboard.account.preferences.groups.propertySearch.items.availabilityChanges",
+      },
     ],
   },
   {
-    title: "Viewings & Applications",
+    titleKey:
+      "renterDashboard.account.preferences.groups.viewingsApplications.title",
     items: [
-      "Viewing confirmations and changes",
-      "Application status updates",
-      "Additional information requested",
-      "Rental invitations",
+      {
+        id: "viewing-confirmations-changes",
+        labelKey:
+          "renterDashboard.account.preferences.groups.viewingsApplications.items.viewingConfirmations",
+      },
+      {
+        id: "application-status-updates",
+        labelKey:
+          "renterDashboard.account.preferences.groups.viewingsApplications.items.applicationStatusUpdates",
+      },
+      {
+        id: "additional-information-requested",
+        labelKey:
+          "renterDashboard.account.preferences.groups.viewingsApplications.items.additionalInfoRequested",
+      },
+      {
+        id: "rental-invitations",
+        labelKey:
+          "renterDashboard.account.preferences.groups.viewingsApplications.items.rentalInvitations",
+      },
     ],
   },
   {
-    title: "Rental & Payments",
+    titleKey: "renterDashboard.account.preferences.groups.rentalPayments.title",
     items: [
-      "Rent due soon",
-      "Payment successful or failed",
-      "Rental setup updates",
-      "Maintenance updates",
+      {
+        id: "rent-due-soon",
+        labelKey:
+          "renterDashboard.account.preferences.groups.rentalPayments.items.rentDueSoon",
+      },
+      {
+        id: "payment-successful-or-failed",
+        labelKey:
+          "renterDashboard.account.preferences.groups.rentalPayments.items.paymentSuccessFailed",
+      },
+      {
+        id: "rental-setup-updates",
+        labelKey:
+          "renterDashboard.account.preferences.groups.rentalPayments.items.rentalSetupUpdates",
+      },
+      {
+        id: "maintenance-updates",
+        labelKey:
+          "renterDashboard.account.preferences.groups.rentalPayments.items.maintenanceUpdates",
+      },
     ],
   },
   {
-    title: "Flatmates",
+    titleKey: "renterDashboard.account.preferences.groups.flatmates.title",
     items: [
-      "New flatmate match",
-      "Someone interested in your profile",
-      "New flatmate message",
+      {
+        id: "new-flatmate-match",
+        labelKey:
+          "renterDashboard.account.preferences.groups.flatmates.items.newFlatmateMatch",
+      },
+      {
+        id: "someone-interested-in-profile",
+        labelKey:
+          "renterDashboard.account.preferences.groups.flatmates.items.someoneInterested",
+      },
+      {
+        id: "new-flatmate-message",
+        labelKey:
+          "renterDashboard.account.preferences.groups.flatmates.items.newFlatmateMessage",
+      },
     ],
   },
-] as const;
+];
+
+const MESSAGE_PREFERENCE_ITEMS: readonly PreferenceItem[] = [
+  {
+    id: "new-message-received",
+    labelKey:
+      "renterDashboard.account.preferences.groups.messagePreferences.items.newMessageReceived",
+  },
+  {
+    id: "message-from-property-representative",
+    labelKey:
+      "renterDashboard.account.preferences.groups.messagePreferences.items.messageFromRepresentative",
+  },
+  {
+    id: "new-flatmate-message",
+    labelKey:
+      "renterDashboard.account.preferences.groups.flatmates.items.newFlatmateMessage",
+  },
+];
+
+const HAUXHUNT_UPDATES_ITEMS: readonly PreferenceItem[] = [
+  {
+    id: "product-updates-features",
+    labelKey:
+      "renterDashboard.account.preferences.groups.hauxhuntUpdates.items.productUpdatesFeatures",
+  },
+  {
+    id: "tips-and-recommendations",
+    labelKey:
+      "renterDashboard.account.preferences.groups.hauxhuntUpdates.items.tipsRecommendations",
+  },
+];
 
 // WhatsApp is a Paid-only delivery channel (see access-control.ts) — its
 // checkbox renders disabled with a lock for Free tenants (PreferenceGroup
 // below) rather than being omitted, so the option is visible, not hidden.
 const NOTIFICATION_CHANNELS = ["In-app", "Email", "SMS", "WhatsApp"] as const;
+
+// Internal channel identifiers (also used to build preference state keys and
+// in `===` comparisons) mapped to their translated column/row labels.
+const CHANNEL_LABEL_KEYS: Record<(typeof NOTIFICATION_CHANNELS)[number], string> = {
+  "In-app": "renterDashboard.account.preferences.channels.inApp",
+  Email: "renterDashboard.account.preferences.channels.email",
+  SMS: "renterDashboard.account.preferences.channels.sms",
+  WhatsApp: "renterDashboard.account.preferences.channels.whatsapp",
+};
 
 const INITIAL_METHODS: PaymentMethod[] = [
   {
@@ -167,6 +345,7 @@ const COUNTRY_PHONE_PLACEHOLDERS: Record<string, string> = {
 };
 
 export default function MyAccountPage() {
+  const { t } = useTranslation();
   const [openSection, setOpenSection] = useState<SectionId>("personal");
   const [profile, setProfile] = useState(INITIAL_PROFILE);
   const [savedProfile, setSavedProfile] = useState(INITIAL_PROFILE);
@@ -211,7 +390,7 @@ export default function MyAccountPage() {
       PREFERENCE_GROUPS.flatMap((group) =>
         group.items.flatMap((item) =>
           NOTIFICATION_CHANNELS.map((channel) => [
-            `${item}-${channel}`,
+            `${item.id}-${channel}`,
             channel === "In-app" || channel === "Email",
           ]),
         ),
@@ -235,6 +414,16 @@ export default function MyAccountPage() {
       passwordDraft.next.length >= 8 &&
       passwordDraft.next === passwordDraft.confirm);
   const accountDirty = profileDirty || contactDirty || preferencesDirty;
+
+  const planFeatures = useMemo(
+    () =>
+      TENANT_PLAN_FEATURE_KEYS.map((feature) => ({
+        label: t(feature.labelKey),
+        free: t(feature.freeKey),
+        paid: t(feature.paidKey, feature.paidVars),
+      })),
+    [t],
+  );
 
   function showToast(message: string) {
     setToast(message);
@@ -271,10 +460,11 @@ export default function MyAccountPage() {
           <div className="mx-auto max-w-[1200px]">
             <div className="flex flex-wrap items-start justify-between gap-5">
               <div>
-                <h1 className="dashboard-page-title">My Account</h1>
+                <h1 className="dashboard-page-title">
+                  {t("renterDashboard.account.heading")}
+                </h1>
                 <p className="text-carbon-500 mt-2 text-sm">
-                  Manage your profile, security, payment methods, and
-                  communication preferences.
+                  {t("renterDashboard.account.subheading")}
                 </p>
               </div>
               <button
@@ -287,26 +477,18 @@ export default function MyAccountPage() {
                 }
                 onClick={() => {
                   saveAccountChanges();
-                  showToast("Account changes saved");
+                  showToast(t("renterDashboard.account.toast.accountChangesSaved"));
                 }}
                 className="h-11 rounded-full bg-black px-6 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-30"
               >
-                Save Changes
+                {t("renterDashboard.account.actions.saveChanges")}
               </button>
             </div>
             <nav
-              aria-label="Account sections"
+              aria-label={t("renterDashboard.account.sectionsNavAria")}
               className="mt-7 flex gap-7 overflow-x-auto"
             >
-              {(
-                [
-                  ["personal", "Personal Information"],
-                  ["security", "Login & Security"],
-                  ["methods", "Payment Methods"],
-                  ["preferences", "Notifications & Preferences"],
-                  ["plan", "Plan & Billing"],
-                ] as const
-              ).map(([id, label]) => (
+              {SECTION_IDS.map((id) => (
                 <button
                   key={id}
                   type="button"
@@ -314,7 +496,7 @@ export default function MyAccountPage() {
                   aria-current={openSection === id ? "page" : undefined}
                   className={`relative flex h-12 shrink-0 items-center text-sm font-medium ${openSection === id ? "text-black" : "text-black/45"}`}
                 >
-                  {label}
+                  {t(SECTION_TAB_KEYS[id])}
                   {openSection === id ? (
                     <span className="absolute inset-x-0 bottom-0 h-0.5 bg-black" />
                   ) : null}
@@ -328,13 +510,15 @@ export default function MyAccountPage() {
           <div className="mx-auto max-w-[1200px]">
             <Accordion
               id="personal"
-              title="Personal Information"
+              title={t(SECTION_TAB_KEYS.personal)}
               open={openSection === "personal"}
               toggle={toggleSection}
             >
               <div className="grid items-stretch gap-5 lg:grid-cols-[230px_1fr]">
                 <div className="relative flex h-full min-h-[330px] flex-col items-center rounded-2xl bg-white p-5 text-center shadow-[0_8px_24px_rgba(0,0,0,0.035)] sm:p-7">
-                  <p className="text-sm font-medium">Profile Photo</p>
+                  <p className="text-sm font-medium">
+                    {t("renterDashboard.account.personal.profilePhoto.heading")}
+                  </p>
                   <div className="absolute top-[46%] left-1/2 size-36 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full bg-black/5 shadow-[0_10px_28px_rgba(0,0,0,0.16)]">
                     {avatarUrl ? (
                       <Image
@@ -353,7 +537,9 @@ export default function MyAccountPage() {
                           {getInitials(profile.name)}
                         </span>
                         <span className="sr-only">
-                          No profile photo selected
+                          {t(
+                            "renterDashboard.account.personal.profilePhoto.noPhotoSr",
+                          )}
                         </span>
                       </span>
                     )}
@@ -361,7 +547,9 @@ export default function MyAccountPage() {
                   <div className="mt-auto flex flex-col items-center gap-2">
                     <label className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full border border-black/15 px-4 text-sm font-medium transition-colors hover:bg-black/[0.04]">
                       <Camera className="size-4" />
-                      {avatarUrl ? "Change Photo" : "Upload Photo"}
+                      {avatarUrl
+                        ? t("renterDashboard.account.personal.profilePhoto.changePhoto")
+                        : t("renterDashboard.account.personal.profilePhoto.uploadPhoto")}
                       <input
                         type="file"
                         accept="image/png,image/jpeg,image/webp"
@@ -371,7 +559,11 @@ export default function MyAccountPage() {
                           if (file) {
                             if (avatarUrl) URL.revokeObjectURL(avatarUrl);
                             setAvatarUrl(URL.createObjectURL(file));
-                            showToast("Profile photo updated");
+                            showToast(
+                              t(
+                                "renterDashboard.account.personal.profilePhoto.toastUpdated",
+                              ),
+                            );
                             event.target.value = "";
                           }
                         }}
@@ -383,35 +575,39 @@ export default function MyAccountPage() {
                         onClick={() => {
                           URL.revokeObjectURL(avatarUrl);
                           setAvatarUrl("");
-                          showToast("Profile photo removed");
+                          showToast(
+                            t(
+                              "renterDashboard.account.personal.profilePhoto.toastRemoved",
+                            ),
+                          );
                         }}
                         className="text-xs text-black/55 transition-colors hover:text-black"
                       >
-                        Remove Photo
+                        {t("renterDashboard.account.personal.profilePhoto.removePhoto")}
                       </button>
                     ) : null}
                   </div>
                 </div>
                 <div className="grid gap-5 rounded-2xl bg-white p-5 shadow-[0_8px_24px_rgba(0,0,0,0.035)] sm:grid-cols-2 sm:p-7">
                   <Field
-                    label="Full Name"
+                    label={t("auth.form.fullName")}
                     value={profile.name}
                     onChange={(value) =>
                       setProfile((current) => ({ ...current, name: value }))
                     }
                   />
                   <ReadOnlyField
-                    label="Email Address"
+                    label={t("auth.form.emailAddress")}
                     value={profile.email}
                     verified
                   />
                   <ReadOnlyField
-                    label="Phone Number"
+                    label={t("auth.form.phoneNumber")}
                     value={profile.phone}
                     verified
                   />
                   <SelectField
-                    label="Country / Region"
+                    label={t("renterDashboard.account.personal.countryRegion")}
                     value={profile.country}
                     options={["Rwanda", "Kenya", "Nigeria"]}
                     onChange={(value) =>
@@ -419,7 +615,7 @@ export default function MyAccountPage() {
                     }
                   />
                   <SelectField
-                    label="Preferred Language"
+                    label={t("renterDashboard.account.personal.preferredLanguage")}
                     value={profile.language}
                     options={["English", "French", "Kinyarwanda"]}
                     onChange={(value) =>
@@ -432,12 +628,12 @@ export default function MyAccountPage() {
 
             <Accordion
               id="security"
-              title="Login & Security"
+              title={t(SECTION_TAB_KEYS.security)}
               open={openSection === "security"}
               toggle={toggleSection}
             >
               <SecurityDisclosure
-                title="Update Email & Phone Number"
+                title={t("renterDashboard.account.security.updateContact.title")}
                 defaultOpen
               >
                 <div className="grid gap-5 sm:grid-cols-2">
@@ -446,14 +642,16 @@ export default function MyAccountPage() {
                       className="text-sm font-medium"
                       htmlFor="account-email"
                     >
-                      Email Address
+                      {t("auth.form.emailAddress")}
                     </label>
                     <div className="mt-2 flex h-11 items-center rounded-xl bg-black/[0.035] pr-1.5">
                       <input
                         id="account-email"
                         type="email"
                         value={emailDraft}
-                        placeholder="Enter your email address"
+                        placeholder={t(
+                          "renterDashboard.account.security.updateContact.emailPlaceholder",
+                        )}
                         onChange={(event) => {
                           setEmailDraft(event.target.value);
                           setEmailOtp("");
@@ -469,13 +667,18 @@ export default function MyAccountPage() {
                             setEmailVerificationRequested(true);
                             setEmailOtpVerified(false);
                             showToast(
-                              `Verification code sent to ${emailDraft}`,
+                              t(
+                                "renterDashboard.account.security.updateContact.verificationSentToast",
+                                { destination: emailDraft },
+                              ),
                             );
                           }}
                           disabled={emailOtpVerified}
                           className="h-8 shrink-0 rounded-full bg-black px-4 text-xs font-medium text-white"
                         >
-                          {emailOtpVerified ? "Verified" : "Verify"}
+                          {emailOtpVerified
+                            ? t("renterDashboard.account.verified")
+                            : t("renterDashboard.account.verify")}
                         </button>
                       ) : null}
                     </div>
@@ -483,13 +686,20 @@ export default function MyAccountPage() {
                     emailChanged &&
                     !emailOtpVerified ? (
                       <OtpBoxes
-                        label={`Enter OTP sent to ${emailDraft.trim()}:`}
+                        label={t(
+                          "renterDashboard.account.security.updateContact.otpLabel",
+                          { destination: emailDraft.trim() },
+                        )}
                         value={emailOtp}
                         onChange={(code) => {
                           setEmailOtp(code);
                           if (/^\d{6}$/.test(code)) {
                             setEmailOtpVerified(true);
-                            showToast("Email address verified");
+                            showToast(
+                              t(
+                                "renterDashboard.account.security.updateContact.emailVerifiedToast",
+                              ),
+                            );
                           }
                         }}
                       />
@@ -500,7 +710,7 @@ export default function MyAccountPage() {
                       className="text-sm font-medium"
                       htmlFor="account-phone"
                     >
-                      Phone Number
+                      {t("auth.form.phoneNumber")}
                     </label>
                     <div className="mt-2 flex items-center gap-1.5">
                       <div className="min-w-0 flex-1">
@@ -529,13 +739,18 @@ export default function MyAccountPage() {
                             setPhoneVerificationRequested(true);
                             setPhoneOtpVerified(false);
                             showToast(
-                              `Verification code sent to ${fullPhoneDraft}`,
+                              t(
+                                "renterDashboard.account.security.updateContact.verificationSentToast",
+                                { destination: fullPhoneDraft },
+                              ),
                             );
                           }}
                           disabled={phoneOtpVerified}
                           className="h-8 shrink-0 rounded-full bg-black px-4 text-xs font-medium text-white"
                         >
-                          {phoneOtpVerified ? "Verified" : "Verify"}
+                          {phoneOtpVerified
+                            ? t("renterDashboard.account.verified")
+                            : t("renterDashboard.account.verify")}
                         </button>
                       ) : null}
                     </div>
@@ -543,13 +758,20 @@ export default function MyAccountPage() {
                     phoneChanged &&
                     !phoneOtpVerified ? (
                       <OtpBoxes
-                        label={`Enter OTP sent to ${fullPhoneDraft}:`}
+                        label={t(
+                          "renterDashboard.account.security.updateContact.otpLabel",
+                          { destination: fullPhoneDraft },
+                        )}
                         value={phoneOtp}
                         onChange={(code) => {
                           setPhoneOtp(code);
                           if (/^\d{6}$/.test(code)) {
                             setPhoneOtpVerified(true);
-                            showToast("Phone number verified");
+                            showToast(
+                              t(
+                                "renterDashboard.account.security.updateContact.phoneVerifiedToast",
+                              ),
+                            );
                           }
                         }}
                       />
@@ -557,18 +779,26 @@ export default function MyAccountPage() {
                   </div>
                 </div>
               </SecurityDisclosure>
-              <SecurityDisclosure title="Change Password">
+              <SecurityDisclosure
+                title={t("renterDashboard.account.security.changePassword.title")}
+              >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="text-carbon-500 text-xs">
-                    Last changed 2 June 2026
+                    {t("renterDashboard.account.security.changePassword.lastChanged", {
+                      date: "2 June 2026",
+                    })}
                   </span>
                 </div>
                 <div className="mt-5 grid gap-5 lg:grid-cols-3">
                   <Field
-                    label="Current Password"
+                    label={t(
+                      "renterDashboard.account.security.changePassword.currentPasswordLabel",
+                    )}
                     value={passwordDraft.current}
                     type="password"
-                    placeholder="Enter current password"
+                    placeholder={t(
+                      "renterDashboard.account.security.changePassword.currentPasswordPlaceholder",
+                    )}
                     onChange={(value) =>
                       setPasswordDraft((current) => ({
                         ...current,
@@ -577,10 +807,14 @@ export default function MyAccountPage() {
                     }
                   />
                   <Field
-                    label="New Password"
+                    label={t(
+                      "renterDashboard.account.security.changePassword.newPasswordLabel",
+                    )}
                     value={passwordDraft.next}
                     type="password"
-                    placeholder="At least 8 characters"
+                    placeholder={t(
+                      "renterDashboard.account.security.changePassword.newPasswordPlaceholder",
+                    )}
                     onChange={(value) =>
                       setPasswordDraft((current) => ({
                         ...current,
@@ -589,10 +823,14 @@ export default function MyAccountPage() {
                     }
                   />
                   <Field
-                    label="Confirm New Password"
+                    label={t(
+                      "renterDashboard.account.security.changePassword.confirmNewPasswordLabel",
+                    )}
                     value={passwordDraft.confirm}
                     type="password"
-                    placeholder="Repeat new password"
+                    placeholder={t(
+                      "renterDashboard.account.security.changePassword.confirmNewPasswordPlaceholder",
+                    )}
                     onChange={(value) =>
                       setPasswordDraft((current) => ({
                         ...current,
@@ -606,19 +844,24 @@ export default function MyAccountPage() {
                   disabled={!passwordDirty || !passwordComplete}
                   onClick={() => {
                     setPasswordDraft({ current: "", next: "", confirm: "" });
-                    showToast("Password updated");
+                    showToast(
+                      t("renterDashboard.account.security.changePassword.toastUpdated"),
+                    );
                   }}
                   className="mt-5 h-10 rounded-full bg-black px-5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-30"
                 >
-                  Update Password
+                  {t("renterDashboard.account.security.changePassword.updateButton")}
                 </button>
               </SecurityDisclosure>
 
-              <SecurityDisclosure title="Devices where you are logged in" forceOpen={forceOpenDevices}>
+              <SecurityDisclosure
+                title={t("renterDashboard.account.security.devices.title")}
+                forceOpen={forceOpenDevices}
+              >
                 <div className="flex flex-wrap items-end justify-between gap-4">
                   <div>
                     <p className="text-carbon-500 mt-1 text-sm">
-                      Your recent account activity.
+                      {t("renterDashboard.account.security.devices.subtitle")}
                     </p>
                   </div>
                   <button
@@ -626,7 +869,7 @@ export default function MyAccountPage() {
                     onClick={() => setModal("sessions")}
                     className="h-10 rounded-full border border-black/15 px-5 text-sm font-medium transition-colors hover:bg-black/[0.04]"
                   >
-                    Log Out Other Sessions
+                    {t("renterDashboard.account.security.devices.logOutOthers")}
                   </button>
                 </div>
                 <div className="mt-5">
@@ -644,49 +887,56 @@ export default function MyAccountPage() {
                           setDevices((current) =>
                             current.filter((item) => item.id !== device.id),
                           );
-                          showToast(`${device.device} logged out`);
+                          showToast(
+                            t(
+                              "renterDashboard.account.security.devices.toastLoggedOut",
+                              { device: device.device },
+                            ),
+                          );
                         }}
                         className="justify-self-start text-xs font-medium text-black/55 transition-colors hover:text-black sm:justify-self-end"
                       >
-                        Log out
+                        {t("renterDashboard.account.security.devices.logOut")}
                       </button>
                     </div>
                   ))}
                 </div>
               </SecurityDisclosure>
 
-              <SecurityDisclosure title="Account Data">
+              <SecurityDisclosure
+                title={t("renterDashboard.account.security.accountData.title")}
+              >
                 <h3 className="font-bricolage text-lg font-medium">
-                  Delete Account
+                  {t("renterDashboard.account.security.accountData.deleteAccountHeading")}
                 </h3>
                 <p className="text-carbon-500 mt-2 max-w-2xl text-sm leading-6">
-                  Permanently delete your HauxHunt account, profile, and saved
-                  account data. This action cannot be undone.
+                  {t(
+                    "renterDashboard.account.security.accountData.deleteAccountDescription",
+                  )}
                 </p>
                 <button
                   type="button"
                   onClick={() => setModal("delete-account")}
                   className="mt-5 h-10 rounded-full border border-black/25 px-5 text-sm font-medium transition-colors hover:bg-black hover:text-white"
                 >
-                  Delete Account
+                  {t("renterDashboard.account.security.accountData.deleteAccountButton")}
                 </button>
               </SecurityDisclosure>
             </Accordion>
 
             <Accordion
               id="methods"
-              title="Payment Methods"
+              title={t(SECTION_TAB_KEYS.methods)}
               open={openSection === "methods"}
               toggle={toggleSection}
             >
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
                   <h3 className="font-bricolage text-xl font-medium">
-                    Payment Methods
+                    {t("renterDashboard.account.methods.heading")}
                   </h3>
                   <p className="text-carbon-500 mt-1 text-sm">
-                    Manage the payment methods you can use for rent and other
-                    rental payments.
+                    {t("renterDashboard.account.methods.subtitle")}
                   </p>
                 </div>
                 <button
@@ -697,7 +947,7 @@ export default function MyAccountPage() {
                   }}
                   className="h-10 rounded-full bg-black px-5 text-sm font-medium text-white"
                 >
-                  + Add Payment Method
+                  {t("renterDashboard.account.methods.addButton")}
                 </button>
               </div>
               <div className="mt-6 divide-y divide-black/10 border-y border-black/10">
@@ -712,12 +962,18 @@ export default function MyAccountPage() {
                           isDefault: item.id === method.id,
                         })),
                       );
-                      showToast(`${method.name} is now your default`);
+                      showToast(
+                        t("renterDashboard.account.methods.toastSetDefault", {
+                          name: method.name,
+                        }),
+                      );
                     }}
                     remove={() => {
                       if (methods.length === 1) {
                         showToast(
-                          "Add another payment method before removing this one",
+                          t(
+                            "renterDashboard.account.methods.toastAddBeforeRemoving",
+                          ),
                         );
                         return;
                       }
@@ -733,33 +989,33 @@ export default function MyAccountPage() {
               </div>
               <div className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
                 <p>
-                  <strong>Payment Methods:</strong> How you pay.
+                  <strong>{t("renterDashboard.account.methods.info.label")}</strong>{" "}
+                  {t("renterDashboard.account.methods.info.description")}
                 </p>
                 <p className="text-carbon-500">
-                  Rent, transactions, and receipts remain under My Home →
-                  Payments.
+                  {t("renterDashboard.account.methods.info.note")}
                 </p>
               </div>
             </Accordion>
 
             <Accordion
               id="preferences"
-              title="Notifications & Preferences"
+              title={t(SECTION_TAB_KEYS.preferences)}
               open={openSection === "preferences"}
               toggle={toggleSection}
             >
               <div className="hidden grid-cols-[1fr_repeat(4,82px)] items-center gap-3 border-b border-black/10 pb-3 text-xs font-medium text-black/45 sm:grid">
-                <span>Notification</span>
+                <span>{t("renterDashboard.account.preferences.columnNotification")}</span>
                 {NOTIFICATION_CHANNELS.map((channel) => (
                   <span key={channel} className="text-center">
-                    {channel}
+                    {t(CHANNEL_LABEL_KEYS[channel])}
                   </span>
                 ))}
               </div>
               {PREFERENCE_GROUPS.map((group) => (
                 <PreferenceGroup
-                  key={group.title}
-                  title={group.title}
+                  key={group.titleKey}
+                  titleKey={group.titleKey}
                   items={group.items}
                   values={preferences}
                   toggle={(key) => {
@@ -772,12 +1028,8 @@ export default function MyAccountPage() {
                 />
               ))}
               <PreferenceGroup
-                title="Message Preferences"
-                items={[
-                  "New message received",
-                  "Message from a property representative",
-                  "New flatmate message",
-                ]}
+                titleKey="renterDashboard.account.preferences.groups.messagePreferences.title"
+                items={MESSAGE_PREFERENCE_ITEMS}
                 values={preferences}
                 toggle={(key) => {
                   setPreferences((current) => ({
@@ -788,11 +1040,8 @@ export default function MyAccountPage() {
                 }}
               />
               <PreferenceGroup
-                title="HauxHunt Updates"
-                items={[
-                  "Product updates and new features",
-                  "Tips and recommendations",
-                ]}
+                titleKey="renterDashboard.account.preferences.groups.hauxhuntUpdates.title"
+                items={HAUXHUNT_UPDATES_ITEMS}
                 values={preferences}
                 toggle={(key) => {
                   setPreferences((current) => ({
@@ -806,11 +1055,11 @@ export default function MyAccountPage() {
 
             <Accordion
               id="plan"
-              title="Plan & Billing"
+              title={t(SECTION_TAB_KEYS.plan)}
               open={openSection === "plan"}
               toggle={toggleSection}
             >
-              <PlanToggleCard features={TENANT_PLAN_FEATURES} />
+              <PlanToggleCard features={planFeatures} />
             </Accordion>
           </div>
         </div>
@@ -843,7 +1092,11 @@ export default function MyAccountPage() {
             setMethods((current) =>
               current.filter((method) => method.id !== methodToRemove.id),
             );
-            showToast(`${methodToRemove.name} removed`);
+            showToast(
+              t("renterDashboard.account.methods.toastRemoved", {
+                name: methodToRemove.name,
+              }),
+            );
             setMethodToRemove(null);
           }}
         />
@@ -959,6 +1212,7 @@ function ReadOnlyField({
   value: string;
   verified?: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div>
       <p className="text-sm font-medium">{label}</p>
@@ -967,7 +1221,7 @@ function ReadOnlyField({
         {verified ? (
           <span className="text-carbon-600 flex items-center gap-1.5 text-xs font-medium">
             <BadgeCheck aria-hidden="true" className="size-5" />
-            Verified
+            {t("renterDashboard.account.verified")}
           </span>
         ) : null}
       </div>
@@ -1016,6 +1270,7 @@ function MethodRow({
   remove: () => void;
   edit: () => void;
 }) {
+  const { t } = useTranslation();
   const methodImage =
     method.kind === "mobile"
       ? mobileMethodImage
@@ -1032,7 +1287,7 @@ function MethodRow({
           <p className="font-medium">{method.name}</p>
           {method.isDefault ? (
             <span className="rounded-full bg-black px-2.5 py-1 text-[10px] font-medium text-white">
-              Default
+              {t("renterDashboard.account.methods.defaultBadge")}
             </span>
           ) : null}
         </div>
@@ -1041,15 +1296,15 @@ function MethodRow({
       </div>
       <div className="flex flex-wrap gap-3 text-sm">
         <button onClick={edit} className="underline underline-offset-4">
-          Edit
+          {t("renterDashboard.account.methods.edit")}
         </button>
         {!method.isDefault ? (
           <button onClick={setDefault} className="underline underline-offset-4">
-            Set as Default
+            {t("renterDashboard.account.methods.setAsDefault")}
           </button>
         ) : null}
         <button onClick={remove} className="underline underline-offset-4">
-          Remove
+          {t("renterDashboard.account.methods.remove")}
         </button>
       </div>
     </div>
@@ -1057,30 +1312,31 @@ function MethodRow({
 }
 
 function PreferenceGroup({
-  title,
+  titleKey,
   items,
   values,
   toggle,
 }: {
-  title: string;
-  items: readonly string[];
+  titleKey: string;
+  items: readonly PreferenceItem[];
   values: Record<string, boolean>;
   toggle: (key: string) => void;
 }) {
+  const { t } = useTranslation();
   const tier = useTier();
 
   return (
     <section className="border-b border-black/10 py-6">
-      <h3 className="font-bricolage text-lg font-medium">{title}</h3>
+      <h3 className="font-bricolage text-lg font-medium">{t(titleKey)}</h3>
       <div className="mt-4 space-y-5">
         {items.map((item) => (
           <div
-            key={item}
+            key={item.id}
             className="grid gap-3 sm:grid-cols-[1fr_repeat(4,82px)] sm:items-center"
           >
-            <p className="text-sm">{item}</p>
+            <p className="text-sm">{t(item.labelKey)}</p>
             {NOTIFICATION_CHANNELS.map((channel) => {
-              const key = `${item}-${channel}`;
+              const key = `${item.id}-${channel}`;
               // WhatsApp is Paid-only (access-control.ts): Free renders a
               // disabled checkbox that opens the upgrade modal instead of
               // toggling, so the option is visibly present, not hidden.
@@ -1090,7 +1346,7 @@ function PreferenceGroup({
                     <LockedFeature
                       feature="tenant.whatsappAlerts"
                       variant="badge"
-                      label="WhatsApp alerts"
+                      label={t("renterDashboard.account.preferences.whatsappAlertsLabel")}
                     />
                   </div>
                 );
@@ -1100,7 +1356,7 @@ function PreferenceGroup({
                   key={channel}
                   className="flex items-center justify-between gap-2 text-xs sm:justify-center"
                 >
-                  <span className="sm:sr-only">{channel}</span>
+                  <span className="sm:sr-only">{t(CHANNEL_LABEL_KEYS[channel])}</span>
                   <input
                     type="checkbox"
                     checked={Boolean(values[key])}
@@ -1126,6 +1382,7 @@ function OtpBoxes({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
       <p className="text-carbon-500 text-xs">{label}</p>
@@ -1147,7 +1404,10 @@ function OtpBoxes({
         {Array.from({ length: 6 }, (_, index) => (
           <input
             key={index}
-            aria-label={`${label}, digit ${index + 1}`}
+            aria-label={t(
+              "renterDashboard.account.security.updateContact.otpDigitAria",
+              { label, index: index + 1 },
+            )}
             inputMode="numeric"
             maxLength={1}
             value={value[index] ?? ""}
@@ -1202,6 +1462,7 @@ function AccountModal({
   updateMethod: (method: PaymentMethod) => void;
   removeMethod: () => void;
 }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     current: "",
     next: "",
@@ -1219,14 +1480,14 @@ function AccountModal({
   });
   const title =
     type === "sessions"
-      ? "Log out of all other devices?"
+      ? t("renterDashboard.account.modal.sessions.title")
       : type === "delete-account"
-        ? "Delete Account?"
+        ? t("renterDashboard.account.modal.deleteAccount.title")
         : type === "remove-method"
-          ? "Remove payment method?"
+          ? t("renterDashboard.account.modal.removeMethod.title")
           : type === "edit-method"
-            ? "Edit Payment Method"
-            : "Add Payment Method";
+            ? t("renterDashboard.account.modal.editMethod.title")
+            : t("renterDashboard.account.modal.addMethod.title");
   function finish(message: string) {
     close();
     showToast(message);
@@ -1241,10 +1502,10 @@ function AccountModal({
       kind: newMethodKind,
       name:
         newMethodKind === "mobile"
-          ? `${form.provider} Mobile Money`
+          ? `${form.provider} ${t(KIND_LABEL_KEYS.mobile)}`
           : newMethodKind === "card"
             ? "Visa"
-            : "Bank Account",
+            : t(KIND_LABEL_KEYS.bank),
       detail:
         newMethodKind === "mobile"
           ? `${mobileCountryCode} ••• ••• ${ending}`
@@ -1255,8 +1516,12 @@ function AccountModal({
         newMethodKind === "mobile"
           ? form.country
           : newMethodKind === "card"
-            ? `Expires ${form.expiry || "08/28"}`
-            : `Account ending in ${ending}`,
+            ? t("renterDashboard.account.modal.generated.cardNote", {
+                expiry: form.expiry || "08/28",
+              })
+            : t("renterDashboard.account.modal.generated.bankNote", {
+                last4: ending,
+              }),
       isDefault: false,
       fields: { ...form },
       phoneNumber:
@@ -1264,7 +1529,7 @@ function AccountModal({
           ? `${mobileCountryCode} ${form.phone.trim()}`
           : undefined,
     });
-    finish("Payment method added");
+    finish(t("renterDashboard.account.modal.addMethod.toastAdded"));
   }
   return (
     <div
@@ -1287,8 +1552,8 @@ function AccountModal({
                 onClick={close}
                 aria-label={
                   type === "delete-account"
-                    ? "Close delete account dialog"
-                    : "Close remove payment method dialog"
+                    ? t("renterDashboard.account.modal.deleteAccount.closeAria")
+                    : t("renterDashboard.account.modal.removeMethod.closeAria")
                 }
                 className="absolute top-4 right-4 flex size-9 items-center justify-center rounded-full border border-black/20 text-black/55 transition-colors hover:border-black/40 hover:text-black"
               >
@@ -1298,29 +1563,30 @@ function AccountModal({
                 src={deletingIllustration}
                 alt={
                   type === "delete-account"
-                    ? "Delete account illustration"
-                    : "Remove payment method illustration"
+                    ? t("renterDashboard.account.modal.deleteAccount.illustrationAlt")
+                    : t("renterDashboard.account.modal.removeMethod.illustrationAlt")
                 }
                 className="h-40 w-auto object-contain"
               />
             </div>
             <div className="p-6 sm:p-8">
-              <h2 className="font-bricolage text-2xl font-medium">
-                {type === "delete-account"
-                  ? "Delete Account?"
-                  : "Remove payment method?"}
-              </h2>
+              <h2 className="font-bricolage text-2xl font-medium">{title}</h2>
               <p className="text-carbon-500 mt-4 text-sm leading-6">
                 {type === "delete-account"
-                  ? "Your HauxHunt account, profile, and saved account data will be permanently deleted. This cannot be undone."
-                  : `${methodToRemove?.name ?? "This method"} ${methodToRemove?.detail ?? ""} will no longer be available for rental payments.`}
+                  ? t("renterDashboard.account.modal.deleteAccount.description")
+                  : t("renterDashboard.account.modal.removeMethod.description", {
+                      name:
+                        methodToRemove?.name ??
+                        t("renterDashboard.account.modal.removeMethod.fallbackName"),
+                      detail: methodToRemove?.detail ?? "",
+                    })}
               </p>
               <div className="mt-7 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => {
                     if (type === "delete-account") {
-                      finish("Account deletion requested");
+                      finish(t("renterDashboard.account.modal.deleteAccount.toastRequested"));
                       return;
                     }
                     removeMethod();
@@ -1328,14 +1594,16 @@ function AccountModal({
                   }}
                   className="h-11 rounded-full border border-black/20 px-5 text-sm font-medium transition-colors hover:bg-black/[0.04]"
                 >
-                  {type === "delete-account" ? "Delete Account" : "Remove"}
+                  {type === "delete-account"
+                    ? t("renterDashboard.account.security.accountData.deleteAccountButton")
+                    : t("renterDashboard.account.methods.remove")}
                 </button>
                 <button
                   type="button"
                   onClick={close}
                   className="h-11 rounded-full bg-black px-6 text-sm font-medium text-white"
                 >
-                  Cancel
+                  {t("renterDashboard.account.actions.cancel")}
                 </button>
               </div>
             </div>
@@ -1346,7 +1614,7 @@ function AccountModal({
               <h2 className="font-bricolage text-2xl font-medium">{title}</h2>
               <button
                 onClick={close}
-                aria-label="Close"
+                aria-label={t("common.close")}
                 className="flex size-9 items-center justify-center rounded-full hover:bg-black/[0.05]"
               >
                 <X className="size-4" />
@@ -1355,10 +1623,12 @@ function AccountModal({
             <div className="mt-6">
               {type === "sessions" ? (
                 <Confirm
-                  text="You'll remain signed in on this device."
+                  text={t("renterDashboard.account.modal.sessions.description")}
                   cancel={close}
-                  action="Log Out Other Sessions"
-                  confirm={() => finish("Other sessions logged out")}
+                  action={t("renterDashboard.account.security.devices.logOutOthers")}
+                  confirm={() =>
+                    finish(t("renterDashboard.account.modal.sessions.toastLoggedOut"))
+                  }
                 />
               ) : type === "edit-method" && methodToEdit ? (
                 <EditMethodForm
@@ -1366,7 +1636,7 @@ function AccountModal({
                   cancel={close}
                   save={(updatedMethod) => {
                     updateMethod(updatedMethod);
-                    finish("Payment method updated");
+                    finish(t("renterDashboard.account.modal.editMethod.toastUpdated"));
                   }}
                 />
               ) : newMethodKind ? (
@@ -1381,11 +1651,11 @@ function AccountModal({
                 <div className="space-y-3">
                   {(
                     [
-                      ["mobile", "Mobile Money", mobileMethodImage],
-                      ["card", "Card", cardMethodImage],
-                      ["bank", "Bank Account", bankMethodImage],
+                      ["mobile", mobileMethodImage],
+                      ["card", cardMethodImage],
+                      ["bank", bankMethodImage],
                     ] as const
-                  ).map(([kind, label, methodImage]) => (
+                  ).map(([kind, methodImage]) => (
                     <button
                       key={kind}
                       onClick={() => setNewMethodKind(kind)}
@@ -1396,7 +1666,7 @@ function AccountModal({
                         alt=""
                         className="size-8 object-contain"
                       />
-                      <span className="font-medium">{label}</span>
+                      <span className="font-medium">{t(KIND_LABEL_KEYS[kind])}</span>
                     </button>
                   ))}
                 </div>
@@ -1418,6 +1688,7 @@ function EditMethodForm({
   cancel: () => void;
   save: (method: PaymentMethod) => void;
 }) {
+  const { t } = useTranslation();
   const [fields, setFields] = useState(method.fields);
   const set = (name: string, value: string) =>
     setFields((current) => ({ ...current, [name]: value }));
@@ -1449,7 +1720,7 @@ function EditMethodForm({
       const code = COUNTRY_CODES[fields.country] ?? "+250";
       save({
         ...method,
-        name: `${fields.provider} Mobile Money`,
+        name: `${fields.provider} ${t(KIND_LABEL_KEYS.mobile)}`,
         detail: `${code} ••• ••• ${ending}`,
         phoneNumber: `${code} ${fields.phone.trim()}`,
         note: fields.country,
@@ -1463,7 +1734,9 @@ function EditMethodForm({
         ...method,
         name: "Visa",
         detail: `•••• ${ending}`,
-        note: `Expires ${fields.expiry}`,
+        note: t("renterDashboard.account.modal.generated.cardNote", {
+          expiry: fields.expiry,
+        }),
         fields,
       });
       return;
@@ -1471,9 +1744,11 @@ function EditMethodForm({
 
     save({
       ...method,
-      name: "Bank Account",
+      name: t(KIND_LABEL_KEYS.bank),
       detail: `${fields.bank} · •••• ${ending}`,
-      note: `Account ending in ${ending}`,
+      note: t("renterDashboard.account.modal.generated.bankNote", {
+        last4: ending,
+      }),
       fields,
     });
   }
@@ -1484,20 +1759,20 @@ function EditMethodForm({
         {method.kind === "mobile" ? (
           <>
             <SelectField
-              label="Country"
+              label={t("auth.form.country")}
               value={fields.country}
               options={["Rwanda", "Kenya", "Nigeria"]}
               onChange={(value) => set("country", value)}
             />
             <SelectField
-              label="Mobile network / provider"
+              label={t("renterDashboard.account.modal.fields.mobileProvider")}
               value={fields.provider}
               options={["MTN", "Airtel"]}
               onChange={(value) => set("provider", value)}
             />
             <label>
               <span className="mb-2 block text-sm font-medium">
-                Phone Number
+                {t("auth.form.phoneNumber")}
               </span>
               <span className="flex h-11 items-center rounded-xl bg-black/[0.035]">
                 <span className="shrink-0 border-r border-black/10 px-4 text-sm">
@@ -1518,27 +1793,27 @@ function EditMethodForm({
         ) : method.kind === "card" ? (
           <>
             <Field
-              label="Name on Card"
+              label={t("renterDashboard.account.modal.fields.nameOnCard")}
               value={fields.name}
               autoComplete="off"
               onChange={(value) => set("name", value)}
             />
             <Field
-              label="Card Number"
+              label={t("renterDashboard.account.modal.fields.cardNumber")}
               value={fields.number}
               autoComplete="off"
               onChange={(value) => set("number", value)}
             />
             <div className="grid grid-cols-2 gap-4">
               <Field
-                label="Expiry Date"
+                label={t("renterDashboard.account.modal.fields.expiryDate")}
                 value={fields.expiry}
                 placeholder="MM/YY"
                 autoComplete="off"
                 onChange={(value) => set("expiry", value)}
               />
               <Field
-                label="CVV"
+                label={t("renterDashboard.account.modal.fields.cvv")}
                 value={fields.cvv}
                 type="password"
                 autoComplete="off"
@@ -1549,18 +1824,18 @@ function EditMethodForm({
         ) : (
           <>
             <SelectField
-              label="Bank"
+              label={t("renterDashboard.account.modal.fields.bank")}
               value={fields.bank}
               options={["Bank of Kigali", "I&M Bank", "Equity Bank"]}
               onChange={(value) => set("bank", value)}
             />
             <Field
-              label="Account Name"
+              label={t("renterDashboard.account.modal.fields.accountName")}
               value={fields.accountName}
               onChange={(value) => set("accountName", value)}
             />
             <Field
-              label="Account Number"
+              label={t("renterDashboard.account.modal.fields.accountNumber")}
               value={fields.accountNumber}
               onChange={(value) => set("accountNumber", value)}
             />
@@ -1573,7 +1848,7 @@ function EditMethodForm({
           onClick={cancel}
           className="h-11 rounded-full border border-black/15 px-5 text-sm"
         >
-          Cancel
+          {t("renterDashboard.account.actions.cancel")}
         </button>
         <button
           type="button"
@@ -1581,7 +1856,7 @@ function EditMethodForm({
           onClick={saveChanges}
           className="h-11 rounded-full bg-black px-5 text-sm text-white disabled:opacity-30"
         >
-          Save Changes
+          {t("renterDashboard.account.actions.saveChanges")}
         </button>
       </div>
     </div>
@@ -1599,6 +1874,7 @@ function Confirm({
   action: string;
   confirm: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div>
       <p className="text-carbon-500 text-sm leading-6">{text}</p>
@@ -1613,7 +1889,7 @@ function Confirm({
           onClick={cancel}
           className="h-11 rounded-full border border-black/15 px-5 text-sm"
         >
-          Cancel
+          {t("renterDashboard.account.actions.cancel")}
         </button>
       </div>
     </div>
@@ -1649,6 +1925,7 @@ function AddMethodForm({
   back: () => void;
   save: () => void;
 }) {
+  const { t } = useTranslation();
   const set = (name: string, value: string) =>
     setForm((current) => ({ ...current, [name]: value }));
   return (
@@ -1656,19 +1933,21 @@ function AddMethodForm({
       {kind === "mobile" ? (
         <>
           <SelectField
-            label="Country"
+            label={t("auth.form.country")}
             value={form.country}
             options={["Rwanda", "Kenya", "Nigeria"]}
             onChange={(value) => set("country", value)}
           />
           <SelectField
-            label="Mobile network / provider"
+            label={t("renterDashboard.account.modal.fields.mobileProvider")}
             value={form.provider}
             options={["MTN", "Airtel"]}
             onChange={(value) => set("provider", value)}
           />
           <label>
-            <span className="mb-2 block text-sm font-medium">Phone Number</span>
+            <span className="mb-2 block text-sm font-medium">
+              {t("auth.form.phoneNumber")}
+            </span>
             <span className="flex h-11 items-center rounded-xl bg-black/[0.035]">
               <span className="shrink-0 border-r border-black/10 px-4 text-sm">
                 {COUNTRY_CODES[form.country] ?? "+250"}
@@ -1688,27 +1967,27 @@ function AddMethodForm({
       ) : kind === "card" ? (
         <>
           <Field
-            label="Name on Card"
+            label={t("renterDashboard.account.modal.fields.nameOnCard")}
             value={form.name}
             autoComplete="off"
             onChange={(value) => set("name", value)}
           />
           <Field
-            label="Card Number"
+            label={t("renterDashboard.account.modal.fields.cardNumber")}
             value={form.number}
             autoComplete="off"
             onChange={(value) => set("number", value)}
           />
           <div className="grid grid-cols-2 gap-4">
             <Field
-              label="Expiry Date"
+              label={t("renterDashboard.account.modal.fields.expiryDate")}
               value={form.expiry}
               placeholder="MM/YY"
               autoComplete="off"
               onChange={(value) => set("expiry", value)}
             />
             <Field
-              label="CVV"
+              label={t("renterDashboard.account.modal.fields.cvv")}
               value={form.cvv}
               type="password"
               autoComplete="off"
@@ -1719,18 +1998,18 @@ function AddMethodForm({
       ) : (
         <>
           <SelectField
-            label="Bank"
+            label={t("renterDashboard.account.modal.fields.bank")}
             value={form.bank}
             options={["Bank of Kigali", "I&M Bank", "Equity Bank"]}
             onChange={(value) => set("bank", value)}
           />
           <Field
-            label="Account Name"
+            label={t("renterDashboard.account.modal.fields.accountName")}
             value={form.accountName}
             onChange={(value) => set("accountName", value)}
           />
           <Field
-            label="Account Number"
+            label={t("renterDashboard.account.modal.fields.accountNumber")}
             value={form.accountNumber}
             onChange={(value) => set("accountNumber", value)}
           />
@@ -1741,18 +2020,15 @@ function AddMethodForm({
           onClick={back}
           className="h-11 rounded-full border border-black/15 px-5 text-sm"
         >
-          Back
+          {t("renterDashboard.account.modal.addMethod.back")}
         </button>
         <button
           onClick={save}
           className="h-11 rounded-full bg-black px-5 text-sm text-white"
         >
-          Add{" "}
-          {kind === "mobile"
-            ? "Mobile Money"
-            : kind === "card"
-              ? "Card"
-              : "Bank Account"}
+          {t("renterDashboard.account.modal.addMethod.addButton", {
+            kind: t(KIND_LABEL_KEYS[kind]),
+          })}
         </button>
       </div>
     </div>

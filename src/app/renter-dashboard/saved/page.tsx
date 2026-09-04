@@ -39,6 +39,7 @@ const LISTING_IMAGES: Record<string, StaticImageData> = {
 };
 
 export default function SavedHomesPage() {
+  const { t } = useTranslation();
   const { propertyIds } = useSavedProperties();
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [saveFeedback, setSaveFeedback] = useState("");
@@ -50,8 +51,8 @@ export default function SavedHomesPage() {
     const showFeedback = window.setTimeout(() => {
       setSaveFeedback(
         saveStatus === "already"
-          ? "This home is already in your favourites"
-          : "Home added to your favourites",
+          ? t("renterDashboard.saved.alreadyFavourited")
+          : t("listingCard.favouriteAdded"),
       );
       const cleanUrl = new URL(window.location.href);
       cleanUrl.searchParams.delete("saved");
@@ -66,6 +67,7 @@ export default function SavedHomesPage() {
       window.clearTimeout(showFeedback);
       window.clearTimeout(hideFeedback);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const orderedPropertyIds =
     sortOrder === "newest" ? [...propertyIds].reverse() : propertyIds;
@@ -87,11 +89,11 @@ export default function SavedHomesPage() {
           <div className="mx-auto max-w-[1562px] border-b border-black/10 pb-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <h1 className="dashboard-page-title text-carbon-900">
-                Favourite Homes
+                {t("renterDashboard.saved.heading")}
               </h1>
               {savedListings.length ? (
                 <label className="flex items-center gap-2 text-sm font-medium">
-                  <span>Sort:</span>
+                  <span>{t("renterDashboard.saved.sortLabel")}</span>
                   <span className="relative block">
                     <select
                       value={sortOrder}
@@ -100,8 +102,12 @@ export default function SavedHomesPage() {
                       }
                       className="catalogue-filter-control h-11 appearance-none rounded-full border-0 bg-white pr-10 pl-4 text-sm font-medium shadow-[0_8px_24px_rgba(0,0,0,0.06)] ring-0 outline-none focus:ring-0"
                     >
-                      <option value="newest">Newest first</option>
-                      <option value="oldest">Oldest first</option>
+                      <option value="newest">
+                        {t("renterDashboard.saved.sortOptions.newest")}
+                      </option>
+                      <option value="oldest">
+                        {t("renterDashboard.saved.sortOptions.oldest")}
+                      </option>
                     </select>
                     <ChevronDown
                       aria-hidden="true"
@@ -112,8 +118,7 @@ export default function SavedHomesPage() {
               ) : null}
             </div>
             <p className="text-carbon-500 mt-3 max-w-xl text-sm leading-6">
-              Keep promising homes together, revisit their details, and remove
-              any that no longer fit.
+              {t("renterDashboard.saved.subtitle")}
             </p>
           </div>
         </section>
@@ -123,10 +128,12 @@ export default function SavedHomesPage() {
             {savedListings.length ? (
               <>
                 <p className="text-carbon-500 mb-4 text-sm">
-                  {savedListings.length}{" "}
-                  {savedListings.length === 1
-                    ? "favourite home"
-                    : "favourite homes"}
+                  {t(
+                    savedListings.length === 1
+                      ? "renterDashboard.saved.countOne"
+                      : "renterDashboard.saved.countOther",
+                    { count: savedListings.length },
+                  )}
                 </p>
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {savedListings.map((property, index) => (
@@ -136,7 +143,7 @@ export default function SavedHomesPage() {
                       title={property.title}
                       location={property.location}
                       price={`${property.currency} ${property.price.toLocaleString()}`}
-                      period="per month"
+                      period={t("featuredListings.perMonth")}
                       bedrooms={property.bedrooms}
                       bathrooms={Math.max(1, property.bedrooms - 1)}
                       area={62 + index * 18}
@@ -152,21 +159,20 @@ export default function SavedHomesPage() {
               <div className="flex min-h-[480px] flex-col items-center justify-center text-center">
                 <Image
                   src={emptyIllustration}
-                  alt="No favourite homes"
+                  alt={t("renterDashboard.saved.emptyState.imageAlt")}
                   className="h-44 w-auto object-contain"
                 />
                 <h2 className="font-bricolage text-carbon-900 mt-5 text-2xl font-medium">
-                  No favourite homes yet
+                  {t("renterDashboard.saved.emptyState.title")}
                 </h2>
                 <p className="text-carbon-500 mt-2 max-w-md text-sm leading-6">
-                  Tap the heart on a home you like and it will appear here for
-                  easy comparison.
+                  {t("renterDashboard.saved.emptyState.description")}
                 </p>
                 <Link
                   href="/renter-dashboard/properties"
                   className="font-bricolage mt-7 inline-flex h-12 items-center gap-2 rounded-full bg-black px-6 text-sm font-medium text-white"
                 >
-                  Explore homes{" "}
+                  {t("renterDashboard.saved.emptyState.action")}{" "}
                   <ArrowRight aria-hidden="true" className="size-4" />
                 </Link>
               </div>

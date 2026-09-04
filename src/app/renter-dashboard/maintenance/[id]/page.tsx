@@ -18,6 +18,7 @@ import house1 from "@/assets/images/house1.jpg";
 import house2 from "@/assets/images/house2.jpg";
 import scheduleIllustration from "@/assets/images/schedule.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
+import { useTranslation } from "@/components/language/use-translation";
 import {
   getMaintenanceRequest,
   subscribeToMaintenance,
@@ -27,8 +28,35 @@ import {
 } from "@/lib/maintenance-data";
 
 type Dialog = "reschedule" | "information" | "reopen" | "cancel" | null;
+type TFunc = (key: string, vars?: Record<string, string | number>) => string;
+
+// Internal status/urgency values stay in English (compared with `===`
+// elsewhere and stored on the shared MaintenanceRequest record) -- these
+// helpers resolve them to a translated display label without touching the
+// underlying value.
+function statusLabel(t: TFunc, status: string) {
+  const labels: Record<string, string> = {
+    Submitted: t("renterDashboard.maintenanceDetail.status.submitted"),
+    "Under Review": t("renterDashboard.maintenanceDetail.status.underReview"),
+    Scheduled: t("renterDashboard.maintenanceDetail.status.scheduled"),
+    "In Progress": t("renterDashboard.maintenanceDetail.status.inProgress"),
+    "Waiting for Renter": t(
+      "renterDashboard.maintenanceDetail.status.waitingForRenter",
+    ),
+    Resolved: t("renterDashboard.maintenanceDetail.status.resolved"),
+    Cancelled: t("renterDashboard.maintenanceDetail.status.cancelled"),
+  };
+  return labels[status] ?? status;
+}
+
+function urgencyLabel(t: TFunc, urgency: string) {
+  return urgency === "Urgent"
+    ? t("renterDashboard.maintenanceDetail.urgency.urgent")
+    : t("renterDashboard.maintenanceDetail.urgency.normal");
+}
 
 export default function MaintenanceDetailPage() {
+  const { t } = useTranslation();
   const params = useParams<{ id: string }>();
   // Cross-Role Lifecycle Synchronization phase -- reads the SAME canonical
   // record PM's Maintenance detail reads, live (Section 26/30).
@@ -82,7 +110,7 @@ export default function MaintenanceDetailPage() {
               className="mb-6 inline-flex items-center gap-1 text-sm text-black/65 transition-colors hover:text-black"
             >
               <ChevronLeft aria-hidden="true" className="size-4" />
-              Back to Maintenance
+              {t("renterDashboard.maintenanceDetail.backLink")}
             </Link>
 
             <header className="flex flex-wrap items-start justify-between gap-5 border-b border-black/10 pb-8">
@@ -91,7 +119,7 @@ export default function MaintenanceDetailPage() {
                   <Status status={status} />
                   {request.urgency === "Urgent" ? (
                     <span className="rounded-full bg-black px-2.5 py-1 text-[10px] font-medium text-white">
-                      Urgent
+                      {t("renterDashboard.maintenanceDetail.urgency.urgent")}
                     </span>
                   ) : null}
                 </div>
@@ -100,8 +128,16 @@ export default function MaintenanceDetailPage() {
                   {request.property} · {request.location}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-xs text-black/50">
-                  <span>Request: {request.id}</span>
-                  <span>Submitted: {request.submitted}</span>
+                  <span>
+                    {t("renterDashboard.maintenanceDetail.requestIdPrefix", {
+                      id: request.id,
+                    })}
+                  </span>
+                  <span>
+                    {t("renterDashboard.maintenanceDetail.submittedPrefix", {
+                      date: request.submitted,
+                    })}
+                  </span>
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -109,12 +145,12 @@ export default function MaintenanceDetailPage() {
                   href={`/renter-dashboard/messages?host=Jean%20Mugisha&role=Property%20Manager&verified=1&ctx=maintenance&title=${encodeURIComponent(request.title)}&property=${encodeURIComponent(request.property)}&propertyId=${encodeURIComponent(request.propertyId)}&status=${encodeURIComponent(request.status)}&refId=${encodeURIComponent(request.id)}`}
                   className="font-bricolage border-carbon-900 text-carbon-900 hover:bg-muted inline-flex h-11 items-center justify-center rounded-full border bg-transparent px-5 text-base font-medium transition-colors duration-150"
                 >
-                  Message Property Manager
+                  {t("renterDashboard.maintenanceDetail.messagePropertyManagerLink")}
                 </Link>
                 {canCancel ? (
                   <button
                     onClick={() => setDialog("cancel")}
-                    aria-label="More request actions"
+                    aria-label={t("renterDashboard.maintenanceDetail.moreActionsAria")}
                     className="flex size-11 items-center justify-center rounded-full border border-black/15"
                   >
                     <MoreHorizontal className="size-5" />
@@ -127,10 +163,10 @@ export default function MaintenanceDetailPage() {
               <section className="mt-6 rounded-2xl bg-black p-6 text-white sm:flex sm:items-center sm:justify-between sm:gap-6">
                 <div>
                   <p className="text-xs font-medium text-white/55">
-                    Information Needed
+                    {t("renterDashboard.maintenanceDetail.informationNeeded.badge")}
                   </p>
                   <h2 className="font-bricolage mt-2 text-xl font-medium">
-                    The property manager requested more details.
+                    {t("renterDashboard.maintenanceDetail.informationNeeded.heading")}
                   </h2>
                   <p className="mt-2 text-sm text-white/65">
                     {request.informationNeeded}
@@ -141,30 +177,43 @@ export default function MaintenanceDetailPage() {
                     href={`/renter-dashboard/messages?host=Jean%20Mugisha&role=Property%20Manager&verified=1&ctx=maintenance&title=${encodeURIComponent(request.title)}&property=${encodeURIComponent(request.property)}&propertyId=${encodeURIComponent(request.propertyId)}&status=${encodeURIComponent(request.status)}&refId=${encodeURIComponent(request.id)}`}
                     className="h-10 rounded-full border border-white/25 px-4 py-2.5 text-sm"
                   >
-                    Message Manager
+                    {t(
+                      "renterDashboard.maintenanceDetail.informationNeeded.messageManagerLink",
+                    )}
                   </Link>
                   <button
                     onClick={() => setDialog("information")}
                     className="h-10 rounded-full bg-white px-5 text-sm font-medium text-black"
                   >
-                    Add Information
+                    {t(
+                      "renterDashboard.maintenanceDetail.informationNeeded.addInformationButton",
+                    )}
                   </button>
                 </div>
               </section>
             ) : informationSent ? (
               <p className="mt-6 text-sm">
                 <Check className="mr-2 inline size-4" />
-                Information Sent
+                {t("renterDashboard.maintenanceDetail.informationNeeded.sentLabel")}
               </p>
             ) : null}
 
             <div className="mt-6 grid gap-6 lg:grid-cols-[1.35fr_0.8fr]">
               <div className="space-y-6">
-                <Card title="Issue Details">
+                <Card title={t("renterDashboard.maintenanceDetail.cards.issueDetailsTitle")}>
                   <div className="grid gap-5 sm:grid-cols-3">
-                    <Meta label="Category" value={request.category} />
-                    <Meta label="Location" value={request.area} />
-                    <Meta label="Urgency" value={request.urgency} />
+                    <Meta
+                      label={t("renterDashboard.maintenanceDetail.fields.category")}
+                      value={request.category}
+                    />
+                    <Meta
+                      label={t("hero.search.location")}
+                      value={request.area}
+                    />
+                    <Meta
+                      label={t("renterDashboard.maintenanceDetail.fields.urgency")}
+                      value={urgencyLabel(t, request.urgency)}
+                    />
                   </div>
                   <p className="text-carbon-500 mt-6 border-t border-black/10 pt-5 text-sm leading-6">
                     {request.description}
@@ -172,42 +221,47 @@ export default function MaintenanceDetailPage() {
                   <div className="mt-5 flex gap-3">
                     <Image
                       src={house1}
-                      alt="Issue photo"
+                      alt={t("renterDashboard.maintenanceDetail.fields.issuePhotoAlt")}
                       className="size-24 rounded-xl object-cover"
                     />
                     <Image
                       src={house2}
-                      alt="Issue photo"
+                      alt={t("renterDashboard.maintenanceDetail.fields.issuePhotoAlt")}
                       className="size-24 rounded-xl object-cover"
                     />
                   </div>
                 </Card>
 
                 {request.scheduledVisit ? (
-                  <Card title="Scheduled Visit">
+                  <Card title={t("renterDashboard.maintenanceDetail.cards.scheduledVisitTitle")}>
                     <div className="grid gap-5 sm:grid-cols-2">
                       <div className="flex gap-3">
                         <CalendarDays className="mt-0.5 size-5" />
                         <Meta
-                          label="Date"
+                          label={t("renterDashboard.maintenanceDetail.fields.date")}
                           value={request.scheduledVisit.date}
                         />
                       </div>
                       <div className="flex gap-3">
                         <Clock3 className="mt-0.5 size-5" />
                         <Meta
-                          label="Time"
+                          label={t("renterDashboard.maintenanceDetail.fields.time")}
                           value={request.scheduledVisit.time}
                         />
                       </div>
                     </div>
                     <div className="mt-6 border-t border-black/10 pt-5">
                       <Meta
-                        label="Maintenance contact"
+                        label={t(
+                          "renterDashboard.maintenanceDetail.fields.maintenanceContact",
+                        )}
                         value={`${request.scheduledVisit.contact} · ${request.scheduledVisit.role}`}
                       />
                       <p className="text-carbon-500 mt-2 text-xs">
-                        Managed through Jean Mugisha · Property Manager
+                        {t("renterDashboard.maintenanceDetail.managedThrough", {
+                          name: "Jean Mugisha",
+                          role: "Property Manager",
+                        })}
                       </p>
                     </div>
                     <div className="mt-6 flex flex-wrap justify-end gap-3">
@@ -215,47 +269,63 @@ export default function MaintenanceDetailPage() {
                         onClick={() => setDialog("reschedule")}
                         className="h-10 rounded-full bg-black px-5 text-sm text-white"
                       >
-                        Request New Time
+                        {t("renterDashboard.maintenanceDetail.requestNewTimeButton")}
                       </button>
                     </div>
                   </Card>
                 ) : null}
 
                 {resolved ? (
-                  <Card title={closed ? "Request Closed" : "Issue Resolved"}>
+                  <Card
+                    title={
+                      closed
+                        ? t("renterDashboard.maintenanceDetail.cards.requestClosedTitle")
+                        : t("renterDashboard.maintenanceDetail.cards.issueResolvedTitle")
+                    }
+                  >
                     {closed ? (
                       <p className="text-sm">
                         <Check className="mr-2 inline size-4" />
-                        You confirmed that this issue is fixed.
+                        {t(
+                          "renterDashboard.maintenanceDetail.resolved.confirmedFixedMessage",
+                        )}
                       </p>
                     ) : (
                       <>
                         <Meta
-                          label="Completed"
+                          label={t("renterDashboard.maintenanceDetail.fields.completed")}
                           value={request.completed ?? "18 August 2026"}
                         />
                         <p className="text-carbon-500 mt-5 text-sm leading-6">
                           {request.resolution ??
-                            "The maintenance work was completed."}
+                            t(
+                              "renterDashboard.maintenanceDetail.resolved.defaultResolutionText",
+                            )}
                         </p>
                         <h3 className="font-bricolage mt-7 text-lg font-medium">
-                          Is the issue resolved?
+                          {t("renterDashboard.maintenanceDetail.resolved.confirmQuestion")}
                         </h3>
                         <div className="mt-4 flex flex-wrap gap-3">
                           <button
                             onClick={() => {
                               setClosed(true);
-                              showToast("Request closed");
+                              showToast(
+                                t("renterDashboard.maintenanceDetail.toasts.requestClosed"),
+                              );
                             }}
                             className="h-10 rounded-full bg-black px-5 text-sm text-white"
                           >
-                            Yes, It&apos;s Fixed
+                            {t(
+                              "renterDashboard.maintenanceDetail.resolved.confirmFixedButton",
+                            )}
                           </button>
                           <button
                             onClick={() => setDialog("reopen")}
                             className="h-10 rounded-full border border-black/15 px-5 text-sm"
                           >
-                            Issue Still Exists
+                            {t(
+                              "renterDashboard.maintenanceDetail.resolved.stillExistsButton",
+                            )}
                           </button>
                         </div>
                       </>
@@ -263,9 +333,9 @@ export default function MaintenanceDetailPage() {
                   </Card>
                 ) : null}
 
-                <Card title="Updates">
+                <Card title={t("renterDashboard.maintenanceDetail.cards.updatesTitle")}>
                   <div className="space-y-5">
-                    {updatesFor(status).map((update) => (
+                    {updatesFor(t, status).map((update) => (
                       <div
                         key={update.text}
                         className="grid gap-1 border-b border-black/10 pb-5 last:border-0 last:pb-0 sm:grid-cols-[130px_1fr]"
@@ -281,22 +351,24 @@ export default function MaintenanceDetailPage() {
               </div>
 
               <aside className="space-y-6">
-                <Card title="Status Timeline">
+                <Card title={t("renterDashboard.maintenanceDetail.cards.statusTimelineTitle")}>
                   <Timeline status={status} />
                 </Card>
-                <Card title="Property Manager">
+                <Card title={t("renterDashboard.maintenanceDetail.cards.propertyManagerTitle")}>
                   <p className="font-medium">Jean Mugisha</p>
                   <p className="text-carbon-500 mt-1 text-sm">
                     Kacyiru Residence
                   </p>
                   <p className="text-carbon-500 mt-3 text-xs">
-                    Maintenance: {request.title}
+                    {t("renterDashboard.maintenanceDetail.maintenanceLabelPrefix", {
+                      title: request.title,
+                    })}
                   </p>
                   <Link
                     href={`/renter-dashboard/messages?host=Jean%20Mugisha&role=Property%20Manager&verified=1&ctx=maintenance&title=${encodeURIComponent(request.title)}&property=${encodeURIComponent(request.property)}&propertyId=${encodeURIComponent(request.propertyId)}&status=${encodeURIComponent(request.status)}&refId=${encodeURIComponent(request.id)}`}
                     className="mt-5 inline-flex h-10 items-center rounded-full border border-black/15 px-4 text-sm"
                   >
-                    Open Messages
+                    {t("renterDashboard.maintenanceDetail.openMessagesLink")}
                   </Link>
                 </Card>
               </aside>
@@ -315,18 +387,24 @@ export default function MaintenanceDetailPage() {
           confirm={() => {
             if (dialog === "information") {
               setInformationSent(true);
-              showToast("Information sent");
+              showToast(t("renterDashboard.maintenanceDetail.toasts.informationSent"));
             } else if (dialog === "reopen") {
               setStatus("Under Review");
               updateMaintenanceRequest(request.id, { status: "Under Review" });
               setClosed(false);
-              showToast("Maintenance request reopened");
+              showToast(
+                t("renterDashboard.maintenanceDetail.toasts.requestReopened"),
+              );
             } else if (dialog === "cancel") {
               setStatus("Cancelled");
               updateMaintenanceRequest(request.id, { status: "Cancelled" });
-              showToast("Maintenance request cancelled");
+              showToast(
+                t("renterDashboard.maintenanceDetail.toasts.requestCancelled"),
+              );
             } else {
-              showToast("New time requested");
+              showToast(
+                t("renterDashboard.maintenanceDetail.toasts.newTimeRequested"),
+              );
             }
             setDialog(null);
           }}
@@ -338,6 +416,7 @@ export default function MaintenanceDetailPage() {
 }
 
 function Timeline({ status }: { status: MaintenanceStatus }) {
+  const { t } = useTranslation();
   const stages = [
     "Submitted",
     "Under Review",
@@ -365,14 +444,14 @@ function Timeline({ status }: { status: MaintenanceStatus }) {
             <p
               className={`text-sm ${index === current ? "font-medium" : "text-black/55"}`}
             >
-              {stage}
+              {statusLabel(t, stage)}
             </p>
             <p className="mt-1 text-xs text-black/40">
               {index < current
-                ? "Completed"
+                ? t("renterDashboard.maintenanceDetail.fields.completed")
                 : index === current
-                  ? "Current"
-                  : "Pending"}
+                  ? t("renterDashboard.maintenanceDetail.timeline.current")
+                  : t("renterDashboard.maintenanceDetail.timeline.pending")}
             </p>
           </div>
         </div>
@@ -396,24 +475,34 @@ function MaintenanceDialog({
   setNote: (value: string) => void;
   confirm: () => void;
 }) {
+  const { t } = useTranslation();
   const [date, setDate] = useState("2026-08-19");
   const [window, setWindow] = useState("Morning");
   const title =
     type === "reschedule"
-      ? "Request Another Time"
+      ? t("renterDashboard.maintenanceDetail.dialog.titles.reschedule")
       : type === "information"
-        ? "Add Information"
+        ? t(
+            "renterDashboard.maintenanceDetail.informationNeeded.addInformationButton",
+          )
         : type === "reopen"
-          ? "Reopen Maintenance Request?"
-          : "Cancel Maintenance Request?";
+          ? t("renterDashboard.maintenanceDetail.dialog.titles.reopen")
+          : t("renterDashboard.maintenanceDetail.dialog.titles.cancel");
   const action =
     type === "reschedule"
-      ? "Request Change"
+      ? t("renterDashboard.maintenanceDetail.dialog.actions.reschedule")
       : type === "information"
-        ? "Send Information"
+        ? t("renterDashboard.maintenanceDetail.dialog.actions.information")
         : type === "reopen"
-          ? "Reopen Request"
-          : "Cancel Request";
+          ? t("renterDashboard.maintenanceDetail.dialog.actions.reopen")
+          : t("renterDashboard.maintenanceDetail.dialog.actions.cancel");
+  const timeWindowLabels: Record<string, string> = {
+    Morning: t("renterDashboard.maintenanceDetail.dialog.timeWindows.morning"),
+    Afternoon: t(
+      "renterDashboard.maintenanceDetail.dialog.timeWindows.afternoon",
+    ),
+    Evening: t("renterDashboard.maintenanceDetail.dialog.timeWindows.evening"),
+  };
   return (
     <div
       className="fixed inset-0 z-[220] flex items-center justify-center bg-black/40 p-4"
@@ -428,7 +517,7 @@ function MaintenanceDialog({
         <div className="relative flex min-h-44 items-center justify-center bg-black/[0.05] p-5">
           <button
             onClick={close}
-            aria-label="Close dialog"
+            aria-label={t("renterDashboard.maintenanceDetail.dialog.closeAria")}
             className="absolute top-4 right-4 flex size-9 items-center justify-center rounded-full border border-black/20"
           >
             <X className="size-4" />
@@ -443,17 +532,30 @@ function MaintenanceDialog({
           <h2 className="font-bricolage text-2xl font-medium">{title}</h2>
           <p className="text-carbon-500 mt-3 text-sm">
             {type === "cancel"
-              ? `${request.title} will be marked as cancelled.`
+              ? t("renterDashboard.maintenanceDetail.dialog.cancelDescription", {
+                  title: request.title,
+                })
               : type === "reschedule"
-                ? `Current appointment: ${request.scheduledVisit?.date ?? "Not scheduled"} · ${request.scheduledVisit?.time ?? ""}`
+                ? t(
+                    "renterDashboard.maintenanceDetail.dialog.currentAppointment",
+                    {
+                      date:
+                        request.scheduledVisit?.date ??
+                        t("renterDashboard.maintenanceDetail.dialog.notScheduled"),
+                      time: request.scheduledVisit?.time ?? "",
+                    },
+                  )
                 : type === "information"
-                  ? (request.informationNeeded ?? "Add the requested details.")
-                  : "Tell us what still needs attention."}
+                  ? (request.informationNeeded ??
+                    t("renterDashboard.maintenanceDetail.dialog.addInfoDefaultText"))
+                  : t("renterDashboard.maintenanceDetail.dialog.reopenPrompt")}
           </p>
           {type === "reschedule" ? (
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
               <label>
-                <span className="mb-2 block text-sm">Preferred date</span>
+                <span className="mb-2 block text-sm">
+                  {t("renterDashboard.maintenanceDetail.dialog.preferredDateLabel")}
+                </span>
                 <input
                   type="date"
                   value={date}
@@ -462,15 +564,19 @@ function MaintenanceDialog({
                 />
               </label>
               <label>
-                <span className="mb-2 block text-sm">Time window</span>
+                <span className="mb-2 block text-sm">
+                  {t("renterDashboard.maintenanceDetail.dialog.timeWindowLabel")}
+                </span>
                 <select
                   value={window}
                   onChange={(event) => setWindow(event.target.value)}
                   className="h-11 w-full rounded-xl bg-black/[0.035] px-4 text-sm outline-none"
                 >
-                  <option>Morning</option>
-                  <option>Afternoon</option>
-                  <option>Evening</option>
+                  {["Morning", "Afternoon", "Evening"].map((option) => (
+                    <option key={option} value={option}>
+                      {timeWindowLabels[option]}
+                    </option>
+                  ))}
                 </select>
               </label>
             </div>
@@ -478,10 +584,12 @@ function MaintenanceDialog({
           <label className="mt-5 block">
             <span className="mb-2 block text-sm">
               {type === "cancel"
-                ? "Reason"
+                ? t("renterDashboard.maintenanceDetail.dialog.reasonLabel")
                 : type === "reschedule"
-                  ? "Reason for requesting another time"
-                  : "Note"}
+                  ? t(
+                      "renterDashboard.maintenanceDetail.dialog.reasonForRescheduleLabel",
+                    )
+                  : t("renterDashboard.maintenanceDetail.dialog.noteLabel")}
             </span>
             <textarea
               value={note}
@@ -489,17 +597,21 @@ function MaintenanceDialog({
               rows={3}
               placeholder={
                 type === "cancel"
-                  ? "Issue fixed itself, no longer needed..."
+                  ? t(
+                      "renterDashboard.maintenanceDetail.dialog.cancelReasonPlaceholder",
+                    )
                   : type === "reschedule"
-                    ? "Explain why the current appointment no longer works..."
-                    : "Add a helpful note"
+                    ? t(
+                        "renterDashboard.maintenanceDetail.dialog.rescheduleReasonPlaceholder",
+                      )
+                    : t("renterDashboard.maintenanceDetail.dialog.notePlaceholder")
               }
               className="w-full resize-none rounded-xl bg-black/[0.035] p-4 text-sm outline-none"
             />
           </label>
           {type === "information" || type === "reopen" ? (
             <label className="mt-4 flex h-11 cursor-pointer items-center justify-center rounded-xl border border-dashed border-black/20 text-sm">
-              Add Photos
+              {t("renterDashboard.maintenanceDetail.dialog.addPhotosLabel")}
               <input
                 type="file"
                 accept="image/*"
@@ -513,7 +625,9 @@ function MaintenanceDialog({
               onClick={close}
               className="h-11 rounded-full border border-black/15 px-5 text-sm"
             >
-              {type === "cancel" ? "Keep Request" : "Cancel"}
+              {type === "cancel"
+                ? t("renterDashboard.maintenanceDetail.dialog.keepRequestButton")
+                : t("renterDashboard.maintenanceDetail.dialog.cancelButton")}
             </button>
             <button
               onClick={confirm}
@@ -528,12 +642,24 @@ function MaintenanceDialog({
   );
 }
 
-function updatesFor(status: MaintenanceStatus) {
+function updatesFor(t: TFunc, status: MaintenanceStatus) {
   const updates = [
-    { date: "16 Aug · 14:30", text: "Technician assigned." },
-    { date: "15 Aug · 09:10", text: "Visit scheduled for 17 August." },
-    { date: "14 Aug · 18:45", text: "Property manager reviewed the request." },
-    { date: "14 Aug · 18:20", text: "Request submitted." },
+    {
+      date: "16 Aug · 14:30",
+      text: t("renterDashboard.maintenanceDetail.updates.technicianAssigned"),
+    },
+    {
+      date: "15 Aug · 09:10",
+      text: t("renterDashboard.maintenanceDetail.updates.visitScheduled"),
+    },
+    {
+      date: "14 Aug · 18:45",
+      text: t("renterDashboard.maintenanceDetail.updates.reviewedRequest"),
+    },
+    {
+      date: "14 Aug · 18:20",
+      text: t("renterDashboard.maintenanceDetail.updates.requestSubmitted"),
+    },
   ];
   return status === "Submitted" ? updates.slice(-1) : updates;
 }
@@ -560,9 +686,10 @@ function Meta({ label, value }: { label: string; value: string }) {
   );
 }
 function Status({ status }: { status: string }) {
+  const { t } = useTranslation();
   return (
     <span className="rounded-full bg-black/[0.07] px-2.5 py-1 text-[10px] font-medium">
-      {status}
+      {statusLabel(t, status)}
     </span>
   );
 }

@@ -8,19 +8,41 @@ import { Suspense, useEffect, useRef, useState } from "react";
 
 import applicationReceivedIllustration from "@/assets/images/application-received.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
+import { useTranslation } from "@/components/language/use-translation";
 import { DEMO_LISTINGS } from "@/data/hero-search-demo";
 import { RENTER_APPLICATIONS } from "@/data/renter-applications";
 
-const steps = [
-  "About you",
-  "Rental needs",
-  "Employment",
-  "Household",
-  "References",
-  "Documents",
-  "Review",
+// Wizard step labels stay translation keys, not literal text -- `steps` in
+// the reference renter-dashboard nav groups is the same pattern (`labelKey`
+// resolved via `t()` at render time). Nothing else in this file compares
+// against step text, only the index, so no separate internal value is
+// needed here.
+const stepKeys = [
+  "renterDashboard.applicationNew.steps.aboutYou",
+  "renterDashboard.applicationNew.steps.rentalNeeds",
+  "renterDashboard.applicationNew.steps.employment",
+  "renterDashboard.applicationNew.steps.household",
+  "renterDashboard.applicationNew.steps.references",
+  "renterDashboard.applicationNew.steps.documents",
+  "renterDashboard.applicationNew.steps.review",
+] as const;
+
+// These stay the internal `<select>` values stored in form state (and shown
+// verbatim in the Review step / carried into the submission payload) --
+// only the label shown in the dropdown is translated, via the parallel
+// label maps below (mirrors the renter dashboard's `FilterSelect`
+// `optionLabels`).
+const employmentOptions = [
+  { value: "Employed", labelKey: "renterDashboard.applicationNew.employmentOptions.employed" },
+  { value: "Self-employed", labelKey: "renterDashboard.applicationNew.employmentOptions.selfEmployed" },
+  { value: "Student", labelKey: "renterDashboard.applicationNew.employmentOptions.student" },
+  { value: "Retired", labelKey: "renterDashboard.applicationNew.employmentOptions.retired" },
+  { value: "Other", labelKey: "renterDashboard.applicationNew.employmentOptions.other" },
 ];
 
+// Income bands contain currency amounts, which stay untranslated -- only
+// the surrounding "Under / Between … and … / Above" wording is translated,
+// via interpolation into the three templates below.
 const incomeRanges = [
   "Under RWF 500,000",
   "Between RWF 500,000 and RWF 999,999",
@@ -28,6 +50,14 @@ const incomeRanges = [
   "Between RWF 1,500,000 and RWF 1,999,999",
   "Between RWF 2,000,000 and RWF 2,999,999",
   "Above RWF 3,000,000",
+];
+const incomeRangeLabels: Array<{ key: string; vars: Record<string, string> }> = [
+  { key: "renterDashboard.applicationNew.incomeRanges.under", vars: { amount: "RWF 500,000" } },
+  { key: "renterDashboard.applicationNew.incomeRanges.between", vars: { min: "RWF 500,000", max: "RWF 999,999" } },
+  { key: "renterDashboard.applicationNew.incomeRanges.between", vars: { min: "RWF 1,000,000", max: "RWF 1,499,999" } },
+  { key: "renterDashboard.applicationNew.incomeRanges.between", vars: { min: "RWF 1,500,000", max: "RWF 1,999,999" } },
+  { key: "renterDashboard.applicationNew.incomeRanges.between", vars: { min: "RWF 2,000,000", max: "RWF 2,999,999" } },
+  { key: "renterDashboard.applicationNew.incomeRanges.above", vars: { amount: "RWF 3,000,000" } },
 ];
 
 const incomeSources = [
@@ -39,6 +69,15 @@ const incomeSources = [
   "Family support",
   "Other",
 ];
+const INCOME_SOURCE_LABEL_KEYS: Record<string, string> = {
+  "Salary or wages": "renterDashboard.applicationNew.incomeSources.salaryOrWages",
+  "Self-employment or business": "renterDashboard.applicationNew.incomeSources.selfEmploymentOrBusiness",
+  "Freelance or contract work": "renterDashboard.applicationNew.incomeSources.freelanceOrContractWork",
+  "Investments or rental income": "renterDashboard.applicationNew.incomeSources.investmentsOrRentalIncome",
+  "Pension or retirement income": "renterDashboard.applicationNew.incomeSources.pensionOrRetirementIncome",
+  "Family support": "renterDashboard.applicationNew.incomeSources.familySupport",
+  Other: "renterDashboard.applicationNew.incomeSources.other",
+};
 
 const rentPaymentMethods = [
   "Bank transfer",
@@ -48,8 +87,20 @@ const rentPaymentMethods = [
   "Employer-paid housing allowance",
   "Other",
 ];
+const RENT_PAYMENT_LABEL_KEYS: Record<string, string> = {
+  "Bank transfer": "renterDashboard.applicationNew.rentPaymentMethods.bankTransfer",
+  "Mobile Money": "renterDashboard.applicationNew.rentPaymentMethods.mobileMoney",
+  "Standing order or direct debit": "renterDashboard.applicationNew.rentPaymentMethods.standingOrderOrDirectDebit",
+  "Cash deposit": "renterDashboard.applicationNew.rentPaymentMethods.cashDeposit",
+  "Employer-paid housing allowance": "renterDashboard.applicationNew.rentPaymentMethods.employerPaidHousingAllowance",
+  Other: "renterDashboard.applicationNew.rentPaymentMethods.other",
+};
 
 const applicationDocuments = ["Identity document", "Reference document"];
+const DOCUMENT_LABEL_KEYS: Record<string, string> = {
+  "Identity document": "renterDashboard.applicationNew.documents.identityDocument",
+  "Reference document": "renterDashboard.applicationNew.documents.referenceDocument",
+};
 
 function currentApplicationValues(values: Record<string, string>) {
   return Object.fromEntries(
@@ -59,32 +110,59 @@ function currentApplicationValues(values: Record<string, string>) {
   );
 }
 
-const fields: Record<number, Array<[string, string, string]>> = {
+type ApplicationField = {
+  labelKey: string;
+  name: string;
+  placeholder?: string;
+  placeholderKey?: string;
+};
+
+const fields: Record<number, ApplicationField[]> = {
   0: [
-    ["Full name", "fullName", "Julien Mugisha"],
-    ["Email", "email", "renter@gmail.com"],
-    ["Phone number", "phone", "+250 788 000 000"],
+    { labelKey: "renterDashboard.applicationNew.fields.fullName", name: "fullName", placeholder: "Julien Mugisha" },
+    { labelKey: "renterDashboard.applicationNew.fields.email", name: "email", placeholder: "renter@gmail.com" },
+    { labelKey: "renterDashboard.applicationNew.fields.phone", name: "phone", placeholder: "+250 788 000 000" },
   ],
   1: [
-    ["Preferred move-in date", "moveIn", "2026-09-01"],
-    ["Lease length", "lease", "12 months"],
-    ["Reason for moving", "reason", "Closer to work"],
+    { labelKey: "renterDashboard.applicationNew.fields.moveIn", name: "moveIn" },
+    {
+      labelKey: "renterDashboard.applicationNew.fields.lease",
+      name: "lease",
+      placeholderKey: "renterDashboard.applicationNew.placeholders.leaseLength",
+    },
+    {
+      labelKey: "renterDashboard.applicationNew.fields.reason",
+      name: "reason",
+      placeholderKey: "renterDashboard.applicationNew.placeholders.reasonForMoving",
+    },
   ],
   2: [
-    ["Employment status", "employment", "Employed"],
-    ["Monthly income", "income", "RWF 1,500,000"],
-    ["Source of income", "incomeSource", "Salary or wages"],
-    ["How will you pay the rent?", "rentPayment", "Bank transfer"],
+    { labelKey: "renterDashboard.applicationNew.fields.employment", name: "employment" },
+    { labelKey: "renterDashboard.applicationNew.fields.income", name: "income" },
+    { labelKey: "renterDashboard.applicationNew.fields.incomeSource", name: "incomeSource" },
+    { labelKey: "renterDashboard.applicationNew.fields.rentPayment", name: "rentPayment" },
   ],
   3: [
-    ["Number of occupants", "occupants", "2"],
-    ["Pets", "pets", "No pets"],
-    ["Co-applicant", "coApplicant", "None"],
+    { labelKey: "renterDashboard.applicationNew.fields.occupants", name: "occupants", placeholder: "2" },
+    {
+      labelKey: "renterDashboard.applicationNew.fields.pets",
+      name: "pets",
+      placeholderKey: "renterDashboard.applicationNew.placeholders.noPets",
+    },
+    {
+      labelKey: "renterDashboard.applicationNew.fields.coApplicant",
+      name: "coApplicant",
+      placeholderKey: "renterDashboard.applicationNew.placeholders.none",
+    },
   ],
   4: [
-    ["Reference name", "reference", "Claire Uwase"],
-    ["Relationship", "relationship", "e.g. Former landlord or supervisor"],
-    ["Reference phone", "referencePhone", "+250 788 111 111"],
+    { labelKey: "renterDashboard.applicationNew.fields.referenceName", name: "reference", placeholder: "Claire Uwase" },
+    {
+      labelKey: "renterDashboard.applicationNew.fields.relationship",
+      name: "relationship",
+      placeholderKey: "renterDashboard.applicationNew.placeholders.relationshipExample",
+    },
+    { labelKey: "renterDashboard.applicationNew.fields.referencePhone", name: "referencePhone", placeholder: "+250 788 111 111" },
   ],
 };
 
@@ -97,6 +175,7 @@ export default function NewApplicationPage() {
 }
 
 function NewApplicationPageInner() {
+  const { t } = useTranslation();
   const params = useSearchParams();
   const router = useRouter();
   const propertyId = params.get("property") ?? "kacyiru-2br";
@@ -155,7 +234,7 @@ function NewApplicationPageInner() {
           );
         }
         if (typeof draft.step === "number") {
-          setStep(Math.min(Math.max(draft.step, 0), steps.length - 1));
+          setStep(Math.min(Math.max(draft.step, 0), stepKeys.length - 1));
         }
       }, 0);
       return () => window.clearTimeout(restoreDraft);
@@ -218,29 +297,36 @@ function NewApplicationPageInner() {
           <section className="w-full max-w-xl p-8 text-center">
             <Image
               src={applicationReceivedIllustration}
-              alt="Application already received illustration"
+              alt={t(
+                "renterDashboard.applicationNew.alreadyApplied.illustrationAlt",
+              )}
               className="mx-auto h-36 w-auto object-contain"
               priority
             />
             <h1 className="font-bricolage mt-5 text-3xl font-medium">
-              You already applied
+              {t("renterDashboard.applicationNew.alreadyApplied.heading")}
             </h1>
             <p className="text-carbon-500 mt-3 text-sm leading-6">
-              An active application for {existing.title} already exists. Open it
-              to check its progress instead of submitting a duplicate.
+              {t("renterDashboard.applicationNew.alreadyApplied.body", {
+                title: existing.title,
+              })}
             </p>
             <div className="mt-7 flex justify-center gap-3">
               <Link
                 href="/renter-dashboard/applications"
                 className="h-10 rounded-full border border-black/15 px-5 py-2.5 text-sm"
               >
-                All Applications
+                {t(
+                  "renterDashboard.applicationNew.alreadyApplied.allApplications",
+                )}
               </Link>
               <Link
                 href={`/renter-dashboard/applications/${existing.id}`}
                 className="h-10 rounded-full bg-black px-5 py-2.5 text-sm text-white"
               >
-                View Application
+                {t(
+                  "renterDashboard.applicationNew.alreadyApplied.viewApplication",
+                )}
               </Link>
             </div>
           </section>
@@ -257,24 +343,34 @@ function NewApplicationPageInner() {
           <section className="w-full max-w-2xl bg-white p-8 text-center shadow-[0_3px_14px_rgba(0,0,0,0.04)]">
             <Image
               src={applicationReceivedIllustration}
-              alt="Application received illustration"
+              alt={t("renterDashboard.applicationNew.submitted.illustrationAlt")}
               className="mx-auto h-40 w-auto object-contain"
               priority
             />
             <h1 className="font-bricolage mt-5 text-3xl font-medium">
-              Application submitted
+              {t("renterDashboard.applicationNew.submitted.heading")}
             </h1>
             <p className="text-carbon-500 mt-2">
-              Your application for {property.title} has been sent.
+              {t("renterDashboard.applicationNew.submitted.body", {
+                title: property.title,
+              })}
             </p>
             <div className="mx-auto mt-7 grid max-w-md grid-cols-2 divide-x divide-black/10 border-y border-black/10 py-4 text-left text-sm">
               <div className="pr-5">
-                <p className="text-carbon-500 text-xs">Application ID</p>
+                <p className="text-carbon-500 text-xs">
+                  {t(
+                    "renterDashboard.applicationNew.submitted.applicationIdLabel",
+                  )}
+                </p>
                 <p className="mt-1 font-medium">{applicationId}</p>
               </div>
               <div className="pl-5">
-                <p className="text-carbon-500 text-xs">Status</p>
-                <p className="mt-1 font-medium">Submitted</p>
+                <p className="text-carbon-500 text-xs">
+                  {t("renterDashboard.applicationNew.submitted.statusLabel")}
+                </p>
+                <p className="mt-1 font-medium">
+                  {t("renterDashboard.applicationNew.submitted.statusValue")}
+                </p>
               </div>
             </div>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
@@ -282,19 +378,19 @@ function NewApplicationPageInner() {
                 href="/renter-dashboard/applications"
                 className="h-10 rounded-full border border-black/15 px-5 py-2.5 text-sm"
               >
-                Applications
+                {t("renterDashboard.applicationNew.applicationsLink")}
               </Link>
               <Link
                 href={`/renter-dashboard/messages?property=${encodeURIComponent(property.title)}&propertyId=${encodeURIComponent(property.id)}&ctx=application&status=Submitted&refId=${encodeURIComponent(applicationId)}`}
                 className="h-10 rounded-full border border-black/15 px-5 py-2.5 text-sm"
               >
-                Message
+                {t("renterDashboard.applicationNew.submitted.message")}
               </Link>
               <Link
                 href={`/renter-dashboard/applications/${applicationId}?property=${encodeURIComponent(property.id)}&title=${encodeURIComponent(property.title)}&location=${encodeURIComponent(property.location)}`}
                 className="h-10 rounded-full bg-black px-5 py-2.5 text-sm text-white"
               >
-                View Application
+                {t("renterDashboard.applicationNew.submitted.viewApplication")}
               </Link>
             </div>
           </section>
@@ -314,12 +410,12 @@ function NewApplicationPageInner() {
               className="inline-flex items-center gap-1 text-sm"
             >
               <ChevronLeft className="size-4" />
-              Applications
+              {t("renterDashboard.applicationNew.applicationsLink")}
             </Link>
             <div className="mt-6 grid gap-6 lg:grid-cols-[250px_1fr]">
               <aside className="h-fit bg-white p-5">
                 <p className="text-carbon-500 text-xs tracking-[0.12em] uppercase">
-                  Applying for
+                  {t("renterDashboard.applicationNew.applyingFor")}
                 </p>
                 <h1 className="font-bricolage mt-2 text-xl font-medium">
                   {property.title}
@@ -328,9 +424,9 @@ function NewApplicationPageInner() {
                   {property.location}
                 </p>
                 <div className="mt-6 space-y-1">
-                  {steps.map((label, index) => (
+                  {stepKeys.map((labelKey, index) => (
                     <button
-                      key={label}
+                      key={labelKey}
                       onClick={() => index <= step && setStep(index)}
                       className={`flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm ${index === step ? "bg-black text-white" : "text-carbon-500"}`}
                     >
@@ -343,7 +439,7 @@ function NewApplicationPageInner() {
                           index + 1
                         )}
                       </span>
-                      {label}
+                      {t(labelKey)}
                     </button>
                   ))}
                 </div>
@@ -356,10 +452,13 @@ function NewApplicationPageInner() {
                 <div className="flex items-start justify-between gap-5">
                   <div>
                     <p className="text-carbon-500 text-sm">
-                      Step {step + 1} of {steps.length}
+                      {t("renterDashboard.applicationNew.stepProgress", {
+                        current: step + 1,
+                        total: stepKeys.length,
+                      })}
                     </p>
                     <h2 className="font-bricolage mt-1 text-3xl font-medium">
-                      {steps[step]}
+                      {t(stepKeys[step])}
                     </h2>
                   </div>
                   <button
@@ -367,145 +466,171 @@ function NewApplicationPageInner() {
                     onClick={saveDraft}
                     className="h-10 shrink-0 rounded-full border border-black/15 px-4 text-sm"
                   >
-                    Save draft
+                    {t("renterDashboard.applicationNew.saveDraft")}
                   </button>
                 </div>
                 <div className="mt-5 h-1 bg-black/10">
                   <div
                     className="h-full bg-black transition-all"
-                    style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+                    style={{ width: `${((step + 1) / stepKeys.length) * 100}%` }}
                   />
                 </div>
                 <div className="mt-8 min-h-[310px]">
                   {step <= 4 ? (
                     <div className="grid gap-5 sm:grid-cols-2">
-                      {fields[step].map(([label, name, placeholder]) => (
-                        <label key={name} className="block">
-                          <span className="mb-2 block text-sm font-medium">
-                            {label} <span className="text-red-600">*</span>
-                          </span>
-                          {name === "employment" ? (
-                            <select
-                              required
-                              value={values[name] ?? ""}
-                              onChange={(event) =>
-                                setValues((current) => ({
-                                  ...current,
-                                  [name]: event.target.value,
-                                }))
-                              }
-                              className="application-form-input h-11 w-full border-0 border-b border-black/20 bg-transparent px-1 text-sm outline-none focus:border-black focus:ring-0"
-                            >
-                              <option value="">Select employment status</option>
-                              <option>Employed</option>
-                              <option>Self-employed</option>
-                              <option>Student</option>
-                              <option>Retired</option>
-                              <option>Other</option>
-                            </select>
-                          ) : name === "income" ? (
-                            <select
-                              required
-                              value={values[name] ?? ""}
-                              onChange={(event) =>
-                                setValues((current) => ({
-                                  ...current,
-                                  [name]: event.target.value,
-                                }))
-                              }
-                              className="application-form-input h-11 w-full border-0 border-b border-black/20 bg-transparent px-1 text-sm outline-none focus:border-black focus:ring-0"
-                            >
-                              <option value="">Select monthly income</option>
-                              {incomeRanges.map((range) => (
-                                <option key={range} value={range}>
-                                  {range}
+                      {fields[step].map((field) => {
+                        const { name } = field;
+                        const placeholderText = field.placeholderKey
+                          ? t(field.placeholderKey)
+                          : field.placeholder;
+                        return (
+                          <label key={name} className="block">
+                            <span className="mb-2 block text-sm font-medium">
+                              {t(field.labelKey)}{" "}
+                              <span className="text-red-600">*</span>
+                            </span>
+                            {name === "employment" ? (
+                              <select
+                                required
+                                value={values[name] ?? ""}
+                                onChange={(event) =>
+                                  setValues((current) => ({
+                                    ...current,
+                                    [name]: event.target.value,
+                                  }))
+                                }
+                                className="application-form-input h-11 w-full border-0 border-b border-black/20 bg-transparent px-1 text-sm outline-none focus:border-black focus:ring-0"
+                              >
+                                <option value="">
+                                  {t(
+                                    "renterDashboard.applicationNew.selectPrompts.employment",
+                                  )}
                                 </option>
-                              ))}
-                            </select>
-                          ) : name === "incomeSource" ? (
-                            <select
-                              required
-                              value={values[name] ?? ""}
-                              onChange={(event) =>
-                                setValues((current) => ({
-                                  ...current,
-                                  [name]: event.target.value,
-                                }))
-                              }
-                              className="application-form-input h-11 w-full border-0 border-b border-black/20 bg-transparent px-1 text-sm outline-none focus:border-black focus:ring-0"
-                            >
-                              <option value="">Select source of income</option>
-                              {incomeSources.map((source) => (
-                                <option key={source} value={source}>
-                                  {source}
+                                {employmentOptions.map((option) => (
+                                  <option key={option.value} value={option.value}>
+                                    {t(option.labelKey)}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : name === "income" ? (
+                              <select
+                                required
+                                value={values[name] ?? ""}
+                                onChange={(event) =>
+                                  setValues((current) => ({
+                                    ...current,
+                                    [name]: event.target.value,
+                                  }))
+                                }
+                                className="application-form-input h-11 w-full border-0 border-b border-black/20 bg-transparent px-1 text-sm outline-none focus:border-black focus:ring-0"
+                              >
+                                <option value="">
+                                  {t(
+                                    "renterDashboard.applicationNew.selectPrompts.income",
+                                  )}
                                 </option>
-                              ))}
-                            </select>
-                          ) : name === "rentPayment" ? (
-                            <select
-                              required
-                              value={values[name] ?? ""}
-                              onChange={(event) =>
-                                setValues((current) => ({
-                                  ...current,
-                                  [name]: event.target.value,
-                                }))
-                              }
-                              className="application-form-input h-11 w-full border-0 border-b border-black/20 bg-transparent px-1 text-sm outline-none focus:border-black focus:ring-0"
-                            >
-                              <option value="">Select payment method</option>
-                              {rentPaymentMethods.map((method) => (
-                                <option key={method} value={method}>
-                                  {method}
+                                {incomeRanges.map((range, index) => (
+                                  <option key={range} value={range}>
+                                    {t(
+                                      incomeRangeLabels[index].key,
+                                      incomeRangeLabels[index].vars,
+                                    )}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : name === "incomeSource" ? (
+                              <select
+                                required
+                                value={values[name] ?? ""}
+                                onChange={(event) =>
+                                  setValues((current) => ({
+                                    ...current,
+                                    [name]: event.target.value,
+                                  }))
+                                }
+                                className="application-form-input h-11 w-full border-0 border-b border-black/20 bg-transparent px-1 text-sm outline-none focus:border-black focus:ring-0"
+                              >
+                                <option value="">
+                                  {t(
+                                    "renterDashboard.applicationNew.selectPrompts.incomeSource",
+                                  )}
                                 </option>
-                              ))}
-                            </select>
-                          ) : (
-                            <input
-                              required
-                              type={
-                                name === "moveIn"
-                                  ? "date"
-                                  : name === "email"
-                                    ? "email"
+                                {incomeSources.map((source) => (
+                                  <option key={source} value={source}>
+                                    {t(INCOME_SOURCE_LABEL_KEYS[source])}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : name === "rentPayment" ? (
+                              <select
+                                required
+                                value={values[name] ?? ""}
+                                onChange={(event) =>
+                                  setValues((current) => ({
+                                    ...current,
+                                    [name]: event.target.value,
+                                  }))
+                                }
+                                className="application-form-input h-11 w-full border-0 border-b border-black/20 bg-transparent px-1 text-sm outline-none focus:border-black focus:ring-0"
+                              >
+                                <option value="">
+                                  {t(
+                                    "renterDashboard.applicationNew.selectPrompts.rentPayment",
+                                  )}
+                                </option>
+                                {rentPaymentMethods.map((method) => (
+                                  <option key={method} value={method}>
+                                    {t(RENT_PAYMENT_LABEL_KEYS[method])}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : (
+                              <input
+                                required
+                                type={
+                                  name === "moveIn"
+                                    ? "date"
+                                    : name === "email"
+                                      ? "email"
+                                      : name === "occupants"
+                                        ? "number"
+                                        : "text"
+                                }
+                                min={
+                                  name === "moveIn"
+                                    ? "2026-08-15"
                                     : name === "occupants"
-                                      ? "number"
-                                      : "text"
-                              }
-                              min={
-                                name === "moveIn"
-                                  ? "2026-08-15"
-                                  : name === "occupants"
-                                    ? "1"
-                                    : undefined
-                              }
-                              value={values[name] ?? ""}
-                              onChange={(event) =>
-                                setValues((current) => ({
-                                  ...current,
-                                  [name]: event.target.value,
-                                }))
-                              }
-                              placeholder={
-                                name === "moveIn" ? undefined : placeholder
-                              }
-                              className="application-form-input h-11 w-full border-0 border-b border-black/20 bg-transparent px-1 text-sm outline-none focus:border-black focus:ring-0"
-                            />
-                          )}
-                          {name === "occupants" ? (
-                            <span className="text-carbon-500 mt-2 block text-xs leading-5">
-                              Include everyone who will live in the home,
-                              including you.
-                            </span>
-                          ) : null}
-                          {name === "coApplicant" ? (
-                            <span className="text-carbon-500 mt-2 block text-xs leading-5">
-                              A co-applicant shares responsibility for the lease
-                              and provides their own details.
-                            </span>
-                          ) : null}
-                        </label>
-                      ))}
+                                      ? "1"
+                                      : undefined
+                                }
+                                value={values[name] ?? ""}
+                                onChange={(event) =>
+                                  setValues((current) => ({
+                                    ...current,
+                                    [name]: event.target.value,
+                                  }))
+                                }
+                                placeholder={
+                                  name === "moveIn" ? undefined : placeholderText
+                                }
+                                className="application-form-input h-11 w-full border-0 border-b border-black/20 bg-transparent px-1 text-sm outline-none focus:border-black focus:ring-0"
+                              />
+                            )}
+                            {name === "occupants" ? (
+                              <span className="text-carbon-500 mt-2 block text-xs leading-5">
+                                {t("renterDashboard.applicationNew.occupantsHelp")}
+                              </span>
+                            ) : null}
+                            {name === "coApplicant" ? (
+                              <span className="text-carbon-500 mt-2 block text-xs leading-5">
+                                {t(
+                                  "renterDashboard.applicationNew.coApplicantHelp",
+                                )}
+                              </span>
+                            ) : null}
+                          </label>
+                        );
+                      })}
                     </div>
                   ) : null}
                   {step === 5 ? (
@@ -547,15 +672,17 @@ function NewApplicationPageInner() {
                     disabled={step === 0}
                     className="inline-flex h-10 items-center gap-1 rounded-full px-4 text-sm disabled:opacity-30"
                   >
-                    <ChevronLeft aria-hidden="true" className="size-4" /> Back
+                    <ChevronLeft aria-hidden="true" className="size-4" />{" "}
+                    {t("renterDashboard.applicationNew.back")}
                   </button>
-                  {step < steps.length - 1 ? (
+                  {step < stepKeys.length - 1 ? (
                     <button
                       type="button"
                       onClick={continueForm}
                       className="inline-flex h-10 items-center gap-2 rounded-full bg-black px-5 text-sm text-white"
                     >
-                      Continue <ChevronRight className="size-4" />
+                      {t("renterDashboard.applicationNew.continue")}{" "}
+                      <ChevronRight className="size-4" />
                     </button>
                   ) : (
                     <button
@@ -564,7 +691,7 @@ function NewApplicationPageInner() {
                       onClick={submitApplication}
                       className="h-10 rounded-full bg-black px-5 text-sm text-white disabled:opacity-35"
                     >
-                      Submit Application
+                      {t("renterDashboard.applicationNew.submitApplication")}
                     </button>
                   )}
                 </div>
@@ -574,7 +701,7 @@ function NewApplicationPageInner() {
         </div>
         {saved ? (
           <div role="status" className="feedback-toast">
-            Application saved to drafts
+            {t("renterDashboard.applicationNew.draftSavedToast")}
           </div>
         ) : null}
       </main>
@@ -589,10 +716,11 @@ function Documents({
   documents: string[];
   onAdd: (name: string, file: File) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div>
       <p className="text-carbon-500 mb-5 text-sm">
-        An identity document is required. PDF, JPG or PNG.
+        {t("renterDashboard.applicationNew.documents.requirement")}
       </p>
       <div className="grid gap-4 sm:grid-cols-2">
         {applicationDocuments.map((name) => (
@@ -621,11 +749,13 @@ function Documents({
                 <FileUp className="size-4" />
               )}
             </span>
-            <p className="mt-3 text-sm font-medium">{name}</p>
+            <p className="mt-3 text-sm font-medium">
+              {t(DOCUMENT_LABEL_KEYS[name])}
+            </p>
             <p className="text-carbon-500 mt-1 text-xs">
               {documents.includes(name)
-                ? "Added · Click to replace"
-                : "Choose file"}
+                ? t("renterDashboard.applicationNew.documents.addedClickToReplace")
+                : t("renterDashboard.applicationNew.documents.chooseFile")}
             </p>
           </label>
         ))}
@@ -647,23 +777,32 @@ function Review({
   consented: boolean;
   onConsent: (checked: boolean) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div>
       <div className="grid gap-5 sm:grid-cols-2">
         <ReviewBlock
-          title="Property"
+          title={t("renterDashboard.applicationNew.review.property")}
           rows={[property.title, property.location]}
         />
         <ReviewBlock
-          title="Rental details"
+          title={t("renterDashboard.applicationNew.review.rentalDetails")}
           rows={[
-            `Move-in: ${formatDate(values.moveIn)}`,
-            `Lease: ${values.lease}`,
-            `Occupants: ${values.occupants}`,
+            t("renterDashboard.applicationNew.review.moveInLabel", {
+              value:
+                formatDate(values.moveIn) ??
+                t("renterDashboard.applicationNew.review.notProvided"),
+            }),
+            t("renterDashboard.applicationNew.review.leaseLabel", {
+              value: values.lease,
+            }),
+            t("renterDashboard.applicationNew.review.occupantsLabel", {
+              value: values.occupants,
+            }),
           ]}
         />
         <ReviewBlock
-          title="Applicant"
+          title={t("renterDashboard.applicationNew.review.applicant")}
           rows={[
             values.fullName,
             values.email,
@@ -674,9 +813,16 @@ function Review({
           ]}
         />
         <ReviewBlock
-          title="Documents"
+          title={t("renterDashboard.applicationNew.review.documents")}
           rows={[
-            `${documents.length} document${documents.length === 1 ? "" : "s"} attached`,
+            documents.length === 1
+              ? t("renterDashboard.applicationNew.review.documentsAttachedOne", {
+                  count: documents.length,
+                })
+              : t(
+                  "renterDashboard.applicationNew.review.documentsAttachedOther",
+                  { count: documents.length },
+                ),
           ]}
           showBorder={false}
         />
@@ -688,10 +834,7 @@ function Review({
           onChange={(event) => onConsent(event.target.checked)}
           className="mt-1 size-4 accent-black"
         />
-        <span>
-          I confirm that the information provided is accurate and I consent to
-          it being shared with the property representative.
-        </span>
+        <span>{t("renterDashboard.applicationNew.review.consent")}</span>
       </label>
     </div>
   );
@@ -706,20 +849,23 @@ function ReviewBlock({
   rows: string[];
   showBorder?: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div className={showBorder ? "border-b border-black/10 pb-5" : "pb-5"}>
       <h3 className="text-sm font-medium">{title}</h3>
       <div className="text-carbon-500 mt-2 space-y-1 text-sm leading-6">
         {rows.map((row) => (
-          <p key={row}>{row || "Not provided"}</p>
+          <p key={row || "empty"}>
+            {row || t("renterDashboard.applicationNew.review.notProvided")}
+          </p>
         ))}
       </div>
     </div>
   );
 }
 
-function formatDate(value?: string) {
-  if (!value) return "Not provided";
+function formatDate(value?: string): string | null {
+  if (!value) return null;
   return new Intl.DateTimeFormat("en", {
     day: "numeric",
     month: "long",

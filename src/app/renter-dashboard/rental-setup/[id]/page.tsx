@@ -8,6 +8,7 @@ import agreedIllustration from "@/assets/images/agreed.png";
 import managerAvatar from "@/assets/images/julien.jpg";
 import emptyIllustration from "@/assets/images/empty.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
+import { useTranslation } from "@/components/language/use-translation";
 import { RENTER_APPLICATIONS } from "@/data/renter-applications";
 import { DEMO_LISTINGS } from "@/data/hero-search-demo";
 import {
@@ -35,18 +36,22 @@ import {
 // same identity, viewed from the renter's side. The step UI/visual design
 // is otherwise preserved exactly as it was.
 
-const steps = [
-  "Rental Details",
-  "Rental Agreement",
-  "Payments",
-  "Move-in",
-  "Complete",
-];
+// Step labels are display-only (the wizard only ever compares the numeric
+// `step` index, never these strings), so they're resolved via `t()` from
+// this key list rather than kept as literal English text.
+const STEP_KEYS = [
+  "renterDashboard.rentalSetup.steps.rentalDetails",
+  "renterDashboard.rentalSetup.steps.rentalAgreement",
+  "renterDashboard.rentalSetup.steps.payments",
+  "renterDashboard.rentalSetup.steps.moveIn",
+  "renterDashboard.rentalSetup.steps.complete",
+] as const;
 type Modal =
   "question" | "agreement" | "sign" | "payment" | "receipt" | "decline" | null;
 const subscribeToHydration = () => () => {};
 
 export default function RentalSetupPage() {
+  const { t } = useTranslation();
   const params = useParams<{ id: string }>();
   const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
   const hydrated = useSyncExternalStore(
@@ -79,15 +84,22 @@ export default function RentalSetupPage() {
     const listing = DEMO_LISTINGS.find(
       (item) => item.id === approvedApplication.propertyId,
     );
+    // The currency-amount branch (listing found) is left untranslated,
+    // matching the app-wide rule that currency amounts/codes stay as-is;
+    // only the plain-text fallback below is translated.
     const monthlyRent = listing
       ? `${listing.currency} ${listing.price.toLocaleString()} / month`
-      : "Rent to be confirmed";
+      : t("renterDashboard.rentalSetup.rentToBeConfirmed");
 
     startRentalSetup({
       applicationId: approvedApplication.id,
       propertyId: approvedApplication.propertyId,
       renterName: "Julien Mugisha",
       monthlyRent,
+      // Note: this demo move-in/end date stay in English -- they flow into
+      // `draft.startDate` which `new Date(...)` parses elsewhere (e.g.
+      // rentals/page.tsx's `startsInFuture` check) to decide Upcoming vs.
+      // Active status; a translated date string would fail that parse.
       moveIn: "1 September 2026",
       initiatedBy: approvedApplication.representative,
       initiatedByRole: approvedApplication.role.replace(/^Verified\s+/i, ""),
@@ -97,7 +109,7 @@ export default function RentalSetupPage() {
       agreementAttached: true,
     });
     sendRentalSetup(approvedApplication.id, approvedApplication.title);
-  }, [approvedApplication, draft, hydrated]);
+  }, [approvedApplication, draft, hydrated, t]);
 
   function save(next = step) {
     setStep(next);
@@ -106,10 +118,16 @@ export default function RentalSetupPage() {
   if (declined)
     return (
       <State
-        title="Invitation declined"
-        text={`You chose not to continue the rental setup${draft ? ` for ${resolveAnyPropertyTitle(draft.propertyId)}` : ""}.`}
+        title={t("renterDashboard.rentalSetup.declined.title")}
+        text={
+          draft
+            ? t("renterDashboard.rentalSetup.declined.textWithProperty", {
+                property: resolveAnyPropertyTitle(draft.propertyId),
+              })
+            : t("renterDashboard.rentalSetup.declined.text")
+        }
         href="/renter-dashboard/applications"
-        action="View Application"
+        action={t("renterDashboard.rentalSetup.declined.viewApplication")}
       />
     );
 
@@ -119,7 +137,7 @@ export default function RentalSetupPage() {
         <RenterCatalogueTopBar />
         <main className="bg-carbon-50 flex min-h-svh items-center justify-center px-5 pt-16 text-center">
           <p className="text-carbon-500 text-sm">
-            Preparing your rental setup…
+            {t("renterDashboard.rentalSetup.preparing")}
           </p>
         </main>
       </>
@@ -137,17 +155,16 @@ export default function RentalSetupPage() {
             className="h-40 w-auto object-contain"
           />
           <h1 className="font-bricolage mt-5 text-3xl font-medium">
-            Rental setup not ready yet
+            {t("renterDashboard.rentalSetup.notReady.title")}
           </h1>
           <p className="text-carbon-500 mt-3 max-w-md text-sm leading-6">
-            Your application was approved, but your property manager hasn&apos;t
-            sent your rental setup yet. Check back soon.
+            {t("renterDashboard.rentalSetup.notReady.description")}
           </p>
           <Link
             href="/renter-dashboard/applications"
             className="mt-6 inline-flex rounded-full bg-black px-5 py-3 text-sm text-white"
           >
-            Back to Applications
+            {t("renterDashboard.rentalSetup.notReady.backToApplications")}
           </Link>
         </main>
       </>
@@ -173,6 +190,7 @@ export default function RentalSetupPage() {
     (p) => p.purpose === "Rental Setup — Deposit & First Month",
   );
   const isCompleted = draft.status === "Completed";
+  const stepLabels = STEP_KEYS.map((key) => t(key));
 
   return (
     <>
@@ -185,7 +203,7 @@ export default function RentalSetupPage() {
               className="inline-flex items-center gap-1 text-sm text-black/60"
             >
               <ChevronLeft className="size-4" />
-              Applications
+              {t("renterDashboard.nav.groups.findHome.applications")}
             </Link>
             <div className="mt-5 flex flex-wrap items-start justify-between gap-5">
               <div>
@@ -196,8 +214,8 @@ export default function RentalSetupPage() {
               </div>
               <span className="rounded-full bg-black px-3 py-1.5 text-xs text-white">
                 {step === 4 || isCompleted
-                  ? "Ready for Move-in"
-                  : "Setup in progress"}
+                  ? t("renterDashboard.rentalSetup.statusBadge.readyForMoveIn")
+                  : t("renterDashboard.rentalSetup.statusBadge.inProgress")}
               </span>
             </div>
             <div className="mt-5 flex items-center gap-3">
@@ -207,8 +225,13 @@ export default function RentalSetupPage() {
                 className="size-9 rounded-full object-cover"
               />
               <p className="text-sm">
-                <span className="text-carbon-500">Invited by </span>
-                <strong>{managerName}</strong> · Verified {managerRoleLabel}
+                <span className="text-carbon-500">
+                  {t("renterDashboard.rentalSetup.invitedBy")}{" "}
+                </span>
+                <strong>{managerName}</strong> ·{" "}
+                {t("renterDashboard.rentalSetup.verifiedRoleLabel", {
+                  role: managerRoleLabel,
+                })}
               </p>
               {!isCompleted ? (
                 <button
@@ -216,7 +239,7 @@ export default function RentalSetupPage() {
                   onClick={() => setModal("decline")}
                   className="ml-auto text-xs text-black/55 underline underline-offset-4"
                 >
-                  Decline Invitation
+                  {t("renterDashboard.rentalSetup.declineInvitation")}
                 </button>
               ) : null}
             </div>
@@ -226,7 +249,9 @@ export default function RentalSetupPage() {
           <div className="mx-auto grid w-full max-w-[1120px] gap-6 py-8 lg:grid-cols-[240px_1fr]">
             <aside className="h-fit bg-white p-5">
               <p className="text-sm font-medium">
-                {Math.min(step, 4)} of 4 requirements complete
+                {t("renterDashboard.rentalSetup.requirementsProgress", {
+                  completed: Math.min(step, 4),
+                })}
               </p>
               <div className="mt-4 h-1 bg-black/10">
                 <div
@@ -235,7 +260,7 @@ export default function RentalSetupPage() {
                 />
               </div>
               <nav className="mt-5 space-y-1">
-                {steps.map((s, i) => (
+                {stepLabels.map((s, i) => (
                   <button
                     key={s}
                     onClick={() => i <= step && setStep(i)}
@@ -346,8 +371,11 @@ const Row = ({ a, b }: { a: string; b: string }) => (
     <strong className="text-right">{b}</strong>
   </div>
 );
-function formatSignedDate(value: string) {
-  if (!value) return "Date unavailable";
+function formatSignedDate(
+  value: string,
+  t: (key: string, vars?: Record<string, string | number>) => string,
+) {
+  if (!value) return t("renterDashboard.rentalSetup.dateUnavailable");
   return new Intl.DateTimeFormat("en", {
     day: "numeric",
     month: "long",
@@ -381,34 +409,58 @@ function Details({
   question: () => void;
   next: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <>
-      <h2 className="font-bricolage text-3xl font-medium">Rental Details</h2>
+      <h2 className="font-bricolage text-3xl font-medium">
+        {t("renterDashboard.rentalSetup.steps.rentalDetails")}
+      </h2>
       <p className="text-carbon-500 mt-2 text-sm">
-        Review the terms provided by the verified property representative.
+        {t("renterDashboard.rentalSetup.details.subtitle")}
       </p>
       <div className="mt-6 grid gap-x-7 sm:grid-cols-2">
-        <Row a="Property" b={propertyTitle} />
-        <Row a="Monthly Rent" b={draft.monthlyRent} />
-        <Row a="Security Deposit" b={oneTimeAmount(draft.securityDeposit)} />
-        <Row a="Rental Start" b={draft.startDate} />
-        <Row a="Rental End" b={draft.endDate || "To be confirmed"} />
-        <Row a="Payment Frequency" b="Monthly" />
-        <Row a="Rent Due" b={draft.paymentDueDay} />
-        <Row a="Managed By" b={managerName} />
+        <Row a={t("renterDashboard.rentalSetup.details.rows.property")} b={propertyTitle} />
+        <Row
+          a={t("renterDashboard.rentalSetup.details.rows.monthlyRent")}
+          b={draft.monthlyRent}
+        />
+        <Row
+          a={t("renterDashboard.rentalSetup.details.rows.securityDeposit")}
+          b={oneTimeAmount(draft.securityDeposit)}
+        />
+        <Row
+          a={t("renterDashboard.rentalSetup.details.rows.rentalStart")}
+          b={draft.startDate}
+        />
+        <Row
+          a={t("renterDashboard.rentalSetup.details.rows.rentalEnd")}
+          b={draft.endDate || t("renterDashboard.rentalSetup.toBeConfirmed")}
+        />
+        <Row
+          a={t("renterDashboard.rentalSetup.details.rows.paymentFrequency")}
+          b={t("renterDashboard.rentalSetup.details.rows.monthly")}
+        />
+        <Row
+          a={t("renterDashboard.rentalSetup.details.rows.rentDue")}
+          b={draft.paymentDueDay}
+        />
+        <Row
+          a={t("renterDashboard.rentalSetup.details.rows.managedBy")}
+          b={managerName}
+        />
       </div>
       <div className="mt-6 flex gap-3">
         <Link
           href={`/properties/${draft.propertyId}?from=renter`}
           className="rounded-full border border-black/15 px-4 py-2.5 text-sm"
         >
-          View Property
+          {t("renterDashboard.rentalSetup.viewProperty")}
         </Link>
         <Link
           href={`/renter-dashboard/messages?host=${encodeURIComponent(managerName)}&ctx=rental-setup&propertyId=${encodeURIComponent(draft.propertyId)}`}
           className="rounded-full border border-black/15 px-4 py-2.5 text-sm"
         >
-          Message Manager
+          {t("renterDashboard.rentalSetup.messageManager")}
         </Link>
       </div>
       <label className="mt-7 flex gap-3 text-sm">
@@ -418,14 +470,14 @@ function Details({
           onChange={(e) => setReviewed(e.target.checked)}
           className="size-4 accent-black"
         />
-        I have reviewed the rental details above.
+        {t("renterDashboard.rentalSetup.details.reviewedCheckbox")}
       </label>
       <Footer
         back={question}
-        backLabel="Something doesn't look right"
+        backLabel={t("renterDashboard.rentalSetup.details.questionLink")}
         next={next}
         disabled={!reviewed}
-        nextLabel="Continue to Agreement"
+        nextLabel={t("renterDashboard.rentalSetup.details.continueToAgreement")}
       />
     </>
   );
@@ -457,32 +509,53 @@ function Agreement({
   sign: () => void;
   next: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <>
-      <h2 className="font-bricolage text-3xl font-medium">Rental Agreement</h2>
+      <h2 className="font-bricolage text-3xl font-medium">
+        {t("renterDashboard.rentalSetup.steps.rentalAgreement")}
+      </h2>
       <p className="text-carbon-500 mt-2 text-sm">
-        Review your rental agreement carefully before signing.
+        {t("renterDashboard.rentalSetup.agreement.subtitle")}
       </p>
       <div className="mt-6 border border-black/10 p-5">
         <p className="flex items-center gap-2 font-medium">
           <FileText className="size-5" />
-          {propertyTitle} Rental Agreement
+          {t("renterDashboard.rentalSetup.agreement.documentTitle", {
+            property: propertyTitle,
+          })}
         </p>
         <p className="text-carbon-500 mt-3 text-sm leading-6">
           {managerName}
           <br />
-          {draft.startDate} – {draft.endDate || "end date to be confirmed"}
+          {draft.startDate} –{" "}
+          {draft.endDate ||
+            t("renterDashboard.rentalSetup.agreement.endDateToBeConfirmed")}
         </p>
         <button onClick={preview} className="mt-4 text-sm underline">
-          View Full Agreement
+          {t("renterDashboard.rentalSetup.agreement.viewFull")}
         </button>
       </div>
-      <h3 className="font-bricolage mt-7 text-xl font-medium">Key Terms</h3>
+      <h3 className="font-bricolage mt-7 text-xl font-medium">
+        {t("renterDashboard.rentalSetup.agreement.keyTerms")}
+      </h3>
       <div className="grid gap-x-8 sm:grid-cols-2">
-        <Row a="Monthly rent" b={draft.monthlyRent} />
-        <Row a="Deposit" b={oneTimeAmount(draft.securityDeposit)} />
-        <Row a="Notice period" b="30 days" />
-        <Row a="Rent due" b={draft.paymentDueDay} />
+        <Row
+          a={t("renterDashboard.rentalSetup.agreement.rows.monthlyRent")}
+          b={draft.monthlyRent}
+        />
+        <Row
+          a={t("renterDashboard.rentalSetup.agreement.rows.deposit")}
+          b={oneTimeAmount(draft.securityDeposit)}
+        />
+        <Row
+          a={t("renterDashboard.rentalSetup.agreement.rows.noticePeriod")}
+          b={t("renterDashboard.rentalSetup.agreement.rows.thirtyDays")}
+        />
+        <Row
+          a={t("renterDashboard.rentalSetup.agreement.rows.rentDue")}
+          b={draft.paymentDueDay}
+        />
       </div>
       {!signed ? (
         <div className="mt-6 space-y-3">
@@ -493,7 +566,7 @@ function Agreement({
               onChange={(e) => setRead(e.target.checked)}
               className="size-4 accent-black"
             />
-            I have read and reviewed the rental agreement.
+            {t("renterDashboard.rentalSetup.agreement.readCheckbox")}
           </label>
           <label className="flex gap-3 text-sm">
             <input
@@ -502,23 +575,29 @@ function Agreement({
               onChange={(e) => setUnderstood(e.target.checked)}
               className="size-4 accent-black"
             />
-            I understand the rental terms and obligations.
+            {t("renterDashboard.rentalSetup.agreement.understoodCheckbox")}
           </label>
           <button
             disabled={!read || !understood}
             onClick={sign}
             className="mt-3 h-11 rounded-full bg-black px-5 text-sm text-white disabled:opacity-30"
           >
-            Sign Agreement
+            {t("renterDashboard.rentalSetup.agreement.signButton")}
           </button>
         </div>
       ) : (
         <p className="mt-6 flex items-center gap-2 text-sm font-medium">
           <Check className="size-5" />
-          Agreement Signed · {formatSignedDate(signedAt)}
+          {t("renterDashboard.rentalSetup.agreement.signedLabel", {
+            date: formatSignedDate(signedAt, t),
+          })}
         </p>
       )}
-      <Footer next={next} disabled={!signed} nextLabel="Continue to Payments" />
+      <Footer
+        next={next}
+        disabled={!signed}
+        nextLabel={t("renterDashboard.rentalSetup.agreement.continueToPayments")}
+      />
     </>
   );
 }
@@ -537,34 +616,46 @@ function Payments({
   receipt: () => void;
   next: () => void;
 }) {
+  const { t } = useTranslation();
   const totalDue = setupPaymentTotal(draft);
+  const paidLabel = t("renterDashboard.rentalSetup.payments.status.paid");
+  const pendingLabel = t("renterDashboard.rentalSetup.payments.status.pending");
   return (
     <>
-      <h2 className="font-bricolage text-3xl font-medium">Required Payments</h2>
+      <h2 className="font-bricolage text-3xl font-medium">
+        {t("renterDashboard.rentalSetup.payments.title")}
+      </h2>
       <div className="mt-6">
         <Row
-          a="Security Deposit"
+          a={t("renterDashboard.rentalSetup.details.rows.securityDeposit")}
           b={
-            paid ? "Paid" : `${oneTimeAmount(draft.securityDeposit)} · Pending`
+            paid
+              ? paidLabel
+              : `${oneTimeAmount(draft.securityDeposit)} · ${pendingLabel}`
           }
         />
         <Row
-          a="First Month's Rent"
-          b={paid ? "Paid" : `${draft.monthlyRent} · Pending`}
+          a={t("renterDashboard.rentalSetup.payments.rows.firstMonthsRent")}
+          b={paid ? paidLabel : `${draft.monthlyRent} · ${pendingLabel}`}
         />
-        <Row a="Total Due Now" b={paid ? "0" : totalDue} />
+        <Row
+          a={t("renterDashboard.rentalSetup.payments.rows.totalDueNow")}
+          b={paid ? "0" : totalDue}
+        />
       </div>
       {paid ? (
         <div className="mt-6">
           <p className="flex items-center gap-2 font-medium">
             <Check className="size-5" />
-            Payment Successful
+            {t("renterDashboard.rentalSetup.payments.successful")}
           </p>
           <p className="text-carbon-500 mt-2 text-sm">
-            Reference {setupPayment?.reference ?? "—"}
+            {t("renterDashboard.rentalSetup.payments.reference", {
+              reference: setupPayment?.reference ?? "—",
+            })}
           </p>
           <button onClick={receipt} className="mt-3 text-sm underline">
-            View Receipt
+            {t("renterDashboard.rentalSetup.payments.viewReceipt")}
           </button>
         </div>
       ) : (
@@ -572,10 +663,14 @@ function Payments({
           onClick={pay}
           className="mt-6 h-11 rounded-full bg-black px-5 text-sm text-white"
         >
-          Pay Deposit &amp; First Month
+          {t("renterDashboard.rentalSetup.payments.payButton")}
         </button>
       )}
-      <Footer next={next} disabled={!paid} nextLabel="Continue to Move-in" />
+      <Footer
+        next={next}
+        disabled={!paid}
+        nextLabel={t("renterDashboard.rentalSetup.payments.continueToMoveIn")}
+      />
     </>
   );
 }
@@ -588,28 +683,51 @@ function MoveIn({
   managerName: string;
   next: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <>
-      <h2 className="font-bricolage text-3xl font-medium">Move-in Details</h2>
+      <h2 className="font-bricolage text-3xl font-medium">
+        {t("renterDashboard.rentalSetup.moveIn.title")}
+      </h2>
       <div className="mt-6">
-        <Row a="Move-in Date" b={draft.startDate} />
-        <Row a="Key Handover" b="At the property · 10:00 AM" />
-        <Row a="Contact" b={managerName} />
-        <Row a="Move-in Inspection" b="Not Started" />
+        <Row
+          a={t("renterDashboard.rentalSetup.moveIn.rows.moveInDate")}
+          b={draft.startDate}
+        />
+        <Row
+          a={t("renterDashboard.rentalSetup.moveIn.rows.keyHandover")}
+          b={t("renterDashboard.rentalSetup.moveIn.keyHandoverTime")}
+        />
+        <Row
+          a={t("renterDashboard.rentalSetup.moveIn.rows.contact")}
+          b={managerName}
+        />
+        <Row
+          a={t("renterDashboard.rentalSetup.moveIn.rows.moveInInspection")}
+          b={t("renterDashboard.rentalSetup.moveIn.notStarted")}
+        />
       </div>
-      <h3 className="font-bricolage mt-7 text-xl font-medium">Instructions</h3>
+      <h3 className="font-bricolage mt-7 text-xl font-medium">
+        {t("renterDashboard.rentalSetup.moveIn.instructions")}
+      </h3>
       <ul className="text-carbon-500 mt-3 list-disc space-y-2 pl-5 text-sm">
-        <li>Bring identification.</li>
-        <li>Meet {managerName} at the property.</li>
-        <li>Complete the inspection before accepting keys.</li>
+        <li>{t("renterDashboard.rentalSetup.moveIn.instructionsList.bringId")}</li>
+        <li>
+          {t("renterDashboard.rentalSetup.moveIn.instructionsList.meetManager", {
+            manager: managerName,
+          })}
+        </li>
+        <li>
+          {t("renterDashboard.rentalSetup.moveIn.instructionsList.completeInspection")}
+        </li>
       </ul>
       <div className="mt-7 space-y-2">
         {[
-          "Rental details confirmed",
-          "Rental agreement signed",
-          "Required payment completed",
-          "Move-in inspection pending",
-          "Keys pending",
+          t("renterDashboard.rentalSetup.moveIn.checklist.rentalDetailsConfirmed"),
+          t("renterDashboard.rentalSetup.moveIn.checklist.rentalAgreementSigned"),
+          t("renterDashboard.rentalSetup.moveIn.checklist.requiredPaymentCompleted"),
+          t("renterDashboard.rentalSetup.moveIn.checklist.moveInInspectionPending"),
+          t("renterDashboard.rentalSetup.moveIn.checklist.keysPending"),
         ].map((x, i) => (
           <p key={x} className="flex gap-2 text-sm">
             <Check className={`size-4 ${i < 3 ? "" : "text-black/25"}`} />
@@ -617,7 +735,7 @@ function MoveIn({
           </p>
         ))}
       </div>
-      <Footer next={next} nextLabel="Complete Setup" />
+      <Footer next={next} nextLabel={t("renterDashboard.rentalSetup.moveIn.completeSetup")} />
     </>
   );
 }
@@ -632,6 +750,7 @@ function Complete({
   managerName: string;
   onComplete: () => void;
 }) {
+  const { t } = useTranslation();
   useEffect(() => {
     onComplete();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -640,29 +759,31 @@ function Complete({
     <div className="py-8 text-center">
       <Image
         src={agreedIllustration}
-        alt="Rental agreement completed"
+        alt={t("renterDashboard.rentalSetup.complete.imageAlt")}
         className="mx-auto h-40 w-auto object-contain"
         priority
       />
       <h2 className="font-bricolage mt-5 text-3xl font-medium">
-        Your Rental Is Ready
+        {t("renterDashboard.rentalSetup.complete.title")}
       </h2>
       <p className="text-carbon-500 mt-3">
-        Your setup for {propertyTitle} is complete. Your rental begins{" "}
-        {draft.startDate}.
+        {t("renterDashboard.rentalSetup.complete.description", {
+          property: propertyTitle,
+          startDate: draft.startDate,
+        })}
       </p>
       <div className="mt-7 flex justify-center gap-3">
         <Link
           href={`/renter-dashboard/messages?host=${encodeURIComponent(managerName)}&ctx=rental-setup&propertyId=${encodeURIComponent(draft.propertyId)}`}
           className="rounded-full border border-black/15 px-5 py-3 text-sm"
         >
-          Message Manager
+          {t("renterDashboard.rentalSetup.messageManager")}
         </Link>
         <Link
           href="/renter-dashboard/rentals"
           className="rounded-full bg-black px-5 py-3 text-sm text-white"
         >
-          Go to My Rentals
+          {t("renterDashboard.rentalSetup.complete.goToMyRentals")}
         </Link>
       </div>
     </div>
@@ -722,13 +843,16 @@ function SetupModal({
   setSignature: (v: string) => void;
   confirm: () => void;
 }) {
+  const { t } = useTranslation();
   const title = {
-    question: "Question these rental details?",
-    agreement: `${propertyTitle} Rental Agreement`,
-    sign: "Sign Rental Agreement",
-    payment: "Pay Security Deposit & First Month",
-    receipt: "Payment Receipt",
-    decline: "Decline this rental invitation?",
+    question: t("renterDashboard.rentalSetup.modal.questionTitle"),
+    agreement: t("renterDashboard.rentalSetup.agreement.documentTitle", {
+      property: propertyTitle,
+    }),
+    sign: t("renterDashboard.rentalSetup.modal.signTitle"),
+    payment: t("renterDashboard.rentalSetup.modal.paymentTitle"),
+    receipt: t("renterDashboard.rentalSetup.modal.receiptTitle"),
+    decline: t("renterDashboard.rentalSetup.modal.declineTitle"),
   }[type];
   return (
     <div
@@ -756,12 +880,17 @@ function SetupModal({
         ) : (
           <p className="text-carbon-500 mt-3 text-sm leading-6">
             {type === "question"
-              ? "Contact the property representative before continuing if the rent, dates, deposit, or terms are incorrect."
+              ? t("renterDashboard.rentalSetup.modal.questionBody")
               : type === "payment"
-                ? `Payment of ${setupPaymentTotal(draft)} covers your security deposit and first month's rent. Choose Mobile Money, Card, or Bank Transfer. No real payment will be processed.`
+                ? t("renterDashboard.rentalSetup.modal.paymentBody", {
+                    amount: setupPaymentTotal(draft),
+                  })
                 : type === "receipt"
-                  ? `${setupPaymentTotal(draft)} · Security deposit & first month's rent · ${setupPayment?.reference ?? "—"}`
-                  : "Type your full name to confirm your signature."}
+                  ? t("renterDashboard.rentalSetup.modal.receiptBody", {
+                      amount: setupPaymentTotal(draft),
+                      reference: setupPayment?.reference ?? "—",
+                    })
+                  : t("renterDashboard.rentalSetup.modal.typeYourName")}
           </p>
         )}
         {type === "sign" ? (
@@ -779,17 +908,17 @@ function SetupModal({
             className="mt-6 h-11 rounded-full bg-black px-5 text-sm text-white disabled:opacity-30"
           >
             {type === "sign"
-              ? "Confirm & Sign"
+              ? t("renterDashboard.rentalSetup.modal.confirmSign")
               : type === "payment"
-                ? "Confirm Mock Payment"
-                : "Decline Invitation"}
+                ? t("renterDashboard.rentalSetup.modal.confirmMockPayment")
+                : t("renterDashboard.rentalSetup.declineInvitation")}
           </button>
         ) : (
           <button
             onClick={close}
             className="mt-6 h-11 rounded-full bg-black px-5 text-sm text-white"
           >
-            Close
+            {t("common.close")}
           </button>
         )}
       </div>
@@ -805,15 +934,18 @@ function AgreementDocument({
   propertyTitle: string;
   managerName: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="mt-5 bg-black/[0.035] p-4 sm:p-6">
       <div className="mx-auto max-w-2xl bg-white px-6 py-8 shadow-sm sm:px-10">
         <div className="border-b border-black/15 pb-5 text-center">
           <p className="text-carbon-500 text-xs tracking-[0.12em] uppercase">
-            Uploaded by {managerName}
+            {t("renterDashboard.rentalSetup.agreementDocument.uploadedBy", {
+              manager: managerName,
+            })}
           </p>
           <h3 className="font-bricolage mt-3 text-2xl font-medium">
-            Residential Rental Agreement
+            {t("renterDashboard.rentalSetup.agreementDocument.title")}
           </h3>
           <p className="text-carbon-500 mt-2 text-sm">
             {propertyTitle} · {resolveAnyPropertyLocation(draft.propertyId)}
@@ -821,66 +953,105 @@ function AgreementDocument({
         </div>
         <div className="mt-6 grid gap-5 text-sm sm:grid-cols-2">
           <div>
-            <p className="text-carbon-500 text-xs">Renter</p>
+            <p className="text-carbon-500 text-xs">
+              {t("renterDashboard.rentalSetup.agreementDocument.fields.renter")}
+            </p>
             <p className="mt-1 font-medium">{draft.renterName}</p>
           </div>
           <div>
-            <p className="text-carbon-500 text-xs">Property Representative</p>
+            <p className="text-carbon-500 text-xs">
+              {t(
+                "renterDashboard.rentalSetup.agreementDocument.fields.propertyRepresentative",
+              )}
+            </p>
             <p className="mt-1 font-medium">{managerName}</p>
           </div>
           <div>
-            <p className="text-carbon-500 text-xs">Rental period</p>
+            <p className="text-carbon-500 text-xs">
+              {t("renterDashboard.rentalSetup.agreementDocument.fields.rentalPeriod")}
+            </p>
             <p className="mt-1 font-medium">
-              {draft.startDate} – {draft.endDate || "To be confirmed"}
+              {draft.startDate} –{" "}
+              {draft.endDate || t("renterDashboard.rentalSetup.toBeConfirmed")}
             </p>
           </div>
           <div>
-            <p className="text-carbon-500 text-xs">Monthly rent</p>
+            <p className="text-carbon-500 text-xs">
+              {t("renterDashboard.rentalSetup.agreement.rows.monthlyRent")}
+            </p>
             <p className="mt-1 font-medium">{draft.monthlyRent}</p>
           </div>
         </div>
         <div className="mt-7 space-y-6 text-sm leading-6">
           <section>
-            <h4 className="font-medium">1. Rental term</h4>
+            <h4 className="font-medium">
+              {t("renterDashboard.rentalSetup.agreementDocument.sections.rentalTerm")}
+            </h4>
             <p className="text-carbon-600 mt-2">
-              The property is rented beginning {draft.startDate}
-              {draft.endDate ? ` and ending ${draft.endDate}` : ""}.
+              {draft.endDate
+                ? t(
+                    "renterDashboard.rentalSetup.agreementDocument.sections.rentalTermWithEnd",
+                    { start: draft.startDate, end: draft.endDate },
+                  )
+                : t(
+                    "renterDashboard.rentalSetup.agreementDocument.sections.rentalTermOpenEnd",
+                    { start: draft.startDate },
+                  )}
             </p>
           </section>
           <section>
-            <h4 className="font-medium">2. Rent and deposit</h4>
+            <h4 className="font-medium">
+              {t("renterDashboard.rentalSetup.agreementDocument.sections.rentAndDeposit")}
+            </h4>
             <p className="text-carbon-600 mt-2">
-              Monthly rent of {draft.monthlyRent} is due{" "}
-              {draft.paymentDueDay.toLowerCase()}. A security deposit of{" "}
-              {oneTimeAmount(draft.securityDeposit)} is required before move-in.
+              {t(
+                "renterDashboard.rentalSetup.agreementDocument.sections.rentAndDepositBody",
+                {
+                  rent: draft.monthlyRent,
+                  dueDay: draft.paymentDueDay.toLowerCase(),
+                  deposit: oneTimeAmount(draft.securityDeposit),
+                },
+              )}
             </p>
           </section>
           <section>
-            <h4 className="font-medium">3. Care of the property</h4>
+            <h4 className="font-medium">
+              {t("renterDashboard.rentalSetup.agreementDocument.sections.careOfProperty")}
+            </h4>
             <p className="text-carbon-600 mt-2">
-              The renter agrees to keep the home in reasonable condition and
-              report maintenance issues promptly.
+              {t(
+                "renterDashboard.rentalSetup.agreementDocument.sections.careOfPropertyBody",
+              )}
             </p>
           </section>
           <section>
-            <h4 className="font-medium">4. Notice</h4>
+            <h4 className="font-medium">
+              {t("renterDashboard.rentalSetup.agreementDocument.sections.notice")}
+            </h4>
             <p className="text-carbon-600 mt-2">
-              Either party should provide at least 30 days&apos; notice where
-              notice is permitted by the agreement.
+              {t("renterDashboard.rentalSetup.agreementDocument.sections.noticeBody")}
             </p>
           </section>
         </div>
         <div className="mt-8 grid gap-6 border-t border-black/15 pt-6 text-sm sm:grid-cols-2">
           <div>
-            <p className="text-carbon-500 text-xs">Renter signature</p>
+            <p className="text-carbon-500 text-xs">
+              {t("renterDashboard.rentalSetup.agreementDocument.fields.renterSignature")}
+            </p>
             <p className="mt-3 border-b border-black/30 pb-2">
-              Awaiting signature
+              {t("renterDashboard.rentalSetup.agreementDocument.awaitingSignature")}
             </p>
           </div>
           <div>
-            <p className="text-carbon-500 text-xs">Property representative</p>
+            <p className="text-carbon-500 text-xs">
+              {t(
+                "renterDashboard.rentalSetup.agreementDocument.fields.propertyRepresentativeSignature",
+              )}
+            </p>
             <p className="mt-3 border-b border-black/30 pb-2">
-              {managerName} · Signed
+              {t("renterDashboard.rentalSetup.agreementDocument.representativeSigned", {
+                manager: managerName,
+              })}
             </p>
           </div>
         </div>
