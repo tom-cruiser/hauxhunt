@@ -16,6 +16,7 @@ import { ListingCard } from "@/components/sections/featured-listings/listing-car
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
 import { DEMO_LISTINGS } from "@/data/hero-search-demo";
 import { useSavedProperties } from "@/hooks/use-saved-properties";
+import { useTranslation } from "@/components/language/use-translation";
 
 const LISTING_IMAGES: Record<string, StaticImageData> = {
   "kacyiru-2br": house1,

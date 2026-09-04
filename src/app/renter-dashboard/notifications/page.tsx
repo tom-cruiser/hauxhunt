@@ -29,6 +29,7 @@ import {
   type Notification,
   type NotificationCategory,
 } from "@/lib/notifications";
+import { useTranslation } from "@/components/language/use-translation";
 
 // ---------------------------------------------------------------------------
 // Category icon map
@@ -53,6 +54,14 @@ const CATEGORY_ICONS: Record<NotificationCategory, typeof Bell> = {
 
 type Group = "Today" | "Yesterday" | "Earlier";
 
+// Internal identifiers stay in English (compared with `===` below); the
+// displayed label is looked up through this map, reusing the drawer's copy.
+const GROUP_LABEL_KEYS: Record<Group, string> = {
+  Today: "renterDashboard.notificationsDrawer.groupToday",
+  Yesterday: "renterDashboard.notificationsDrawer.groupYesterday",
+  Earlier: "renterDashboard.notificationsDrawer.groupEarlier",
+};
+
 function getGroup(timestamp: number): Group {
   const now = new Date();
   const date = new Date(timestamp);
@@ -63,16 +72,22 @@ function getGroup(timestamp: number): Group {
   return "Earlier";
 }
 
-function formatTimestamp(timestamp: number): string {
+function formatTimestamp(
+  timestamp: number,
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): string {
   const diffMs = Date.now() - timestamp;
   const diffMin = Math.floor(diffMs / 60_000);
   const diffHr = Math.floor(diffMs / 3_600_000);
   const diffDay = Math.floor(diffMs / 86_400_000);
-  if (diffMin < 1) return "Just now";
-  if (diffMin < 60) return `${diffMin} min ago`;
-  if (diffHr < 24) return `${diffHr} hr ago`;
-  if (diffDay === 1) return "Yesterday";
-  if (diffDay < 7) return `${diffDay} days ago`;
+  if (diffMin < 1) return t("renterDashboard.notificationsPage.timeJustNow");
+  if (diffMin < 60)
+    return t("renterDashboard.notificationsPage.timeMinutesAgo", { count: diffMin });
+  if (diffHr < 24)
+    return t("renterDashboard.notificationsPage.timeHoursAgo", { count: diffHr });
+  if (diffDay === 1) return t("renterDashboard.notificationsDrawer.groupYesterday");
+  if (diffDay < 7)
+    return t("renterDashboard.notificationsPage.timeDaysAgo", { count: diffDay });
   return new Date(timestamp).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
@@ -86,6 +101,7 @@ function formatTimestamp(timestamp: number): string {
 type Filter = "all" | "unread";
 
 export default function NotificationsPage() {
+  const { t } = useTranslation();
   const router = useRouter();
 
   const notifications = useSyncExternalStore(
@@ -142,19 +158,20 @@ export default function NotificationsPage() {
           {/* Header */}
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h1 className="dashboard-page-title">Notifications</h1>
+              <h1 className="dashboard-page-title">
+                {t("renterDashboard.notificationsDrawer.title")}
+              </h1>
               <p className="text-carbon-500 mt-2 text-sm">
-                Stay updated on your searches, applications, rentals, payments,
-                maintenance, and flatmate activity.
+                {t("renterDashboard.notificationsPage.subtitle")}
               </p>
             </div>
             <Link
               href="/renter-dashboard/account#preferences"
               className="text-carbon-500 mt-1 flex items-center gap-1.5 text-xs hover:text-black"
-              aria-label="Notification settings"
+              aria-label={t("renterDashboard.notificationsDrawer.settingsAria")}
             >
               <Settings className="size-3.5" />
-              Notification settings
+              {t("renterDashboard.notificationsDrawer.settingsAria")}
             </Link>
           </div>
 
@@ -173,7 +190,9 @@ export default function NotificationsPage() {
                       : "bg-black/[0.055] text-black hover:bg-black/10"
                   }`}
                 >
-                  {f === "all" ? "All" : "Unread"}
+                  {f === "all"
+                    ? t("renterDashboard.notificationsDrawer.filterAll")
+                    : t("renterDashboard.notificationsDrawer.filterUnread")}
                   {f === "unread" && unreadCount > 0 ? (
                     <span className="ml-1.5 inline-flex size-4 items-center justify-center rounded-full bg-white text-[0.6rem] font-bold text-black">
                       {unreadCount}
@@ -188,7 +207,7 @@ export default function NotificationsPage() {
                 onClick={markAllNotificationsRead}
                 className="text-carbon-500 text-xs font-medium underline underline-offset-4 hover:text-black"
               >
-                Mark all as read
+                {t("renterDashboard.notificationsDrawer.markAllRead")}
               </button>
             ) : null}
           </div>
@@ -199,7 +218,7 @@ export default function NotificationsPage() {
               grouped.map(({ group, items }) => (
                 <section key={group} className="mb-8">
                   <h2 className="mb-3 text-xs font-semibold tracking-wider text-black/40 uppercase">
-                    {group}
+                    {t(GROUP_LABEL_KEYS[group])}
                   </h2>
                   <div className="overflow-hidden rounded-2xl bg-white shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
                     {items.map((n, index) => (
@@ -241,6 +260,7 @@ function NotificationRow({
   onClick: () => void;
   onMarkRead: () => void;
 }) {
+  const { t } = useTranslation();
   const Icon = CATEGORY_ICONS[n.category];
 
   return (
@@ -252,7 +272,7 @@ function NotificationRow({
       {/* Unread dot */}
       {!n.read ? (
         <span
-          aria-label="Unread"
+          aria-label={t("renterDashboard.notificationsDrawer.filterUnread")}
           className="absolute top-5 left-2 size-1.5 rounded-full bg-black"
         />
       ) : null}
@@ -284,7 +304,7 @@ function NotificationRow({
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <span className="text-carbon-400 text-xs">
-            {formatTimestamp(n.timestamp)}
+            {formatTimestamp(n.timestamp, t)}
           </span>
           {n.actionLabel && n.actionHref ? (
             <button
@@ -307,7 +327,7 @@ function NotificationRow({
               }}
               className="text-carbon-400 text-xs hover:text-black"
             >
-              Mark as read
+              {t("renterDashboard.notificationsDrawer.markReadAria")}
             </button>
           ) : null}
         </div>
@@ -331,38 +351,40 @@ function NotificationRow({
 // ---------------------------------------------------------------------------
 
 function AllEmptyState() {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
       <div className="flex size-16 items-center justify-center rounded-full bg-black/[0.06]">
         <Bell className="size-7 text-black/40" />
       </div>
       <h2 className="font-bricolage mt-6 text-2xl font-medium">
-        You&apos;re all caught up
+        {t("renterDashboard.notificationsDrawer.emptyAllTitle")}
       </h2>
       <p className="text-carbon-500 mt-3 max-w-xs text-sm leading-6">
-        Important updates about your HauxHunt activity will appear here.
+        {t("renterDashboard.notificationsDrawer.emptyAllDescription")}
       </p>
       <Link
         href="/renter-dashboard/properties"
         className="mt-7 inline-flex h-11 items-center rounded-full bg-black px-6 text-sm font-medium text-white"
       >
-        Browse Homes
+        {t("renterDashboard.notificationsDrawer.browseHomes")}
       </Link>
     </div>
   );
 }
 
 function UnreadEmptyState() {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
       <div className="flex size-16 items-center justify-center rounded-full bg-black/[0.06]">
         <Bell className="size-7 text-black/40" />
       </div>
       <h2 className="font-bricolage mt-6 text-2xl font-medium">
-        No unread notifications
+        {t("renterDashboard.notificationsDrawer.emptyUnreadTitle")}
       </h2>
       <p className="text-carbon-500 mt-3 max-w-xs text-sm leading-6">
-        You&apos;ve seen all your latest updates.
+        {t("renterDashboard.notificationsDrawer.emptyUnreadDescription")}
       </p>
     </div>
   );

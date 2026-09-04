@@ -19,6 +19,7 @@ import bankMethodImage from "@/assets/images/bank.png";
 import cardMethodImage from "@/assets/images/card.png";
 import mobileMethodImage from "@/assets/images/mobile.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
+import { useTranslation } from "@/components/language/use-translation";
 import { getOwnerPayments, updateOwnerPayment } from "@/lib/owner-data";
 import { REGISTERED_PROFESSIONALS } from "@/lib/team-data";
 import { pushProfessionalNotification } from "@/lib/professional-work";

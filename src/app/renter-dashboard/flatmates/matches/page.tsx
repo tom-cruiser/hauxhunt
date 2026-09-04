@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ChevronLeft, MessageSquare, X, Info, HelpCircle } from "lucide-react";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
+import { useTranslation } from "@/components/language/use-translation";
 import {
   PUBLIC_FLATMATES,
   type PublicFlatmate,
@@ -14,6 +15,7 @@ import emptyImage from "@/assets/images/empty.png";
 import matchImage from "@/assets/images/match.png";
 
 export default function RenterFlatmateMatchesPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"matches" | "received" | "sent">(
     "matches",
   );
@@ -205,16 +207,15 @@ export default function RenterFlatmateMatchesPage() {
               className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-black/65 transition-colors hover:text-black"
             >
               <ChevronLeft aria-hidden="true" className="size-4" />
-              Back to Catalog
+              {t("renterDashboard.flatmateMatches.backToCatalog")}
             </Link>
 
             <div className="flex flex-col gap-2">
               <h1 className="dashboard-page-title text-carbon-900">
-                Matches & Interests
+                {t("renterDashboard.flatmateMatches.heading")}
               </h1>
               <p className="text-carbon-600 max-w-xl text-sm leading-relaxed">
-                Connect with compatible flatmates who share your budget, housing
-                choices, and lifestyle expectations.
+                {t("renterDashboard.flatmateMatches.subheading")}
               </p>
             </div>
 
@@ -228,7 +229,7 @@ export default function RenterFlatmateMatchesPage() {
                     : "text-neutral-450 hover:text-black"
                 }`}
               >
-                <span>Matches</span>
+                <span>{t("renterDashboard.flatmateMatches.tabs.matches")}</span>
                 {matchedFlatmates.length > 0 && (
                   <span className="ml-1.5 rounded-full bg-black px-2 py-0.5 text-[10px] text-white">
                     {matchedFlatmates.length}
@@ -247,7 +248,7 @@ export default function RenterFlatmateMatchesPage() {
                     : "text-neutral-450 hover:text-black"
                 }`}
               >
-                <span>Interested in You</span>
+                <span>{t("renterDashboard.flatmateMatches.tabs.received")}</span>
                 {incomingInterests.length > 0 && (
                   <span className="ml-1.5 rounded-full bg-black px-2 py-0.5 text-[10px] text-white">
                     {incomingInterests.length}
@@ -266,7 +267,7 @@ export default function RenterFlatmateMatchesPage() {
                     : "text-neutral-450 hover:text-black"
                 }`}
               >
-                <span>Your Interests</span>
+                <span>{t("renterDashboard.flatmateMatches.tabs.sent")}</span>
                 {outgoingInterests.length > 0 && (
                   <span className="ml-1.5 rounded-full bg-black px-2 py-0.5 text-[10px] text-white">
                     {outgoingInterests.length}
@@ -284,8 +285,10 @@ export default function RenterFlatmateMatchesPage() {
                 <>
                   {matchedFlatmates.length === 0 ? (
                     <EmptyState
-                      title="No Matches Yet"
-                      description="When you and another person are both interested in living together, they'll appear here."
+                      title={t("renterDashboard.flatmateMatches.empty.matches.title")}
+                      description={t(
+                        "renterDashboard.flatmateMatches.empty.matches.description",
+                      )}
                     />
                   ) : (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -395,8 +398,10 @@ export default function RenterFlatmateMatchesPage() {
                 <>
                   {incomingInterests.length === 0 ? (
                     <EmptyState
-                      title="No New Interests"
-                      description="People interested in being flatmates with you will appear here."
+                      title={t("renterDashboard.flatmateMatches.empty.received.title")}
+                      description={t(
+                        "renterDashboard.flatmateMatches.empty.received.description",
+                      )}
                     />
                   ) : (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -466,8 +471,10 @@ export default function RenterFlatmateMatchesPage() {
                 <>
                   {outgoingInterests.length === 0 ? (
                     <EmptyState
-                      title="You Haven't Expressed Interest Yet"
-                      description="Browse Flatmates and let someone know when you think you could be a good fit."
+                      title={t("renterDashboard.flatmateMatches.empty.sent.title")}
+                      description={t(
+                        "renterDashboard.flatmateMatches.empty.sent.description",
+                      )}
                     />
                   ) : (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
