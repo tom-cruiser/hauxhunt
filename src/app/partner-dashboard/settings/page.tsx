@@ -4,8 +4,8 @@ import { DashboardShell } from "@/components/partner/dashboard-shell";
 import { PartnerSettingsContent } from "@/components/partner/partner-settings-content";
 
 export const metadata: Metadata = {
-  title: "My Account | Partner dashboard | HauxHunt",
-  description: "Manage your HauxHunt partner profile and business details.",
+  title: "My Account | Partner dashboard | RentUp",
+  description: "Manage your RentUp partner profile and business details.",
 };
 
 export default function PartnerSettingsPage() {
@@ -18,7 +18,7 @@ export default function PartnerSettingsPage() {
               My Account
             </h1>
             <p className="text-carbon-600 mt-5 max-w-2xl text-base leading-7 sm:text-lg">
-              Keep your personal and business information current. HauxHunt uses
+              Keep your personal and business information current. RentUp uses
               these details when you create listings and contact clients.
             </p>
           </header>

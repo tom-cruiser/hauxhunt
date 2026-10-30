@@ -11,7 +11,7 @@
   font-display: swap;
 }
 
-/* Class-scoped, never media-scoped: HauxHunt has no user-facing dark-mode
+/* Class-scoped, never media-scoped: RentUp has no user-facing dark-mode
    toggle. The official identity is dark-first — Dark Green and Carbon are the
    default canvas, not an alternate theme. Light ("Paper") is a scoped context
    for documents/forms, opted into via `.theme-paper`, never via OS preference. */
@@ -248,7 +248,7 @@
 
   /* ======================================================================
      LAYER 3 — shadcn/Radix bridge. Maps the vendor-expected role names onto
-     the HauxHunt semantic layer so third-party primitives inherit the brand
+     the RentUp semantic layer so third-party primitives inherit the brand
      without being re-skinned one by one.
      ====================================================================== */
   --background: var(--bg-canvas);

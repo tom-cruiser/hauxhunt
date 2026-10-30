@@ -142,7 +142,7 @@ export function ListPropertyForm({
   // unauthenticated public flow).
   propertyContext?: { title: string; location: string; badge: string };
   // Prefills known property facts (Section 27) so the professional never
-  // re-types what HauxHunt already knows. Only the fields present are
+  // re-types what RentUp already knows. Only the fields present are
   // prefilled; everything else (pricing, availability, photos) stays
   // listing-specific and blank.
   initialValues?: {
@@ -244,7 +244,7 @@ export function ListPropertyForm({
           {propertyContext ? "Your listing is under review" : "Your property is under review"}
         </h2>
         <p className="text-carbon-600 mx-auto mt-4 max-w-xl leading-7">
-          Your listing has been submitted to the HauxHunt team and is now under
+          Your listing has been submitted to the RentUp team and is now under
           review. We will notify you when it is approved or if any changes are
           needed.
         </p>
@@ -650,7 +650,7 @@ export function ListPropertyForm({
             />
             <span>
               I confirm that the property information is accurate and that I am
-              authorized to list this property on HauxHunt.
+              authorized to list this property on RentUp.
             </span>
           </label>
         </StepPanel>

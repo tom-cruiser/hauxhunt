@@ -167,7 +167,7 @@ export function PublicListingGate() {
                 <p className="text-carbon-600 mt-3 text-sm leading-6">
                   {accountRole === "renter"
                     ? "Property listings are managed through Property Manager, Agent, or Agency accounts. Create a partner account to continue."
-                    : "Log in or create a HauxHunt partner account before adding and managing a property listing."}
+                    : "Log in or create a RentUp partner account before adding and managing a property listing."}
                 </p>
                 <div className="mt-7 flex gap-3">
                   <Link

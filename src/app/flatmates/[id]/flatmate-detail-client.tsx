@@ -387,7 +387,7 @@ export function FlatmateDetailClient({
                         )}
                       </dl>
                       <p className="text-carbon-505 mt-6 border-t border-black/10 pt-5 text-[11px] text-neutral-450 leading-relaxed font-normal">
-                        Living-arrangement information is provided by this member and does not represent a HauxHunt property listing.
+                        Living-arrangement information is provided by this member and does not represent a RentUp property listing.
                       </p>
                     </ProfileSection>
                   ) : null}

@@ -206,7 +206,7 @@ export function OwnerAccountContent() {
         onPasswordChanged={() => setPasswordJustChanged(true)}
       />
 
-      <SettingsCard icon={Bell} title="Notifications & preferences" description="Choose which HauxHunt updates matter to you.">
+      <SettingsCard icon={Bell} title="Notifications & preferences" description="Choose which RentUp updates matter to you.">
         <div className="space-y-3">
           {PREFERENCE_CATEGORIES.map((category) => (
             <label key={category.key} className="flex items-center justify-between gap-4 rounded-xl border border-black/10 p-3.5">
@@ -254,7 +254,7 @@ export function OwnerAccountContent() {
         </div>
       </SettingsCard>
 
-      <SettingsCard icon={Building2} title="Bank attachment" description="Where HauxHunt sends your rent payouts.">
+      <SettingsCard icon={Building2} title="Bank attachment" description="Where RentUp sends your rent payouts.">
         {isPaidTier(tier) ? (
           <PayoutDetailsForm details={payoutDetails} onSave={savePayoutDetails} />
         ) : (

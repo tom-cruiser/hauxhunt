@@ -17,8 +17,8 @@
 //
 // This file replaces the SHARED-RELATIONSHIP portion of all three with one
 // participant-addressed store. It does not absorb every renter conversation
-// type -- flatmate matches, HauxHunt support, and enquiries to people who
-// aren't registered HauxHunt participants (an off-platform Owner, a
+// type -- flatmate matches, RentUp support, and enquiries to people who
+// aren't registered RentUp participants (an off-platform Owner, a
 // prospective applicant who isn't the demo renter persona) have no second
 // dashboard to synchronize with, so they correctly stay outside this model;
 // see the Phase 5 implementation report for the full list.
@@ -111,7 +111,7 @@ export type Conversation = {
 // thread both being Jean <-> Julien about Kacyiru Residence), the content
 // is merged into ONE conversation instead of kept as duplicates -- this is
 // the concrete case Phase 5 exists to fix. Conversations with someone who
-// has no real HauxHunt dashboard identity (an off-platform independent
+// has no real RentUp dashboard identity (an off-platform independent
 // Owner, an applicant who isn't the one demo Renter persona) are not
 // migrated here -- see the implementation report.
 // ---------------------------------------------------------------------------

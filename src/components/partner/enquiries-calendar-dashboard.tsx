@@ -461,7 +461,7 @@ function MessagesWorkspace({
           <div>
             <p className="text-sm font-medium">Member conversations</p>
             <p className="mt-1 text-xs text-black/40">
-              Registered HauxHunt users
+              Registered RentUp users
             </p>
           </div>
           <span className="flex size-7 items-center justify-center rounded-full bg-black text-xs font-medium text-white">

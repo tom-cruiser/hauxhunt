@@ -132,14 +132,14 @@ export const GATED_FEATURES: Record<GatedFeature, FeatureCopy> = {
     label: "Priority alert",
     title: "Get a priority alert on your request",
     description:
-      "Upgrade to Paid so HauxHunt flags your property requests to landlords and agents with priority, so they're seen first.",
+      "Upgrade to Paid so RentUp flags your property requests to landlords and agents with priority, so they're seen first.",
     upgradeHref: TENANT_UPGRADE_HREF,
   },
   "tenant.maintenanceRequests": {
     label: "Maintenance requests",
     title: "Submit maintenance requests in-app",
     description:
-      "Upgrade to Paid to report and track maintenance issues directly in HauxHunt instead of contacting your manager separately.",
+      "Upgrade to Paid to report and track maintenance issues directly in RentUp instead of contacting your manager separately.",
     upgradeHref: TENANT_UPGRADE_HREF,
   },
   "tenant.whatsappAlerts": {
@@ -167,7 +167,7 @@ export const GATED_FEATURES: Record<GatedFeature, FeatureCopy> = {
     label: "In-app rent collection",
     title: "Collect rent in-app",
     description:
-      "Upgrade to Paid to send payment requests and collect rent directly through HauxHunt.",
+      "Upgrade to Paid to send payment requests and collect rent directly through RentUp.",
     upgradeHref: OWNER_UPGRADE_HREF,
   },
   "owner.bankAttachment": {
@@ -209,7 +209,7 @@ export const GATED_FEATURES: Record<GatedFeature, FeatureCopy> = {
     label: "In-app rent collection",
     title: "Collect rent in-app",
     description:
-      "Upgrade to Paid to collect rent directly through HauxHunt, with automatic payout history and a live billing schedule for every tenant.",
+      "Upgrade to Paid to collect rent directly through RentUp, with automatic payout history and a live billing schedule for every tenant.",
     upgradeHref: AGENT_UPGRADE_HREF,
   },
   "agent.bankAttachment": {

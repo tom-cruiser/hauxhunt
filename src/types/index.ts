@@ -11,7 +11,7 @@ export type NavItem = {
   external?: boolean;
 };
 
-/** Currency codes for HauxHunt's launch markets (UIUX Brief §3). */
+/** Currency codes for RentUp's launch markets (UIUX Brief §3). */
 export type CurrencyCode = "USD";
 
 /**

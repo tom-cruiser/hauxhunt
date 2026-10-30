@@ -14,7 +14,7 @@ export type TenantHistoryDrawerProps = {
  * The paid-tier "View Tenant History" panel -- previous stay durations,
  * on-time payment reliability, and past landlord feedback for an applicant.
  * Ported from the Joseph checkout's `TenantHistoryDrawer`/`Tenanthistory.md`
- * onto HauxHunt's own conventions: HauxHunt has no shared `Dialog`
+ * onto RentUp's own conventions: RentUp has no shared `Dialog`
  * primitive, so this uses the same hand-rolled `fixed inset-0` + `role=
  * "dialog"` pattern as `NotSelectDialog` (owner-dashboard/applications) and
  * `PaymentDetail` (owner-dashboard/payments); and it renders unconditionally

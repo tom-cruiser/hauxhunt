@@ -34,7 +34,7 @@ import {
 } from "@/lib/message-threads";
 import patrickManagerPortrait from "@/assets/images/flatmate-patrick.png";
 import jeanOwnerPortrait from "@/assets/images/flatmate-joseph.jpg";
-import hauxhuntWhiteLogo from "@/assets/images/HauxHunt_white.png";
+import rentUpWhiteLogo from "@/assets/images/RentUp_white.png";
 import { resolveAnyPropertyTitle } from "@/lib/professional-properties";
 import { OWNER } from "@/lib/owner-data";
 import { getProfessionalByName } from "@/lib/team-data";
@@ -82,7 +82,7 @@ type Conversation = {
   id: string;
   name: string;
   avatar?: any;
-  role: string; // "Property Manager", "Agent", "Maintenance Technician", "Flatmate", "HauxHunt Support"
+  role: string; // "Property Manager", "Agent", "Maintenance Technician", "Flatmate", "RentUp Support"
   verified?: boolean;
   showPhone: boolean;
   type: ConversationType; // filter bucket for the "More…" dropdown
@@ -684,17 +684,17 @@ export default function RenterDashboardMessagesPage() {
           });
         }
 
-        // 5. The HauxHunt concierge follows up on open "Property search"
+        // 5. The RentUp concierge follows up on open "Property search"
         // support requests (see renter-dashboard/requests) — kept simple,
         // no housing context card.
         chats.push({
           id: "hauxhunt-concierge",
-          name: "HauxHunt",
+          name: "RentUp",
           role: "Support",
           showPhone: false,
           type: "support",
           verified: true,
-          avatar: hauxhuntWhiteLogo,
+          avatar: rentUpWhiteLogo,
           subtitle: "Property Search",
           metaContext: "Support",
           context: { type: "support" },
@@ -799,7 +799,7 @@ export default function RenterDashboardMessagesPage() {
             // Phase 5.5 -- Section 24/49: hostParam matched no existing
             // row (shared or legacy). Before falling back to a throwaway
             // local record, check whether it's actually a real, resolvable
-            // HauxHunt participant (a registered professional, or the
+            // RentUp participant (a registered professional, or the
             // Owner) who simply doesn't have a shared conversation yet --
             // if so, create the real shared one instead of a name-keyed
             // local duplicate.

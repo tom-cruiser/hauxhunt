@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
-import footerLogo from "@/assets/images/HauxHunt_white_with_company_name.png";
+import footerLogo from "@/assets/images/RentUp_white_with_company_name.png";
 import { useTranslation } from "@/components/language/use-translation";
 
 /**

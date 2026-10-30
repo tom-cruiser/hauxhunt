@@ -14,7 +14,7 @@ import {
 import { useEffect, useState } from "react";
 
 import emptyIllustration from "@/assets/images/empty.png";
-import blackHauxHuntLogo from "@/assets/images/HauxHunt_black_with_company_name.png";
+import blackRentUpLogo from "@/assets/images/RentUp_black_with_company_name.png";
 import bankMethodImage from "@/assets/images/bank.png";
 import cardMethodImage from "@/assets/images/card.png";
 import mobileMethodImage from "@/assets/images/mobile.png";
@@ -264,7 +264,7 @@ export default function PaymentsPage() {
               <h1 className="dashboard-page-title">Payments</h1>
               {paymentAccess === "enabled" ? (
                 <p className="text-carbon-500 mt-2 text-sm">
-                  Manage rent and view payment activity for your HauxHunt
+                  Manage rent and view payment activity for your RentUp
                   rentals.
                 </p>
               ) : null}
@@ -355,7 +355,7 @@ function EmptyPayments() {
           No Payments Yet
         </h2>
         <p className="text-carbon-500 mt-3 max-w-xl text-sm leading-6">
-          Once payments are enabled for one of your HauxHunt rentals, your rent,
+          Once payments are enabled for one of your RentUp rentals, your rent,
           deposits, and payment history will appear here.
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-3">
@@ -379,10 +379,10 @@ function Invitation({ onSetup }: { onSetup: () => void }) {
           <Building2 className="size-5" />
         </span>
         <h2 className="font-bricolage mt-6 text-3xl font-medium">
-          You&apos;re invited to manage rent through HauxHunt
+          You&apos;re invited to manage rent through RentUp
         </h2>
         <p className="text-carbon-500 mt-3 text-sm">
-          {rental.manager} has enabled HauxHunt payments for:
+          {rental.manager} has enabled RentUp payments for:
         </p>
         <h3 className="mt-2 text-lg font-medium">{rental.title}</h3>
         <div className="mt-7 grid gap-5 border-y border-black/10 py-6 sm:grid-cols-2">
@@ -987,8 +987,8 @@ function Receipt({
         <article className="mx-auto min-h-[620px] max-w-md bg-white px-6 py-7 text-left shadow-[0_12px_35px_rgba(0,0,0,0.12)] sm:px-8 sm:py-9">
           <header className="flex items-start justify-between gap-5 border-b border-black/15 pb-6">
             <Image
-              src={blackHauxHuntLogo}
-              alt="HauxHunt"
+              src={blackRentUpLogo}
+              alt="RentUp"
               className="h-20 w-20 object-contain"
             />
             <div className="text-right">
@@ -1044,7 +1044,7 @@ function Receipt({
               financial document.
             </p>
             <p className="mt-3 text-[10px] font-medium tracking-[0.12em] uppercase">
-              HauxHunt · Rental payment services
+              RentUp · Rental payment services
             </p>
           </footer>
         </article>
@@ -1078,7 +1078,7 @@ async function createReceiptPdf(item: (typeof history)[number]) {
   context.fillStyle = "#ffffff";
   context.fillRect(0, 0, canvas.width, canvas.height);
   const logo = new window.Image();
-  logo.src = blackHauxHuntLogo.src;
+  logo.src = blackRentUpLogo.src;
   await logo.decode();
   context.drawImage(logo, 80, 55, 190, 190);
 
@@ -1171,7 +1171,7 @@ async function createReceiptPdf(item: (typeof history)[number]) {
   );
   context.fillStyle = "#171717";
   context.font = "600 18px Arial, sans-serif";
-  context.fillText("HAUXHUNT · RENTAL PAYMENT SERVICES", 620, 1240);
+  context.fillText("RENTUP · RENTAL PAYMENT SERVICES", 620, 1240);
 
   const jpegBlob = await new Promise<Blob>((resolve, reject) =>
     canvas.toBlob(

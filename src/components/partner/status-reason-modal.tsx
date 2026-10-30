@@ -19,7 +19,7 @@ export type StatusReasonModalProps = {
  * product spec asks for on every backward (rollback) transition, and reused
  * for declining an application ("Not Selected"), which needs the same
  * confirmation + required reason even though it isn't a rollback. Built on
- * HauxHunt's existing hand-rolled dialog pattern (see `NotSelectDialog` in
+ * RentUp's existing hand-rolled dialog pattern (see `NotSelectDialog` in
  * owner-dashboard/applications/page.tsx and `PaymentDetail` in
  * owner-dashboard/payments/page.tsx) rather than introducing a new shared
  * `Dialog` primitive -- this app doesn't have one, and every modal in it is

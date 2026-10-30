@@ -400,7 +400,7 @@ function RemoveFromTeamDialog({ memberName, onClose, onConfirm }: { memberName: 
           </h2>
           <p className="text-carbon-600 mt-4 text-sm leading-6">{firstName} will lose access to all properties assigned to them through your team.</p>
           <p className="text-carbon-600 mt-2 text-sm leading-6">Previous property, listing, viewing and application activity will remain available.</p>
-          <p className="text-carbon-600 mt-2 text-sm leading-6">{firstName}&apos;s personal HauxHunt account will not be deleted.</p>
+          <p className="text-carbon-600 mt-2 text-sm leading-6">{firstName}&apos;s personal RentUp account will not be deleted.</p>
           <div className="mt-7 flex justify-end gap-2">
             <button type="button" onClick={onClose} className="font-bricolage inline-flex h-12 items-center rounded-full border border-black/15 px-5 font-medium hover:border-black">
               Cancel

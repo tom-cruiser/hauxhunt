@@ -241,7 +241,7 @@ const SEED_INDEPENDENT_APPLICATIONS: IndependentApplication[] = [
   // Cross-Role Lifecycle Synchronization phase -- Section 56's own test
   // scenario: Jean's Verified Independent property (Vision Apartments),
   // already Approved (the off-platform Owner's decision happened outside
-  // HauxHunt -- Section 35, no fabricated Owner account), so Jean can walk
+  // RentUp -- Section 35, no fabricated Owner account), so Jean can walk
   // Start Rental Setup -> Send -> Renter receives it end to end.
   {
     id: "IND-APP-0002",
@@ -252,7 +252,7 @@ const SEED_INDEPENDENT_APPLICATIONS: IndependentApplication[] = [
     submitted: "18 Aug 2026",
     proposedRent: "USD 700 / month",
     moveIn: "1 Sep 2026",
-    note: "Approved by the property owner outside HauxHunt. Ready for rental setup.",
+    note: "Approved by the property owner outside RentUp. Ready for rental setup.",
   },
 ];
 
@@ -568,9 +568,9 @@ function nextId(prefix: string) {
 // ---------------------------------------------------------------------------
 
 // Replying to an enquiry now writes into the SAME shared conversation store
-// -- but only when the enquirer is a real, resolvable HauxHunt participant.
+// -- but only when the enquirer is a real, resolvable RentUp participant.
 // In this prototype that's only ever the one demo Renter persona
-// (RENTER_DEMO_NAME); most enquiries come from a prospect with no HauxHunt
+// (RENTER_DEMO_NAME); most enquiries come from a prospect with no RentUp
 // account at all (e.g. "Divine Keza"), who has no dashboard to synchronize
 // a shared thread with. For those, the enquiry's own status still updates
 // to Replied -- the reply just doesn't produce a Messages thread. This is a

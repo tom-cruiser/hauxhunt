@@ -12,16 +12,16 @@ const ARTICLES: Record<
   { title: string; category: string; categorySlug: string; body: { heading?: string; text: string }[] }
 > = {
   "getting-started/create-account": {
-    title: "How to create a HauxHunt account",
+    title: "How to create a RentUp account",
     category: "Getting Started",
     categorySlug: "getting-started",
     body: [
-      { text: "Creating a HauxHunt account takes less than two minutes. Follow the steps below to get started." },
+      { text: "Creating a RentUp account takes less than two minutes. Follow the steps below to get started." },
       { heading: "Step 1 — Go to the registration page", text: "Visit hauxhunt.com and click Sign Up in the top navigation, or go directly to /register." },
       { heading: "Step 2 — Choose Renter", text: "Select the Renter option when prompted to choose your account type." },
       { heading: "Step 3 — Enter your details", text: "Provide your full name, email address, phone number, and a secure password. Your password must be at least 8 characters." },
       { heading: "Step 4 — Verify your email", text: "Check your inbox for a 6-digit verification code and enter it on the verification screen." },
-      { heading: "Step 5 — Complete your profile", text: "Add your location preferences, budget, and move-in date so HauxHunt can show you the most relevant listings." },
+      { heading: "Step 5 — Complete your profile", text: "Add your location preferences, budget, and move-in date so RentUp can show you the most relevant listings." },
     ],
   },
   "getting-started/complete-profile": {
@@ -29,7 +29,7 @@ const ARTICLES: Record<
     category: "Getting Started",
     categorySlug: "getting-started",
     body: [
-      { text: "A complete profile helps HauxHunt surface the most relevant listings and makes your applications more compelling to landlords." },
+      { text: "A complete profile helps RentUp surface the most relevant listings and makes your applications more compelling to landlords." },
       { heading: "Step 1 — Go to your profile settings", text: "Open your dashboard and click Account in the sidebar, then select Personal Information." },
       { heading: "Step 2 — Add your location preferences", text: "Enter the cities or neighbourhoods you're interested in. You can add multiple areas." },
       { heading: "Step 3 — Set your budget", text: "Enter your monthly rent budget. This is used to filter listings and match you with compatible flatmates." },
@@ -43,7 +43,7 @@ const ARTICLES: Record<
     category: "Getting Started",
     categorySlug: "getting-started",
     body: [
-      { text: "Identity verification helps keep HauxHunt safe for everyone. Verified renters are more likely to have their applications accepted." },
+      { text: "Identity verification helps keep RentUp safe for everyone. Verified renters are more likely to have their applications accepted." },
       { heading: "Why we verify renters", text: "Verification confirms you are who you say you are, which builds trust with landlords and reduces fraud on the platform." },
       { heading: "What you'll need", text: "A government-issued photo ID — such as a national ID card, passport, or driver's licence." },
       { heading: "Step 1 — Open verification", text: "Go to Account → Verification in your dashboard and click Start Verification." },
@@ -53,13 +53,13 @@ const ARTICLES: Record<
     ],
   },
   "getting-started/download-app": {
-    title: "Downloading the HauxHunt app",
+    title: "Downloading the RentUp app",
     category: "Getting Started",
     categorySlug: "getting-started",
     body: [
-      { text: "The HauxHunt mobile app lets you search for properties, track applications, and pay rent from your phone." },
-      { heading: "Step 1 — Download the app", text: "On iPhone or iPad, open the App Store and search for HauxHunt, then tap Get. On Android, open the Google Play Store and tap Install. The app requires iOS 15 or Android 9 and above." },
-      { heading: "Step 2 — Open the app and sign in", text: "Once installed, open HauxHunt and sign in with the same email and password you use on the website. All your data — saved properties, applications, and messages — will sync automatically." },
+      { text: "The RentUp mobile app lets you search for properties, track applications, and pay rent from your phone." },
+      { heading: "Step 1 — Download the app", text: "On iPhone or iPad, open the App Store and search for RentUp, then tap Get. On Android, open the Google Play Store and tap Install. The app requires iOS 15 or Android 9 and above." },
+      { heading: "Step 2 — Open the app and sign in", text: "Once installed, open RentUp and sign in with the same email and password you use on the website. All your data — saved properties, applications, and messages — will sync automatically." },
       { heading: "Step 3 — Enable notifications", text: "When prompted, allow notifications so you don't miss new listings, application updates, or messages from landlords." },
     ],
   },
@@ -68,7 +68,7 @@ const ARTICLES: Record<
     category: "Getting Started",
     categorySlug: "getting-started",
     body: [
-      { text: "HauxHunt supports multiple currencies so you can view prices in the currency that makes most sense to you. Supported options are Rwandan Franc (RWF), US Dollar (USD), Nigerian Naira (NGN), and Kenyan Shilling (KES)." },
+      { text: "RentUp supports multiple currencies so you can view prices in the currency that makes most sense to you. Supported options are Rwandan Franc (RWF), US Dollar (USD), Nigerian Naira (NGN), and Kenyan Shilling (KES)." },
       { heading: "Step 1 — Open the currency selector", text: "On the website, click the currency selector in the top navigation bar. In the app, tap the profile icon and go to Settings → Display Currency." },
       { heading: "Step 2 — Choose your currency", text: "Select your preferred currency from the list. The change applies immediately across all listings." },
       { heading: "How conversion works", text: "Prices are converted using live exchange rates. The original listing currency is always shown alongside the converted amount so there's no ambiguity." },
@@ -83,7 +83,7 @@ const ARTICLES: Record<
       { text: "Notifications keep you informed about new listings, application updates, messages, and payment reminders." },
       { heading: "Step 1 — Open notification preferences", text: "In your dashboard, navigate to Account → Notifications." },
       { heading: "Step 2 — Turn on email alerts", text: "Toggle on the types of email alerts you want — new listings matching your saved searches, application status changes, and rent payment reminders." },
-      { heading: "Step 3 — Enable push notifications", text: "In the HauxHunt app, go to Settings → Notifications and enable push alerts. You can control each notification type individually." },
+      { heading: "Step 3 — Enable push notifications", text: "In the RentUp app, go to Settings → Notifications and enable push alerts. You can control each notification type individually." },
       { heading: "Step 4 — Set up SMS alerts", text: "Enter and verify your phone number to receive SMS alerts for urgent updates such as application decisions and payment confirmations." },
       { heading: "Turning off notifications", text: "You can disable any notification type at any time from the same Notifications settings page. Turning off all notifications is not recommended as you may miss important updates about your rental." },
     ],
@@ -111,7 +111,7 @@ const ARTICLES: Record<
     category: "Getting Started",
     categorySlug: "getting-started",
     body: [
-      { text: "You can permanently delete your HauxHunt account at any time. Please read the information below before proceeding — this action cannot be undone." },
+      { text: "You can permanently delete your RentUp account at any time. Please read the information below before proceeding — this action cannot be undone." },
       { heading: "Before you delete", text: "Resolve any active rentals or pending applications, and settle any outstanding payments. Your profile, saved properties, saved searches, and message history will all be permanently removed." },
       { heading: "Step 1 — Go to account settings", text: "Navigate to Account → Settings in your dashboard." },
       { heading: "Step 2 — Click Delete Account", text: "Scroll to the bottom of the page and click Delete Account." },
@@ -124,7 +124,7 @@ const ARTICLES: Record<
     category: "Search & Listings",
     categorySlug: "search-and-listings",
     body: [
-      { text: "HauxHunt gives you several ways to find your ideal home — filters, keyword search, voice search, and a map view." },
+      { text: "RentUp gives you several ways to find your ideal home — filters, keyword search, voice search, and a map view." },
       { heading: "Step 1 — Go to Search", text: "Click Search in the top navigation or go to /rent to open the listings page." },
       { heading: "Step 2 — Enter a location", text: "Type a city, neighbourhood, or area into the search bar. You can also use the voice button to speak your search." },
       { heading: "Step 3 — Apply filters", text: "Use the filter bar to narrow results by price range, number of bedrooms, move-in date, and property type." },
@@ -161,7 +161,7 @@ const ARTICLES: Record<
     category: "Search & Listings",
     categorySlug: "search-and-listings",
     body: [
-      { text: "You can request a viewing directly through HauxHunt without needing to call or email the landlord separately." },
+      { text: "You can request a viewing directly through RentUp without needing to call or email the landlord separately." },
       { heading: "Step 1 — Open the listing", text: "Go to the property detail page for the home you'd like to visit." },
       { heading: "Step 2 — Click Request a Viewing", text: "Select the Request a Viewing button on the listing page." },
       { heading: "Step 3 — Choose a date and time", text: "Pick your preferred date and time slot from the available options." },
@@ -205,8 +205,8 @@ const ARTICLES: Record<
       { text: "A property request lets you describe what you're looking for so that landlords and agents can come to you with matching properties." },
       { heading: "Step 1 — Go to Property Request", text: "Navigate to /property-request or click Post a Request in the navigation." },
       { heading: "Step 2 — Describe your requirements", text: "Enter your preferred location, budget, number of bedrooms, move-in date, and any other requirements." },
-      { heading: "Step 3 — Submit your request", text: "Click Submit. Your request will be visible to verified landlords and agents on HauxHunt." },
-      { heading: "Receiving responses", text: "When a landlord or agent has a matching property, they'll send you a message through HauxHunt. You'll be notified by email and push notification." },
+      { heading: "Step 3 — Submit your request", text: "Click Submit. Your request will be visible to verified landlords and agents on RentUp." },
+      { heading: "Receiving responses", text: "When a landlord or agent has a matching property, they'll send you a message through RentUp. You'll be notified by email and push notification." },
     ],
   },
   "search-and-listings/listing-unavailable": {
@@ -234,12 +234,12 @@ const ARTICLES: Record<
     ],
   },
   "search-and-listings/trending-locations": {
-    title: "Trending locations on HauxHunt",
+    title: "Trending locations on RentUp",
     category: "Search & Listings",
     categorySlug: "search-and-listings",
     body: [
-      { text: "HauxHunt highlights trending locations based on search activity and new listings. Here's what's popular right now." },
-      { heading: "Kigali, Rwanda", text: "Kigali is HauxHunt's primary market. Popular neighbourhoods include Kimihurura, Kacyiru, Nyarutarama, and Remera, which offer a mix of furnished apartments and family homes." },
+      { text: "RentUp highlights trending locations based on search activity and new listings. Here's what's popular right now." },
+      { heading: "Kigali, Rwanda", text: "Kigali is RentUp's primary market. Popular neighbourhoods include Kimihurura, Kacyiru, Nyarutarama, and Remera, which offer a mix of furnished apartments and family homes." },
       { heading: "Lagos, Nigeria", text: "Lagos listings are concentrated in Lekki, Victoria Island, and Ikeja — areas popular with young professionals and expats." },
       { heading: "Nairobi, Kenya", text: "Nairobi listings cover Westlands, Kilimani, and Lavington, known for their proximity to business districts and amenities." },
       { heading: "How trending is determined", text: "Trending locations are updated weekly based on the volume of searches, saved properties, and new listings in each area." },
@@ -267,8 +267,8 @@ const ARTICLES: Record<
       { heading: "Step 1 — Open the listing", text: "Go to the property detail page for the home you're interested in." },
       { heading: "Step 2 — Click Contact", text: "Click the Contact Landlord or Message Agent button on the listing." },
       { heading: "Step 3 — Write your message", text: "Introduce yourself and ask any questions you have about the property — availability, viewing times, or lease terms." },
-      { heading: "Step 4 — Send", text: "Click Send. The landlord or agent will receive your message and can reply through HauxHunt Messages." },
-      { heading: "Keep communication on HauxHunt", text: "For your safety, keep all conversations within HauxHunt. This protects you if a dispute arises and ensures our support team can assist if needed." },
+      { heading: "Step 4 — Send", text: "Click Send. The landlord or agent will receive your message and can reply through RentUp Messages." },
+      { heading: "Keep communication on RentUp", text: "For your safety, keep all conversations within RentUp. This protects you if a dispute arises and ensures our support team can assist if needed." },
     ],
   },
   "applications/submit-application": {
@@ -276,7 +276,7 @@ const ARTICLES: Record<
     category: "Apply to Rentals",
     categorySlug: "applications",
     body: [
-      { text: "Submitting an application through HauxHunt is straightforward. Here's what to expect." },
+      { text: "Submitting an application through RentUp is straightforward. Here's what to expect." },
       { heading: "Step 1 — Find a property", text: "Browse listings and open the property detail page for the home you're interested in." },
       { heading: "Step 2 — Click Apply", text: "Select the Apply button on the listing. You'll be taken to the application form." },
       { heading: "Step 3 — Fill in the form", text: "Provide your personal details, employment information, and any documents the landlord has requested, such as proof of income or a copy of your ID." },
@@ -301,10 +301,10 @@ const ARTICLES: Record<
     category: "Apply to Rentals",
     categorySlug: "applications",
     body: [
-      { text: "The documents required vary by landlord, but here's what's commonly asked for on HauxHunt." },
+      { text: "The documents required vary by landlord, but here's what's commonly asked for on RentUp." },
       { heading: "Proof of identity", text: "A government-issued photo ID such as a national ID card, passport, or driver's licence." },
       { heading: "Proof of income", text: "Recent payslips, a bank statement, or an employment letter confirming your salary. Self-employed applicants may need to provide tax returns or business bank statements." },
-      { heading: "References", text: "Some landlords ask for a reference from a previous landlord or employer. HauxHunt lets you upload reference letters directly to your application." },
+      { heading: "References", text: "Some landlords ask for a reference from a previous landlord or employer. RentUp lets you upload reference letters directly to your application." },
       { heading: "How to upload documents", text: "During the application process, you'll see an upload section for each required document. Accepted formats are PDF, JPG, and PNG." },
       { heading: "Keep documents ready", text: "Having your documents prepared before you apply speeds up the process and improves your chances of being accepted." },
     ],
@@ -327,11 +327,11 @@ const ARTICLES: Record<
     category: "Apply to Rentals",
     categorySlug: "applications",
     body: [
-      { text: "Yes, you can apply to more than one property at the same time on HauxHunt." },
+      { text: "Yes, you can apply to more than one property at the same time on RentUp." },
       { heading: "Why apply to multiple properties?", text: "The rental market moves quickly. Applying to several properties at once increases your chances of securing a home within your timeline." },
       { heading: "Tracking multiple applications", text: "All your active applications are listed in the Applications section of your dashboard, each with its current status." },
       { heading: "Once you're accepted", text: "When a landlord accepts your application, you should withdraw any other pending applications promptly as a courtesy to other renters and landlords." },
-      { heading: "No limit on applications", text: "HauxHunt does not cap the number of applications you can have open at once." },
+      { heading: "No limit on applications", text: "RentUp does not cap the number of applications you can have open at once." },
     ],
   },
   "applications/application-declined": {
@@ -344,7 +344,7 @@ const ARTICLES: Record<
       { heading: "Keep your other applications active", text: "If you applied to multiple properties, your other applications are still live. Check their status in your Applications dashboard." },
       { heading: "Apply to similar properties", text: "Use your saved search or browse similar listings in the same area and price range." },
       { heading: "Complete your profile", text: "A fully completed profile with a verified identity and uploaded documents makes future applications more compelling." },
-      { heading: "Contact support", text: "If you believe your application was declined unfairly or in violation of HauxHunt's policies, contact our support team." },
+      { heading: "Contact support", text: "If you believe your application was declined unfairly or in violation of RentUp's policies, contact our support team." },
     ],
   },
   "applications/rental-invitation": {
@@ -361,11 +361,11 @@ const ARTICLES: Record<
     ],
   },
   "payments/pay-rent": {
-    title: "How to pay rent through HauxHunt",
+    title: "How to pay rent through RentUp",
     category: "Pay Rent Online",
     categorySlug: "payments",
     body: [
-      { text: "HauxHunt makes it easy to pay rent securely from your dashboard." },
+      { text: "RentUp makes it easy to pay rent securely from your dashboard." },
       { heading: "Step 1 — Go to Payments", text: "Navigate to Payments in your dashboard sidebar." },
       { heading: "Step 2 — Select the payment due", text: "Find the upcoming rent payment and click Pay Now." },
       { heading: "Step 3 — Choose a payment method", text: "Select from your saved payment methods — mobile money, card, or bank transfer — or add a new one." },
@@ -378,7 +378,7 @@ const ARTICLES: Record<
     category: "Pay Rent Online",
     categorySlug: "payments",
     body: [
-      { text: "HauxHunt supports several payment methods so you can pay rent in the way that's most convenient for you." },
+      { text: "RentUp supports several payment methods so you can pay rent in the way that's most convenient for you." },
       { heading: "Mobile money", text: "Pay using MTN Mobile Money, Airtel Money, or M-Pesa depending on your country. Payments are typically instant." },
       { heading: "Debit and credit cards", text: "Visa and Mastercard are accepted. Card payments are processed securely and usually reflect within 1–2 business days." },
       { heading: "Bank transfer", text: "Transfer directly from your bank account. Processing times vary by bank but are usually 1–3 business days." },
@@ -408,7 +408,7 @@ const ARTICLES: Record<
       { heading: "Try again", text: "Go to Payments in your dashboard, find the failed payment, and click Retry." },
       { heading: "Try a different payment method", text: "If the same method keeps failing, switch to an alternative — for example, use a card instead of mobile money." },
       { heading: "Check for network issues", text: "Mobile money payments can fail due to temporary network outages. Wait a few minutes and try again." },
-      { heading: "Contact support", text: "If the payment continues to fail and your due date is approaching, contact HauxHunt support immediately so we can help you avoid a late payment fee." },
+      { heading: "Contact support", text: "If the payment continues to fail and your due date is approaching, contact RentUp support immediately so we can help you avoid a late payment fee." },
     ],
   },
   "payments/receipts": {
@@ -416,7 +416,7 @@ const ARTICLES: Record<
     category: "Pay Rent Online",
     categorySlug: "payments",
     body: [
-      { text: "A receipt is generated automatically for every successful rent payment on HauxHunt." },
+      { text: "A receipt is generated automatically for every successful rent payment on RentUp." },
       { heading: "Step 1 — Go to Payments", text: "Navigate to Payments in your dashboard sidebar." },
       { heading: "Step 2 — Open the payment", text: "Click on any completed payment to open its details." },
       { heading: "Step 3 — Download the receipt", text: "Click Download Receipt to save a PDF copy to your device." },
@@ -441,11 +441,11 @@ const ARTICLES: Record<
     categorySlug: "payments",
     body: [
       { text: "Paying rent on time is important. Here's what happens if a payment is late." },
-      { heading: "Due date reminders", text: "HauxHunt sends you a reminder 3 days before your rent is due and again on the due date. Make sure notifications are enabled." },
-      { heading: "Grace period", text: "Most landlords on HauxHunt allow a grace period of 1–5 days after the due date. The grace period for your rental is shown in your lease details." },
+      { heading: "Due date reminders", text: "RentUp sends you a reminder 3 days before your rent is due and again on the due date. Make sure notifications are enabled." },
+      { heading: "Grace period", text: "Most landlords on RentUp allow a grace period of 1–5 days after the due date. The grace period for your rental is shown in your lease details." },
       { heading: "Late fees", text: "If payment is not received within the grace period, a late fee may be applied as specified in your lease agreement. The fee will appear as a separate charge in your Payments dashboard." },
       { heading: "Avoiding late payments", text: "Enable auto-pay in your payment settings to have rent deducted automatically on the due date." },
-      { heading: "If you can't pay on time", text: "Contact your landlord or property manager through HauxHunt Messages as early as possible to discuss your situation." },
+      { heading: "If you can't pay on time", text: "Contact your landlord or property manager through RentUp Messages as early as possible to discuss your situation." },
     ],
   },
   "payments/refunds": {
@@ -453,10 +453,10 @@ const ARTICLES: Record<
     category: "Pay Rent Online",
     categorySlug: "payments",
     body: [
-      { text: "Refunds on HauxHunt are handled on a case-by-case basis depending on the circumstances." },
+      { text: "Refunds on RentUp are handled on a case-by-case basis depending on the circumstances." },
       { heading: "Duplicate payments", text: "If you were charged twice for the same payment, contact support immediately with the payment details. Duplicate charges are refunded within 3–5 business days." },
       { heading: "Overpayments", text: "If you paid more than the amount due, the excess will be credited to your next payment or refunded on request." },
-      { heading: "Cancelled rentals", text: "If your rental is cancelled before you move in, any payments made through HauxHunt are subject to the cancellation policy agreed in your lease." },
+      { heading: "Cancelled rentals", text: "If your rental is cancelled before you move in, any payments made through RentUp are subject to the cancellation policy agreed in your lease." },
       { heading: "How to request a refund", text: "Go to Payments, open the relevant payment, and click Request Refund. Provide a brief explanation and submit. Our team will review and respond within 2 business days." },
     ],
   },
@@ -465,7 +465,7 @@ const ARTICLES: Record<
     category: "Pay Rent Online",
     categorySlug: "payments",
     body: [
-      { text: "HauxHunt supports multi-currency display, but payments are always processed in the currency agreed with your landlord." },
+      { text: "RentUp supports multi-currency display, but payments are always processed in the currency agreed with your landlord." },
       { heading: "Display currency vs payment currency", text: "Your display currency is for reference only — it helps you understand prices in a familiar currency. The actual payment is charged in the landlord's listed currency." },
       { heading: "Exchange rates", text: "Display prices are converted using live exchange rates updated daily. Rates are sourced from a reliable financial data provider." },
       { heading: "Foreign transaction fees", text: "If you pay with a card in a currency different from your card's home currency, your bank may charge a foreign transaction fee. Check with your bank for details." },
@@ -473,7 +473,7 @@ const ARTICLES: Record<
     ],
   },
   "payments/security-deposit": {
-    title: "Security deposits on HauxHunt",
+    title: "Security deposits on RentUp",
     category: "Pay Rent Online",
     categorySlug: "payments",
     body: [
@@ -482,7 +482,7 @@ const ARTICLES: Record<
       { heading: "When is it paid?", text: "The deposit is paid during the rental setup process, after your application has been accepted and before you move in." },
       { heading: "How to pay the deposit", text: "Go to Rental Setup in your dashboard and follow the prompts to pay the deposit using your preferred payment method." },
       { heading: "Getting your deposit back", text: "At the end of your tenancy, the landlord will inspect the property. If there's no damage beyond normal wear and tear, your deposit will be returned within the timeframe specified in your lease." },
-      { heading: "Deposit disputes", text: "If you disagree with a deduction from your deposit, contact HauxHunt support. We can help mediate between you and your landlord." },
+      { heading: "Deposit disputes", text: "If you disagree with a deduction from your deposit, contact RentUp support. We can help mediate between you and your landlord." },
     ],
   },
   "maintenance/report-issue": {
@@ -519,8 +519,8 @@ const ARTICLES: Record<
       { text: "Some maintenance issues require immediate attention. Here's how to escalate them." },
       { heading: "What counts as urgent?", text: "Urgent issues include flooding, gas leaks, total loss of electricity, broken locks, or anything that poses a safety risk to you or the property." },
       { heading: "Step 1 — Submit a request and mark it urgent", text: "Go to Maintenance → Report an Issue and toggle the Urgent switch before submitting. This flags the request for immediate attention." },
-      { heading: "Step 2 — Message your property manager", text: "Send a direct message to your property manager through HauxHunt Messages to make sure they're aware of the urgency." },
-      { heading: "Step 3 — In a life-threatening emergency", text: "If there is an immediate risk to life — such as a fire or gas explosion — call your local emergency services first before contacting HauxHunt." },
+      { heading: "Step 2 — Message your property manager", text: "Send a direct message to your property manager through RentUp Messages to make sure they're aware of the urgency." },
+      { heading: "Step 3 — In a life-threatening emergency", text: "If there is an immediate risk to life — such as a fire or gas explosion — call your local emergency services first before contacting RentUp." },
     ],
   },
   "maintenance/add-photos": {
@@ -603,7 +603,7 @@ const ARTICLES: Record<
     category: "Flatmates",
     categorySlug: "flatmates",
     body: [
-      { text: "When you find someone you'd like to share a home with, you can reach out to them directly through HauxHunt." },
+      { text: "When you find someone you'd like to share a home with, you can reach out to them directly through RentUp." },
       { heading: "Step 1 — Open their profile", text: "Click on the flatmate's card to open their full profile." },
       { heading: "Step 2 — Click Message", text: "Select the Message button on their profile page." },
       { heading: "Step 3 — Write your message", text: "Introduce yourself, mention what you're looking for, and explain why you think you'd be a good match." },
@@ -622,15 +622,15 @@ const ARTICLES: Record<
     ],
   },
   "messages/send-message": {
-    title: "Sending a message on HauxHunt",
+    title: "Sending a message on RentUp",
     category: "Messages",
     categorySlug: "messages",
     body: [
-      { text: "HauxHunt Messages lets you communicate with landlords, agents, and property managers all in one place." },
+      { text: "RentUp Messages lets you communicate with landlords, agents, and property managers all in one place." },
       { heading: "Step 1 — Start from a listing", text: "The easiest way to start a conversation is from a property listing. Click Contact Landlord or Message Agent on the listing page." },
       { heading: "Step 2 — Or open Messages directly", text: "Go to Messages in your dashboard sidebar to start a new conversation or continue an existing one." },
       { heading: "Step 3 — Write and send", text: "Type your message and click Send. The recipient will be notified by email and push notification." },
-      { heading: "Keep it on HauxHunt", text: "For your protection, keep all conversations within HauxHunt. This ensures our support team can assist if a dispute arises." },
+      { heading: "Keep it on RentUp", text: "For your protection, keep all conversations within RentUp. This ensures our support team can assist if a dispute arises." },
     ],
   },
   "messages/message-notifications": {
@@ -638,9 +638,9 @@ const ARTICLES: Record<
     category: "Messages",
     categorySlug: "messages",
     body: [
-      { text: "HauxHunt notifies you whenever you receive a new message so you never miss an important update." },
+      { text: "RentUp notifies you whenever you receive a new message so you never miss an important update." },
       { heading: "Email notifications", text: "A notification email is sent to your registered address whenever you receive a new message. Check your spam folder if you're not receiving them." },
-      { heading: "Push notifications", text: "If you have the HauxHunt app installed and notifications enabled, you'll receive a push alert on your phone for every new message." },
+      { heading: "Push notifications", text: "If you have the RentUp app installed and notifications enabled, you'll receive a push alert on your phone for every new message." },
       { heading: "In-app badge", text: "The Messages icon in your dashboard shows an unread count badge so you can see at a glance when there are new messages." },
       { heading: "Adjusting notification settings", text: "Go to Account → Notifications to control how and when you're notified about new messages." },
     ],
@@ -662,7 +662,7 @@ const ARTICLES: Record<
     category: "Messages",
     categorySlug: "messages",
     body: [
-      { text: "If you receive a message that violates HauxHunt's community guidelines, please report it so our team can take action." },
+      { text: "If you receive a message that violates RentUp's community guidelines, please report it so our team can take action." },
       { heading: "Step 1 — Open the message", text: "Go to Messages and open the conversation containing the message you want to report." },
       { heading: "Step 2 — Select the message", text: "Long-press or hover over the specific message and click the flag icon or Report option." },
       { heading: "Step 3 — Choose a reason", text: "Select the reason for reporting — such as harassment, spam, fraud, or offensive content." },
@@ -675,12 +675,12 @@ const ARTICLES: Record<
     category: "Trust & Safety",
     categorySlug: "trust-and-safety",
     body: [
-      { text: "Rental fraud is a real risk in any property market. Here's how to protect yourself on HauxHunt." },
-      { heading: "Only pay through HauxHunt", text: "Never transfer money directly to a landlord's personal account before signing a lease. All legitimate payments on HauxHunt are processed through the platform." },
+      { text: "Rental fraud is a real risk in any property market. Here's how to protect yourself on RentUp." },
+      { heading: "Only pay through RentUp", text: "Never transfer money directly to a landlord's personal account before signing a lease. All legitimate payments on RentUp are processed through the platform." },
       { heading: "Watch for prices that seem too good", text: "If a listing is significantly cheaper than comparable properties in the same area, treat it with caution. Fraudsters often use unrealistically low prices to attract victims." },
-      { heading: "Verify the landlord", text: "Look for the Verified badge on a landlord's profile. Verified landlords have had their identity and property ownership confirmed by HauxHunt." },
+      { heading: "Verify the landlord", text: "Look for the Verified badge on a landlord's profile. Verified landlords have had their identity and property ownership confirmed by RentUp." },
       { heading: "Never pay before viewing", text: "Avoid paying a deposit or rent before you've viewed the property in person or via a verified video tour." },
-      { heading: "Keep communication on HauxHunt", text: "If someone asks you to move the conversation to WhatsApp, email, or another platform before you've signed a lease, be cautious. Legitimate landlords are happy to communicate through HauxHunt." },
+      { heading: "Keep communication on RentUp", text: "If someone asks you to move the conversation to WhatsApp, email, or another platform before you've signed a lease, be cautious. Legitimate landlords are happy to communicate through RentUp." },
       { heading: "Report suspicious listings", text: "If something feels off, use the Report button on the listing page to flag it for our team to review." },
     ],
   },
@@ -689,7 +689,7 @@ const ARTICLES: Record<
     category: "Trust & Safety",
     categorySlug: "trust-and-safety",
     body: [
-      { text: "If you come across a listing that seems fraudulent, misleading, or in violation of HauxHunt's policies, please report it." },
+      { text: "If you come across a listing that seems fraudulent, misleading, or in violation of RentUp's policies, please report it." },
       { heading: "Step 1 — Open the listing", text: "Go to the property detail page for the listing you want to report." },
       { heading: "Step 2 — Click Report", text: "Scroll to the bottom of the listing and click Report this Listing, or use the three-dot menu near the top of the page." },
       { heading: "Step 3 — Choose a reason", text: "Select the most appropriate reason — such as Fraudulent, Inaccurate information, Already rented, or Inappropriate content." },
@@ -714,11 +714,11 @@ const ARTICLES: Record<
     category: "Trust & Safety",
     categorySlug: "trust-and-safety",
     body: [
-      { text: "Paying through HauxHunt is the safest way to handle rent and deposits. Here's why and how." },
-      { heading: "Always pay through the platform", text: "HauxHunt processes all payments securely. Never send money via bank transfer, mobile money, or cash directly to a landlord before your rental is set up on the platform." },
-      { heading: "Receipts for every payment", text: "Every payment made through HauxHunt generates a receipt, giving you a clear record of what was paid and when." },
-      { heading: "Dispute protection", text: "Payments made through HauxHunt are covered by our dispute resolution process. If a landlord fails to deliver on their obligations, our team can investigate and assist." },
-      { heading: "Secure payment processing", text: "All card and mobile money transactions are encrypted and processed by certified payment providers. HauxHunt never stores your full card details." },
+      { text: "Paying through RentUp is the safest way to handle rent and deposits. Here's why and how." },
+      { heading: "Always pay through the platform", text: "RentUp processes all payments securely. Never send money via bank transfer, mobile money, or cash directly to a landlord before your rental is set up on the platform." },
+      { heading: "Receipts for every payment", text: "Every payment made through RentUp generates a receipt, giving you a clear record of what was paid and when." },
+      { heading: "Dispute protection", text: "Payments made through RentUp are covered by our dispute resolution process. If a landlord fails to deliver on their obligations, our team can investigate and assist." },
+      { heading: "Secure payment processing", text: "All card and mobile money transactions are encrypted and processed by certified payment providers. RentUp never stores your full card details." },
     ],
   },
   "trust-and-safety/data-privacy": {
@@ -726,8 +726,8 @@ const ARTICLES: Record<
     category: "Trust & Safety",
     categorySlug: "trust-and-safety",
     body: [
-      { text: "HauxHunt takes your privacy seriously. Here's a summary of how we handle your personal information." },
-      { heading: "What we collect", text: "We collect the information you provide when registering and using HauxHunt — such as your name, email, phone number, and payment details — as well as usage data to improve the platform." },
+      { text: "RentUp takes your privacy seriously. Here's a summary of how we handle your personal information." },
+      { heading: "What we collect", text: "We collect the information you provide when registering and using RentUp — such as your name, email, phone number, and payment details — as well as usage data to improve the platform." },
       { heading: "How we use it", text: "Your data is used to operate the platform, match you with relevant listings, process payments, and communicate with you about your account and rentals." },
       { heading: "Who we share it with", text: "We share necessary information with landlords and agents when you apply for a property or request a viewing. We do not sell your personal data to third parties." },
       { heading: "Your rights", text: "You can request a copy of your data, ask us to correct inaccurate information, or request deletion of your account and data at any time from Account → Privacy Settings." },
@@ -739,12 +739,12 @@ const ARTICLES: Record<
     category: "Trust & Safety",
     categorySlug: "trust-and-safety",
     body: [
-      { text: "Follow these best practices to keep your HauxHunt account safe." },
+      { text: "Follow these best practices to keep your RentUp account safe." },
       { heading: "Use a strong password", text: "Choose a password that's at least 8 characters and includes a mix of letters, numbers, and symbols. Don't reuse passwords from other sites." },
       { heading: "Enable two-factor authentication", text: "Go to Account → Security and turn on two-factor authentication (2FA). This adds a second verification step when you sign in from a new device." },
       { heading: "Review active sessions", text: "Go to Account → Active Sessions to see all devices currently signed in to your account. Log out of any you don't recognise." },
-      { heading: "Watch for phishing", text: "HauxHunt will never ask for your password by email or phone. If you receive a suspicious message claiming to be from us, do not click any links — report it to support@hauxhunt.com." },
-      { heading: "Sign out on shared devices", text: "Always sign out of HauxHunt when using a shared or public device." },
+      { heading: "Watch for phishing", text: "RentUp will never ask for your password by email or phone. If you receive a suspicious message claiming to be from us, do not click any links — report it to support@hauxhunt.com." },
+      { heading: "Sign out on shared devices", text: "Always sign out of RentUp when using a shared or public device." },
     ],
   },
   "support/contact-support": {
@@ -755,7 +755,7 @@ const ARTICLES: Record<
       { text: "Our support team is available to help with any issue you can't resolve through the Help Center." },
       { heading: "Live chat", text: "Click the chat icon in the bottom-right corner of any page to start a live chat with a support agent. Available Monday to Friday, 8am–6pm (CAT)." },
       { heading: "Email", text: "Send an email to support@hauxhunt.com. Include your account email address and a clear description of the issue." },
-      { heading: "In-app support", text: "In the HauxHunt app, go to Account → Help → Contact Support to send a message directly from the app." },
+      { heading: "In-app support", text: "In the RentUp app, go to Account → Help → Contact Support to send a message directly from the app." },
       { heading: "From your dashboard", text: "Go to Help → Customer Support in your renter dashboard and click Contact Support to open a support ticket." },
     ],
   },
@@ -764,7 +764,7 @@ const ARTICLES: Record<
     category: "Customer Support",
     categorySlug: "support",
     body: [
-      { text: "Here's what to expect when you reach out to the HauxHunt support team." },
+      { text: "Here's what to expect when you reach out to the RentUp support team." },
       { heading: "Live chat", text: "Live chat responses are typically within a few minutes during business hours (Monday to Friday, 8am–6pm CAT)." },
       { heading: "Email", text: "Email enquiries are usually responded to within 24 hours on business days. Complex issues may take up to 48 hours." },
       { heading: "Urgent issues", text: "If your issue is urgent — such as a failed payment on a due date or a security concern — use live chat for the fastest response." },
@@ -776,8 +776,8 @@ const ARTICLES: Record<
     category: "Customer Support",
     categorySlug: "support",
     body: [
-      { text: "If you have a serious concern about HauxHunt or a landlord on the platform, here's how to formally raise it." },
-      { heading: "Step 1 — Try to resolve it first", text: "For issues with a landlord or property manager, try messaging them directly through HauxHunt first. Many issues can be resolved quickly through direct communication." },
+      { text: "If you have a serious concern about RentUp or a landlord on the platform, here's how to formally raise it." },
+      { heading: "Step 1 — Try to resolve it first", text: "For issues with a landlord or property manager, try messaging them directly through RentUp first. Many issues can be resolved quickly through direct communication." },
       { heading: "Step 2 — Contact support", text: "If the issue isn't resolved, contact our support team via live chat or email at support@hauxhunt.com. Describe the issue clearly and include any relevant screenshots or evidence." },
       { heading: "Step 3 — Submit a formal complaint", text: "For serious matters, go to Help → Contact Support in your dashboard and select Submit a Complaint. Fill in the complaint form with full details." },
       { heading: "What happens next", text: "Our team will acknowledge your complaint within 24 hours and aim to resolve it within 5 business days. You'll be kept updated throughout the process." },
@@ -788,8 +788,8 @@ const ARTICLES: Record<
     category: "Customer Support",
     categorySlug: "support",
     body: [
-      { text: "We love hearing from renters. Your feedback helps us improve HauxHunt for everyone." },
-      { heading: "In-app feedback", text: "In the HauxHunt app, go to Account → Help → Send Feedback. Rate your experience and leave a comment." },
+      { text: "We love hearing from renters. Your feedback helps us improve RentUp for everyone." },
+      { heading: "In-app feedback", text: "In the RentUp app, go to Account → Help → Send Feedback. Rate your experience and leave a comment." },
       { heading: "From the dashboard", text: "Go to Help → Customer Support in your dashboard and click Send Feedback." },
       { heading: "Email", text: "You can also email your ideas and suggestions directly to feedback@hauxhunt.com." },
       { heading: "What we do with feedback", text: "All feedback is reviewed by our product team. While we can't respond to every submission individually, popular requests are regularly considered for upcoming releases." },
@@ -838,7 +838,7 @@ const ARTICLES: Record<
     category: "Account & Settings",
     categorySlug: "account",
     body: [
-      { text: "Active sessions shows every device currently signed in to your HauxHunt account." },
+      { text: "Active sessions shows every device currently signed in to your RentUp account." },
       { heading: "Step 1 — Go to Security", text: "Navigate to Account → Security in your dashboard." },
       { heading: "Step 2 — View active sessions", text: "Scroll to the Active Sessions section. Each session shows the device type, browser, location, and last active time." },
       { heading: "Step 3 — Log out a session", text: "Click Log Out next to any session you don't recognise or no longer use." },
@@ -854,7 +854,7 @@ const ARTICLES: Record<
       { text: "Control exactly which alerts you receive and how you receive them." },
       { heading: "Step 1 — Go to Notifications", text: "Navigate to Account → Notifications in your dashboard." },
       { heading: "Email notifications", text: "Toggle on or off email alerts for new listings, application updates, payment reminders, and messages." },
-      { heading: "Push notifications", text: "Control push alerts in the HauxHunt app under Settings → Notifications. You can enable or disable each type individually." },
+      { heading: "Push notifications", text: "Control push alerts in the RentUp app under Settings → Notifications. You can enable or disable each type individually." },
       { heading: "SMS notifications", text: "Enter and verify your phone number to receive SMS alerts for urgent updates. You can turn these off at any time." },
       { heading: "Changes save automatically", text: "Your preferences are saved as you toggle each setting — no need to click Save." },
     ],
@@ -864,7 +864,7 @@ const ARTICLES: Record<
     category: "Account & Settings",
     categorySlug: "account",
     body: [
-      { text: "HauxHunt is available in English, French, and Kinyarwanda." },
+      { text: "RentUp is available in English, French, and Kinyarwanda." },
       { heading: "Step 1 — Go to Preferences", text: "Navigate to Account → Preferences in your dashboard." },
       { heading: "Step 2 — Select a language", text: "Choose your preferred language from the Language dropdown." },
       { heading: "Step 3 — Save", text: "Click Save. The interface will update to your chosen language immediately." },
@@ -875,7 +875,7 @@ const ARTICLES: Record<
     category: "Account & Settings",
     categorySlug: "account",
     body: [
-      { text: "Your display currency controls how prices are shown across HauxHunt. You can change it at any time." },
+      { text: "Your display currency controls how prices are shown across RentUp. You can change it at any time." },
       { heading: "Step 1 — Use the currency selector", text: "Click the currency selector in the top navigation bar and choose your preferred currency. This is the quickest way." },
       { heading: "Or go to Preferences", text: "Navigate to Account → Preferences and select your currency from the Display Currency dropdown, then click Save." },
       { heading: "Supported currencies", text: "RWF (Rwandan Franc), USD (US Dollar), NGN (Nigerian Naira), and KES (Kenyan Shilling)." },
@@ -886,12 +886,12 @@ const ARTICLES: Record<
     category: "Account & Settings",
     categorySlug: "account",
     body: [
-      { text: "Privacy settings let you control what information is visible to landlords, agents, and other renters on HauxHunt." },
+      { text: "Privacy settings let you control what information is visible to landlords, agents, and other renters on RentUp." },
       { heading: "Step 1 — Go to Privacy Settings", text: "Navigate to Account → Privacy Settings in your dashboard." },
       { heading: "Profile visibility", text: "Control whether your renter profile is visible to landlords when you haven't applied to their property." },
       { heading: "Flatmate profile visibility", text: "Toggle your flatmate profile on or off without deleting it. When off, it won't appear in the flatmate directory." },
-      { heading: "Data and personalisation", text: "Choose whether HauxHunt can use your activity data to personalise listing recommendations." },
-      { heading: "Download your data", text: "Click Download My Data to request a copy of all the personal information HauxHunt holds about you." },
+      { heading: "Data and personalisation", text: "Choose whether RentUp can use your activity data to personalise listing recommendations." },
+      { heading: "Download your data", text: "Click Download My Data to request a copy of all the personal information RentUp holds about you." },
     ],
   },
   "account/delete-account": {
@@ -899,7 +899,7 @@ const ARTICLES: Record<
     category: "Account & Settings",
     categorySlug: "account",
     body: [
-      { text: "You can permanently delete your HauxHunt account at any time. This action cannot be undone." },
+      { text: "You can permanently delete your RentUp account at any time. This action cannot be undone." },
       { heading: "Before you delete", text: "Resolve any active rentals or pending applications, and settle any outstanding payments. Your profile, saved properties, saved searches, and message history will all be permanently removed." },
       { heading: "Step 1 — Go to account settings", text: "Navigate to Account → Settings in your dashboard." },
       { heading: "Step 2 — Click Delete Account", text: "Scroll to the bottom of the page and click Delete Account." },

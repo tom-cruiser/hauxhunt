@@ -145,13 +145,13 @@ export default function AddPropertyPage() {
           <header className="mt-4 border-b border-black/10 pb-8">
             <h1 className="dashboard-page-title text-carbon-900">Add a Property</h1>
             <p className="text-carbon-600 mt-5 max-w-2xl text-base leading-7">
-              {role === "agent" ? "Add a property you're authorized to represent on HauxHunt." : "Add a property you're authorized to manage on HauxHunt."}
+              {role === "agent" ? "Add a property you're authorized to represent on RentUp." : "Add a property you're authorized to manage on RentUp."}
             </p>
           </header>
 
           {step === "details" ? (
             <div className="mt-6 rounded-2xl bg-black/3 p-5">
-              <p className="text-sm font-medium">Was this property assigned to you through a HauxHunt Team?</p>
+              <p className="text-sm font-medium">Was this property assigned to you through a RentUp Team?</p>
               <p className="text-carbon-600 mt-1.5 text-sm leading-6">Team-assigned properties automatically appear in your {role === "agent" ? "assigned" : "managed"} properties and don&apos;t need to be added again.</p>
               <Link href="/partner-dashboard/properties?filter=team" className="mt-2 inline-block text-sm font-medium underline underline-offset-4">
                 View Assigned Properties
@@ -259,7 +259,7 @@ export default function AddPropertyPage() {
                   </Field>
                 </div>
                 <p className="text-carbon-500 mt-4 text-xs leading-5">
-                  HauxHunt account: <span className="font-medium">Not connected.</span> This Owner isn&apos;t required to register or verify anything on HauxHunt for you to submit this authorization.
+                  RentUp account: <span className="font-medium">Not connected.</span> This Owner isn&apos;t required to register or verify anything on RentUp for you to submit this authorization.
                 </p>
                 <div className="mt-7 flex justify-between">
                   <button type="button" onClick={() => setStep("details")} className="font-bricolage inline-flex h-12 items-center rounded-full border border-black/15 px-5 font-medium hover:border-black">
@@ -284,7 +284,7 @@ export default function AddPropertyPage() {
                 <div className="mt-5">
                   <p className="text-carbon-500 text-xs font-medium tracking-widest uppercase">Proof of Authorization</p>
                   <p className="text-carbon-600 mt-1.5 text-sm leading-6">
-                    Upload a document showing that the property owner has authorized you to {role === "agent" ? "represent" : "manage"} this property. Accepted proof may include documents such as an authorization letter or other evidence accepted by HauxHunt.
+                    Upload a document showing that the property owner has authorized you to {role === "agent" ? "represent" : "manage"} this property. Accepted proof may include documents such as an authorization letter or other evidence accepted by RentUp.
                   </p>
                   <input ref={fileInputRef} type="file" className="hidden" onChange={(e) => setProofName(e.target.files?.[0]?.name ?? null)} />
                   <button
@@ -305,7 +305,7 @@ export default function AddPropertyPage() {
 
                 <label className="mt-6 flex cursor-pointer items-start gap-3">
                   <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="mt-0.5 size-4 accent-black" />
-                  <span className="text-sm leading-6">I confirm that I have permission from the property owner to {role === "agent" ? "represent" : "manage"} this property on HauxHunt.</span>
+                  <span className="text-sm leading-6">I confirm that I have permission from the property owner to {role === "agent" ? "represent" : "manage"} this property on RentUp.</span>
                 </label>
 
                 <div className="mt-7 flex justify-between">

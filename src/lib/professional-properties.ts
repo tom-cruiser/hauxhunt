@@ -3,27 +3,27 @@
 // Phase 1/2 modeled property access as something an Owner's Team grants:
 // invite -> accept -> Owner (or authorized PM) assigns a property. That is
 // still true, but it is no longer the ONLY way an Agent or Property Manager
-// can have access to a property on HauxHunt. A professional account exists
+// can have access to a property on RentUp. A professional account exists
 // independently of any Team:
 //
 //   PROFESSIONAL
 //        |
 //        +-- Team memberships (team-data.ts) -- zero, one, or several
 //        +-- Independent property authorizations (this file) -- properties
-//            represented for an Owner who does not use HauxHunt at all
+//            represented for an Owner who does not use RentUp at all
 //
 // The two authority sources are kept structurally distinct and are never
 // merged into one stored record:
 //
 //   TEAM_ASSIGNMENT           -- team-data.ts's PropertyAssignment, always
 //                                 tied to a teamId and an Owner who has a
-//                                 HauxHunt account.
+//                                 RentUp account.
 //   INDEPENDENT_AUTHORIZATION -- an OwnerAuthorization below, tied to a
 //                                 property THIS FILE owns the facts for and
 //                                 an off-platform Owner who has neither an
 //                                 account nor a Team. Submitting one does
 //                                 NOT create a Team, and never will just
-//                                 because HauxHunt reviewed it (Section 58).
+//                                 because RentUp reviewed it (Section 58).
 //
 // "PropertyAccess" (the brief's Section 52 concept) is deliberately NOT a
 // third stored table -- that would let it drift from the two real sources

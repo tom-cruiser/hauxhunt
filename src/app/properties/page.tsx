@@ -6,7 +6,7 @@ import {
 } from "@/components/listings/catalogue-page";
 
 export const metadata: Metadata = {
-  title: "All properties | HauxHunt",
+  title: "All properties | RentUp",
   description: "Explore homes for rent across Rwanda, Nigeria, and Kenya.",
 };
 

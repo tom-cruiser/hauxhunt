@@ -134,7 +134,7 @@ export function SavePropertyButton({
                           Keep favourite homes with an account.
                         </h2>
                         <p className="text-carbon-600 mt-3 text-sm leading-6">
-                          Log in or create a HauxHunt account to add this home
+                          Log in or create a RentUp account to add this home
                           to your favourites and find it again later.
                         </p>
                         <div className="mt-7 flex gap-3">

@@ -116,7 +116,7 @@ function FinanceWorkspaceInner() {
             </span>
             <h1 className="dashboard-page-title text-carbon-900 mt-6">Finance</h1>
             <p className="text-carbon-600 mt-5 max-w-2xl text-base leading-7 sm:text-lg">
-              Rent activity, billing schedules, and payouts for the properties you manage. Payments here is monitoring, not accounting -- HauxHunt does not process tenant payments.
+              Rent activity, billing schedules, and payouts for the properties you manage. Payments here is monitoring, not accounting -- RentUp does not process tenant payments.
             </p>
             {propertyId && tab === "Payments" ? <PropertyFilterChip propertyId={propertyId} onClear={clearPropertyFilter} /> : null}
           </header>

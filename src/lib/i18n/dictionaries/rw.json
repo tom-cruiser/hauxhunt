@@ -13,7 +13,7 @@
     "rent": "Gukodesha",
     "flatmates": "Abasangira inzu",
     "list": "Tanga inzu",
-    "homeAriaLabel": "HauxHunt — ahabanza",
+    "homeAriaLabel": "RentUp — ahabanza",
     "openMenu": "Fungura menyu",
     "closeMenu": "Funga menyu",
     "primaryLabel": "Nyamukuru"
@@ -26,7 +26,7 @@
     "rw": "Ikinyarwanda"
   },
   "footer": {
-    "homeAriaLabel": "HauxHunt ahabanza",
+    "homeAriaLabel": "RentUp ahabanza",
     "tagline": "Uburyo bworoshye kandi bwizewe bwo kubona amazu mu Rwanda, muri Nigeria no muri Kenya.",
     "navLabel": "Igice cyo hepfo",
     "groups": {
@@ -45,7 +45,7 @@
         "agencyTeams": "Ku matsinda y'ajensi"
       },
       "company": {
-        "title": "HauxHunt",
+        "title": "RentUp",
         "about": "Abo turi bo",
         "help": "Ikigo cy'ubufasha",
         "safety": "Umutekano",
@@ -53,12 +53,12 @@
       }
     },
     "socialAria": {
-      "instagram": "HauxHunt kuri Instagram",
-      "linkedin": "HauxHunt kuri LinkedIn",
-      "facebook": "HauxHunt kuri Facebook",
-      "whatsapp": "Vugana na HauxHunt kuri WhatsApp"
+      "instagram": "RentUp kuri Instagram",
+      "linkedin": "RentUp kuri LinkedIn",
+      "facebook": "RentUp kuri Facebook",
+      "whatsapp": "Vugana na RentUp kuri WhatsApp"
     },
-    "copyright": "© {{year}} HauxHunt. Uburenganzira bwose burabitswe.",
+    "copyright": "© {{year}} RentUp. Uburenganzira bwose burabitswe.",
     "privacy": "Ibanga",
     "terms": "Amabwiriza"
   },
@@ -133,13 +133,13 @@
       "description": "Vugana n'ucunga inzu cyangwa ajenti uyihagarariye maze utegure intambwe ikurikira wizeye."
     },
     "partnerPanel": {
-      "growTitle": "Kwagura ubucuruzi bwawe bw'amazu na HauxHunt",
+      "growTitle": "Kwagura ubucuruzi bwawe bw'amazu na RentUp",
       "growDescription": "Abacunga amazu na ba ajenti bashobora kugera ku bashaka amazu koko, gucunga amatangazo, no gusubiza abasaba amazu ahantu hamwe.",
       "joinUs": "Twifatanye nawe ubu",
       "appTitle": "Jyana ishakisha ry'inzu aho ugiye hose",
-      "appDescription": "Bika amatangazo, wakire amakuru ku bihuye bishya, kandi uvugane n'inzobere mu mazu aho uri hose ukoresheje porogaramu ya HauxHunt.",
-      "googlePlayAria": "Kura HauxHunt kuri Google Play",
-      "appStoreAria": "Kura HauxHunt kuri App Store",
+      "appDescription": "Bika amatangazo, wakire amakuru ku bihuye bishya, kandi uvugane n'inzobere mu mazu aho uri hose ukoresheje porogaramu ya RentUp.",
+      "googlePlayAria": "Kura RentUp kuri Google Play",
+      "appStoreAria": "Kura RentUp kuri App Store",
       "googlePlayAlt": "Yikure kuri Google Play",
       "appStoreAlt": "Yikure kuri App Store"
     }
@@ -191,7 +191,7 @@
     "removeFromFavouritesAria": "Kuraho {{title}} ku byo ukunda",
     "addToFavouritesAria": "Ongeraho {{title}} ku byo ukunda",
     "keepFavouritesTitle": "Bika amazu ukunda ukoresheje konti.",
-    "keepFavouritesDescription": "Injira cyangwa ufungure konti ya HauxHunt kugira ngo wongere iyi nzu ku byo ukunda kandi uyibone ukoresheje ikindi gikoresho cyose.",
+    "keepFavouritesDescription": "Injira cyangwa ufungure konti ya RentUp kugira ngo wongere iyi nzu ku byo ukunda kandi uyibone ukoresheje ikindi gikoresho cyose.",
     "beds": "ibyumba {{count}}",
     "baths": "ubwogero {{count}}",
     "areaUnit": "{{area}} m²",
@@ -201,19 +201,19 @@
   },
   "requestPropertyDialog": {
     "title": "Injira kugira ngo usabe inzu.",
-    "description": "Injira cyangwa ufungure konti ya HauxHunt kugira ngo utange icyifuzo cy'inzu, abafatanyabikorwa bemejwe bakubwire amahitamo abereye."
+    "description": "Injira cyangwa ufungure konti ya RentUp kugira ngo utange icyifuzo cy'inzu, abafatanyabikorwa bemejwe bakubwire amahitamo abereye."
   },
   "auth": {
     "back": "Subira inyuma",
-    "homeAriaLabel": "HauxHunt ahabanza",
+    "homeAriaLabel": "RentUp ahabanza",
     "registrationImageAlt": "Imbere y'inzu ituje kandi igezweho hari intebe y'igiti",
-    "showcaseAria": "Kwerekana amazu ya HauxHunt",
+    "showcaseAria": "Kwerekana amazu ya RentUp",
     "login": {
       "welcomeTitle": "Ikaze wagarutse.",
       "welcomeSubtitle": "Injira kugira ngo ukomeze gushaka inzu, gucunga amazu wabitse, cyangwa gusubira ku matangazo yawe."
     },
     "register": {
-      "joinTitle": "Injira muri HauxHunt.",
+      "joinTitle": "Injira muri RentUp.",
       "joinSubtitle": "Fungura konti imwe yizewe kugira ngo ubone inzu, wandikishe amazu, kandi uvugane n'abakodesha, abaguzi n'abafatanyabikorwa b'amazu bafite ishaka rikomeye."
     },
     "form": {
@@ -253,16 +253,16 @@
       "confirmPassword": "Emeza ijambo ry'ibanga",
       "rememberMe": "Nyibuke",
       "forgotPassword": "Wibagiwe ijambo ry'ibanga?",
-      "termsAgreement": "Nemeje amabwiriza ya HauxHunt kandi nemeza ko amakuru natanze ari ukuri.",
+      "termsAgreement": "Nemeje amabwiriza ya RentUp kandi nemeza ko amakuru natanze ari ukuri.",
       "createAccount": "Fungura konti",
       "alreadyHaveAccount": "Ufite konti yawe?",
-      "newToHauxHunt": "Uri mushya kuri HauxHunt?",
+      "newToRentUp": "Uri mushya kuri RentUp?",
       "hidePassword": "Hisha ijambo ry'ibanga",
       "showPassword": "Erekana ijambo ry'ibanga"
     },
     "mosaic": {
       "card1": {
-        "labelA": "HauxHunt",
+        "labelA": "RentUp",
         "titleA": "Bona ikwiye.",
         "labelB": "Shakisha",
         "titleB": "Reba ikwiye."
@@ -295,7 +295,7 @@
   },
   "renterDashboard": {
     "nav": {
-      "homeAria": "Imbonerahamwe y'ukodesha ya HauxHunt",
+      "homeAria": "Imbonerahamwe y'ukodesha ya RentUp",
       "messages": "Ubutumwa",
       "groups": {
         "findHome": {
@@ -329,12 +329,12 @@
       "logOut": "Sohoka"
     },
     "overview": {
-      "dashboardAriaLabel": "Imbonerahamwe y'ukodesha ya HauxHunt",
+      "dashboardAriaLabel": "Imbonerahamwe y'ukodesha ya RentUp",
       "heroTitle": "Shaka inzu ijyanye n'ubuzima bwawe.",
       "heroImageAlt": "Inzu igezweho ihagaze mu murima ugaragara",
       "searchAria": "Shakisha amazu",
       "searchPlaceholder": "Gerageza 'Apartimenti ifite ibyumba 3 i Kacyiru munsi ya Dolari 800'",
-      "exploreTitle": "Reba amazu kuri HauxHunt",
+      "exploreTitle": "Reba amazu kuri RentUp",
       "viewAllProperties": "Reba amazu yose",
       "filters": {
         "location": "Aho",
@@ -384,7 +384,7 @@
       },
       "ctaAgent": {
         "title": "Ba ajenti",
-        "description": "Injira muri HauxHunt maze ufashe abakodesha kubona amazu mu Rwanda, muri Nigeria no muri Kenya.",
+        "description": "Injira muri RentUp maze ufashe abakodesha kubona amazu mu Rwanda, muri Nigeria no muri Kenya.",
         "action": "Saba ubu"
       },
       "listings": {
@@ -416,7 +416,7 @@
       "groupYesterday": "Ejo hashize",
       "groupEarlier": "Kera",
       "emptyAllTitle": "Wabonye byose",
-      "emptyAllDescription": "Amakuru y'ingenzi ku bikorwa byawe kuri HauxHunt azagaragara hano.",
+      "emptyAllDescription": "Amakuru y'ingenzi ku bikorwa byawe kuri RentUp azagaragara hano.",
       "emptyUnreadTitle": "Nta makuru atarasomwa",
       "emptyUnreadDescription": "Wabonye amakuru yawe yose agezweho."
     }

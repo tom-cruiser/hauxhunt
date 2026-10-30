@@ -24,7 +24,7 @@ export default function PropertyBoundListingPage() {
   const professional = useDemoProfessional(role);
   const card = professional ? getPropertyAccessDetail(professional.id, params.id) : null;
 
-  // No management permission, or the listing is under HauxHunt's own
+  // No management permission, or the listing is under RentUp's own
   // moderation review (a separate, moderation lock -- Section 29's "In
   // Review" example only ever offers View, never Edit): send them back to
   // Property Detail, where the Listing section explains why. Never a

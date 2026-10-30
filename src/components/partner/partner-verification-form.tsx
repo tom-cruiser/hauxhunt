@@ -1120,7 +1120,7 @@ function ReviewStep({
   return (
     <div>
       <StepHeading eyebrow="Step 5" title="Review and confirm">
-        Make sure everything is accurate before sending it to the HauxHunt
+        Make sure everything is accurate before sending it to the RentUp
         verification team.
       </StepHeading>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -1168,14 +1168,14 @@ function ReviewStep({
         </CheckLabel>
         <CheckLabel>
           I confirm that I own, manage, or have permission to advertise the
-          properties I list on HauxHunt.
+          properties I list on RentUp.
         </CheckLabel>
         <CheckLabel>
-          I agree that HauxHunt may verify these details and contact me if
+          I agree that RentUp may verify these details and contact me if
           additional evidence is required.
         </CheckLabel>
         <CheckLabel>
-          I consent to HauxHunt checking the submitted information against
+          I consent to RentUp checking the submitted information against
           relevant identity, business, tax, licensing, and property records.
         </CheckLabel>
       </div>

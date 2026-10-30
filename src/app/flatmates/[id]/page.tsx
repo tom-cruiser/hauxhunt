@@ -21,10 +21,10 @@ export async function generateMetadata({
   const flatmate = getPublicFlatmate(id);
   return flatmate
     ? {
-        title: `${flatmate.firstName}'s flatmate profile | HauxHunt`,
+        title: `${flatmate.firstName}'s flatmate profile | RentUp`,
         description: `View ${flatmate.firstName}'s public housing preferences and flatmate profile.`,
       }
-    : { title: "Flatmate profile | HauxHunt" };
+    : { title: "Flatmate profile | RentUp" };
 }
 
 export default async function PublicFlatmateProfile({

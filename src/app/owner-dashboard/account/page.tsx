@@ -4,8 +4,8 @@ import { OwnerDashboardShell } from "@/components/owner/owner-dashboard-shell";
 import { OwnerAccountContent } from "@/components/owner/owner-account-content";
 
 export const metadata: Metadata = {
-  title: "My Account | Owner dashboard | HauxHunt",
-  description: "Manage your HauxHunt property owner profile, login, and notification preferences.",
+  title: "My Account | Owner dashboard | RentUp",
+  description: "Manage your RentUp property owner profile, login, and notification preferences.",
 };
 
 export default function OwnerAccountPage() {

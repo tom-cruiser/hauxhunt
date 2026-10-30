@@ -53,7 +53,7 @@ function OwnerPaymentsPageInner() {
           <header className="border-b border-black/10 pb-8">
             <h1 className="dashboard-page-title text-carbon-900">Payments</h1>
             <p className="text-carbon-600 mt-5 max-w-2xl text-base leading-7 sm:text-lg">
-              Rent activity across your portfolio. This does not include HauxHunt account billing.
+              Rent activity across your portfolio. This does not include RentUp account billing.
             </p>
           </header>
 

@@ -1,6 +1,6 @@
 // Property Owner / Landlord mock data model.
 //
-// This is the fourth HauxHunt role, distinct from Renter, Agent, and
+// This is the fourth RentUp role, distinct from Renter, Agent, and
 // Property Manager:
 //
 //   OWNER owns the asset.
@@ -693,7 +693,7 @@ export function createOwnerRental(rental: OwnerRental) {
 }
 
 // ---------------------------------------------------------------------------
-// Payments — rental payments only. Not HauxHunt platform billing.
+// Payments — rental payments only. Not RentUp platform billing.
 // ---------------------------------------------------------------------------
 
 export type OwnerPayment = {

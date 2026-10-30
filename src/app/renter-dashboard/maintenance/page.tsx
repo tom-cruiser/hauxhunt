@@ -389,7 +389,7 @@ function ReportIssueDialog({
   const [urgency, setUrgency] = useState<"Normal" | "Urgent">("Normal");
   const [access, setAccess] = useState("Contact me first");
   const [availability, setAvailability] = useState("Morning");
-  const [contact, setContact] = useState("HauxHunt Messages");
+  const [contact, setContact] = useState("RentUp Messages");
   const [photos, setPhotos] = useState<string[]>([]);
   const rental = ACTIVE_RENTALS.find((item) => item.id === rentalId)!;
   const ready = title.trim() && description.trim();
@@ -443,7 +443,7 @@ function ReportIssueDialog({
     Evening: t("renterDashboard.maintenanceList.timeOfDay.evening"),
   };
   const contactMethodLabels: Record<string, string> = {
-    "HauxHunt Messages": t(
+    "RentUp Messages": t(
       "renterDashboard.maintenanceList.contactMethod.hauxhuntMessages",
     ),
     Phone: t("renterDashboard.maintenanceList.contactMethod.phone"),
@@ -755,7 +755,7 @@ function ReportIssueDialog({
                 )}
                 value={contact}
                 setValue={setContact}
-                options={["HauxHunt Messages", "Phone", "Email"]}
+                options={["RentUp Messages", "Phone", "Email"]}
                 optionLabels={contactMethodLabels}
               />
             </div>

@@ -177,7 +177,7 @@ export const MOCK_NOTIFICATIONS: Notification[] = [
     id: "new-login",
     category: "security",
     title: "New login detected",
-    body: "Your HauxHunt account was signed in on a new device in Kigali, Rwanda.",
+    body: "Your RentUp account was signed in on a new device in Kigali, Rwanda.",
     timestamp: NOW - 7 * DAY,
     read: true,
     actionLabel: "Review Activity",

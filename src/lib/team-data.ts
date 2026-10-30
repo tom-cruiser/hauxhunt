@@ -5,7 +5,7 @@
 // where before (owner-data.ts's old assignPropertyManager/assignAgent) they
 // were one atomic action. The lifecycle is now:
 //
-//   Registered professional (exists on HauxHunt, not on this team)
+//   Registered professional (exists on RentUp, not on this team)
 //     -> invited (TeamInvitation, status "Pending")
 //     -> accepts or declines
 //     -> Team Member (TeamMembership, status "Active") -- with ZERO
@@ -65,7 +65,7 @@ import immaculeePortrait from "@/assets/images/flatmate-joan.jpg";
 // several of these at once. A second, small, mock team ("Kigali Homes")
 // exists purely so the professional side has real multi-team data to show
 // (My Teams, a second Team-assigned property) -- it does NOT get its own
-// Owner dashboard; that owner has no HauxHunt account/login in this
+// Owner dashboard; that owner has no RentUp account/login in this
 // prototype, only a name for display (see getTeamById).
 // ---------------------------------------------------------------------------
 
@@ -84,7 +84,7 @@ export function getTeamById(teamId: string): Team | undefined {
 }
 
 // ---------------------------------------------------------------------------
-// Registered professionals -- people who have a HauxHunt Agent or Property
+// Registered professionals -- people who have a RentUp Agent or Property
 // Manager account, independent of any Owner's team. The Owner does not
 // create these accounts; they only search this pool to invite from. This is
 // a mock stand-in for a real user directory -- see the audit ("Assignment

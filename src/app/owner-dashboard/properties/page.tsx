@@ -117,7 +117,7 @@ export default function OwnerPropertiesPage() {
               </h3>
               <p className="text-carbon-500 mt-2 max-w-md text-sm leading-6">
                 {properties.length === 0
-                  ? "Add your first property to create a listing, manage applications, and start renting through HauxHunt."
+                  ? "Add your first property to create a listing, manage applications, and start renting through RentUp."
                   : "Try a different filter or search term."}
               </p>
               {properties.length === 0 ? (

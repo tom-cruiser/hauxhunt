@@ -136,7 +136,7 @@ export default function FeedbackPage() {
               Thanks for your feedback!
             </h1>
             <p className="text-carbon-500 mt-3 text-sm leading-6">
-              We read every submission and use it to make HauxHunt better. We'll
+              We read every submission and use it to make RentUp better. We'll
               reach out to {email} if we need more details.
             </p>
             <button
@@ -174,7 +174,7 @@ export default function FeedbackPage() {
               </h1>
               <p className="text-carbon-500 mt-3 max-w-xl text-sm leading-6">
                 Tell us what's working, what's broken, or what you'd love to see.
-                Every message goes directly to the HauxHunt product team.
+                Every message goes directly to the RentUp product team.
               </p>
             </div>
           </div>

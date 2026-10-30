@@ -13,7 +13,7 @@
     "rent": "Louer",
     "flatmates": "Colocataires",
     "list": "Publier",
-    "homeAriaLabel": "HauxHunt — accueil",
+    "homeAriaLabel": "RentUp — accueil",
     "openMenu": "Ouvrir le menu",
     "closeMenu": "Fermer le menu",
     "primaryLabel": "Principal"
@@ -26,7 +26,7 @@
     "rw": "Ikinyarwanda"
   },
   "footer": {
-    "homeAriaLabel": "HauxHunt accueil",
+    "homeAriaLabel": "RentUp accueil",
     "tagline": "Une manière plus simple et fiable de trouver un logement au Rwanda, au Nigéria et au Kenya.",
     "navLabel": "Pied de page",
     "groups": {
@@ -45,7 +45,7 @@
         "agencyTeams": "Pour les équipes d'agence"
       },
       "company": {
-        "title": "HauxHunt",
+        "title": "RentUp",
         "about": "À propos de nous",
         "help": "Centre d'aide",
         "safety": "Sécurité",
@@ -53,12 +53,12 @@
       }
     },
     "socialAria": {
-      "instagram": "HauxHunt sur Instagram",
-      "linkedin": "HauxHunt sur LinkedIn",
-      "facebook": "HauxHunt sur Facebook",
-      "whatsapp": "Contacter HauxHunt sur WhatsApp"
+      "instagram": "RentUp sur Instagram",
+      "linkedin": "RentUp sur LinkedIn",
+      "facebook": "RentUp sur Facebook",
+      "whatsapp": "Contacter RentUp sur WhatsApp"
     },
-    "copyright": "© {{year}} HauxHunt. Tous droits réservés.",
+    "copyright": "© {{year}} RentUp. Tous droits réservés.",
     "privacy": "Confidentialité",
     "terms": "Conditions"
   },
@@ -133,13 +133,13 @@
       "description": "Contactez le gestionnaire immobilier ou l'agent responsable du bien et organisez la prochaine étape en toute confiance."
     },
     "partnerPanel": {
-      "growTitle": "Développez votre activité immobilière avec HauxHunt",
+      "growTitle": "Développez votre activité immobilière avec RentUp",
       "growDescription": "Les gestionnaires immobiliers et les agents peuvent toucher des locataires sérieux, gérer leurs annonces et répondre aux demandes de biens, au même endroit.",
       "joinUs": "Rejoignez-nous",
       "appTitle": "Emportez votre recherche de logement partout",
-      "appDescription": "Enregistrez des annonces, recevez des alertes de nouvelles correspondances et contactez des professionnels de l'immobilier partout avec l'application HauxHunt.",
-      "googlePlayAria": "Obtenir HauxHunt sur Google Play",
-      "appStoreAria": "Télécharger HauxHunt sur l'App Store",
+      "appDescription": "Enregistrez des annonces, recevez des alertes de nouvelles correspondances et contactez des professionnels de l'immobilier partout avec l'application RentUp.",
+      "googlePlayAria": "Obtenir RentUp sur Google Play",
+      "appStoreAria": "Télécharger RentUp sur l'App Store",
       "googlePlayAlt": "Disponible sur Google Play",
       "appStoreAlt": "Télécharger sur l'App Store"
     }
@@ -191,7 +191,7 @@
     "removeFromFavouritesAria": "Retirer {{title}} des favoris",
     "addToFavouritesAria": "Ajouter {{title}} aux favoris",
     "keepFavouritesTitle": "Conservez vos logements favoris avec un compte.",
-    "keepFavouritesDescription": "Connectez-vous ou créez un compte HauxHunt pour ajouter ce logement à vos favoris et le retrouver depuis n'importe quel appareil.",
+    "keepFavouritesDescription": "Connectez-vous ou créez un compte RentUp pour ajouter ce logement à vos favoris et le retrouver depuis n'importe quel appareil.",
     "beds": "{{count}} chambres",
     "baths": "{{count}} salles de bain",
     "areaUnit": "{{area}} m²",
@@ -201,19 +201,19 @@
   },
   "requestPropertyDialog": {
     "title": "Connectez-vous pour demander un bien.",
-    "description": "Connectez-vous ou créez un compte HauxHunt pour envoyer une demande de bien et laisser des partenaires vérifiés vous proposer des options correspondantes."
+    "description": "Connectez-vous ou créez un compte RentUp pour envoyer une demande de bien et laisser des partenaires vérifiés vous proposer des options correspondantes."
   },
   "auth": {
     "back": "Retour",
-    "homeAriaLabel": "HauxHunt accueil",
+    "homeAriaLabel": "RentUp accueil",
     "registrationImageAlt": "Un intérieur moderne et apaisant avec une chaise longue en bois",
-    "showcaseAria": "Vitrine des biens HauxHunt",
+    "showcaseAria": "Vitrine des biens RentUp",
     "login": {
       "welcomeTitle": "Bon retour.",
       "welcomeSubtitle": "Connectez-vous pour continuer votre recherche de logement, gérer vos logements enregistrés ou revenir à vos annonces."
     },
     "register": {
-      "joinTitle": "Rejoignez HauxHunt.",
+      "joinTitle": "Rejoignez RentUp.",
       "joinSubtitle": "Créez un compte de confiance unique pour trouver un logement, publier des biens et échanger avec des locataires, acheteurs et partenaires immobiliers sérieux."
     },
     "form": {
@@ -253,16 +253,16 @@
       "confirmPassword": "Confirmer le mot de passe",
       "rememberMe": "Se souvenir de moi",
       "forgotPassword": "Mot de passe oublié ?",
-      "termsAgreement": "J'accepte les conditions HauxHunt et confirme que les informations fournies sont exactes.",
+      "termsAgreement": "J'accepte les conditions RentUp et confirme que les informations fournies sont exactes.",
       "createAccount": "Créer un compte",
       "alreadyHaveAccount": "Vous avez déjà un compte ?",
-      "newToHauxHunt": "Nouveau sur HauxHunt ?",
+      "newToRentUp": "Nouveau sur RentUp ?",
       "hidePassword": "Masquer le mot de passe",
       "showPassword": "Afficher le mot de passe"
     },
     "mosaic": {
       "card1": {
-        "labelA": "HauxHunt",
+        "labelA": "RentUp",
         "titleA": "Trouvez ce qui vous va.",
         "labelB": "Explorer",
         "titleB": "Découvrez ce qui vous va."
@@ -295,7 +295,7 @@
   },
   "renterDashboard": {
     "nav": {
-      "homeAria": "HauxHunt — accueil locataire",
+      "homeAria": "RentUp — accueil locataire",
       "messages": "Messages",
       "groups": {
         "findHome": {
@@ -329,12 +329,12 @@
       "logOut": "Déconnexion"
     },
     "overview": {
-      "dashboardAriaLabel": "Tableau de bord locataire HauxHunt",
+      "dashboardAriaLabel": "Tableau de bord locataire RentUp",
       "heroTitle": "Trouvez un logement qui correspond à votre vie.",
       "heroImageAlt": "Une maison moderne isolée dans un champ ouvert",
       "searchAria": "Rechercher des logements",
       "searchPlaceholder": "Essayez « appartement 3 chambres à Kacyiru sous 800 USD »",
-      "exploreTitle": "Explorez les maisons sur HauxHunt",
+      "exploreTitle": "Explorez les maisons sur RentUp",
       "viewAllProperties": "Voir tous les biens",
       "filters": {
         "location": "Lieu",
@@ -384,7 +384,7 @@
       },
       "ctaAgent": {
         "title": "Devenir agent",
-        "description": "Rejoignez HauxHunt et aidez les locataires à trouver un logement au Rwanda, au Nigéria et au Kenya.",
+        "description": "Rejoignez RentUp et aidez les locataires à trouver un logement au Rwanda, au Nigéria et au Kenya.",
         "action": "Postuler maintenant"
       },
       "listings": {
@@ -416,7 +416,7 @@
       "groupYesterday": "Hier",
       "groupEarlier": "Plus tôt",
       "emptyAllTitle": "Vous êtes à jour",
-      "emptyAllDescription": "Les mises à jour importantes sur votre activité HauxHunt apparaîtront ici.",
+      "emptyAllDescription": "Les mises à jour importantes sur votre activité RentUp apparaîtront ici.",
       "emptyUnreadTitle": "Aucune notification non lue",
       "emptyUnreadDescription": "Vous avez vu toutes vos dernières mises à jour."
     }

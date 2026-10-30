@@ -42,7 +42,7 @@ export type StoredMessage = {
 export type ThreadMeta = {
   id: string;
   name: string;
-  role: string; // "Property Manager", "Agent", "Maintenance Technician", "Flatmate", "HauxHunt Support"
+  role: string; // "Property Manager", "Agent", "Maintenance Technician", "Flatmate", "RentUp Support"
   verified?: boolean;
   showPhone: boolean;
   subtitle: string; // short line shown in the conversation list only

@@ -4,8 +4,8 @@ import { OwnerDashboardShell } from "@/components/owner/owner-dashboard-shell";
 import { ListPropertyForm } from "@/components/properties/list-property-form";
 
 export const metadata: Metadata = {
-  title: "Add property | Owner dashboard | HauxHunt",
-  description: "Add a property you own to HauxHunt.",
+  title: "Add property | Owner dashboard | RentUp",
+  description: "Add a property you own to RentUp.",
 };
 
 export default function NewOwnerPropertyPage() {

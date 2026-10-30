@@ -323,7 +323,7 @@ function ApplicationDetail({ application, professionalId, professionalName }: { 
         <div className="mt-6 rounded-2xl bg-black/3 p-4">
           <p className="font-medium">Application Approved</p>
           {application.source === "INDEPENDENT_AUTHORIZATION" ? (
-            <p className="text-carbon-600 mt-1.5 text-sm leading-6">Rental setup for independently managed properties isn&apos;t yet available in HauxHunt.</p>
+            <p className="text-carbon-600 mt-1.5 text-sm leading-6">Rental setup for independently managed properties isn&apos;t yet available in RentUp.</p>
           ) : rentalSetupDraft ? (
             <p className="text-carbon-600 mt-1.5 text-sm leading-6">Rental setup has been sent to {application.applicant} — handled by the Property Owner.</p>
           ) : (

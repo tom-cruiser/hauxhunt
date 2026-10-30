@@ -222,7 +222,7 @@ export function PropertyRequestForm({
               className="mt-1 size-4 accent-black"
             />
             <span>
-              I agree that verified HauxHunt property partners may contact me
+              I agree that verified RentUp property partners may contact me
               about houses matching this request.
             </span>
           </label>

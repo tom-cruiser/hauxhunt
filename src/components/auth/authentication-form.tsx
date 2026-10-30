@@ -414,7 +414,7 @@ export function AuthenticationForm({
       >
         {isRegister
           ? t("auth.form.alreadyHaveAccount")
-          : t("auth.form.newToHauxHunt")}{" "}
+          : t("auth.form.newToRentUp")}{" "}
         <Link
           href={isRegister ? "/login" : "/register"}
           className={`font-medium ${isDark ? "text-white hover:text-white/75" : "text-black"}`}

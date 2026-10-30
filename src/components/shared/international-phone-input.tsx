@@ -30,7 +30,7 @@ function flagEmoji(iso2: string): string {
     .replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
 }
 
-// HauxHunt's three launch markets (README: "Rwanda, Nigeria, and Kenya")
+// RentUp's three launch markets (README: "Rwanda, Nigeria, and Kenya")
 // pinned first, then a broad international set spanning Africa, Europe,
 // the Americas, Asia, the Middle East, and Oceania -- enough for this to
 // genuinely read as "international," not an exhaustive ISO-3166 list.

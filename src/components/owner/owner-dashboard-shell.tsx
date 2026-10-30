@@ -260,7 +260,7 @@ function OwnerSidebar({
           </button>
         ) : (
           <>
-            <Link href="/" aria-label="HauxHunt home" className="shrink-0 invert transition-all w-auto">
+            <Link href="/" aria-label="RentUp home" className="shrink-0 invert transition-all w-auto">
               <Wordmark height={42} />
             </Link>
             <button
@@ -300,7 +300,7 @@ function OwnerSidebar({
             />
           </svg>
           <div className="relative z-10 max-w-[135px]">
-            <p className="font-bricolage text-lg leading-5 font-medium tracking-[-0.025em]">HauxHunt on the go.</p>
+            <p className="font-bricolage text-lg leading-5 font-medium tracking-[-0.025em]">RentUp on the go.</p>
             <p className="mt-2 text-xs leading-4 text-black/55">Manage your properties anywhere.</p>
           </div>
           <button
@@ -311,7 +311,7 @@ function OwnerSidebar({
           </button>
           <Image
             src={appIllustration}
-            alt="Person using the HauxHunt mobile app"
+            alt="Person using the RentUp mobile app"
             className="absolute -right-32 -bottom-32 z-10 h-96 w-auto max-w-none object-contain"
           />
         </section>
@@ -349,7 +349,7 @@ function MobileOwnerNav({ pathname }: { pathname: string }) {
   return (
     <div className="border-b border-black/10 bg-white lg:hidden">
       <div className="flex items-center justify-between px-5 py-4 sm:px-6">
-        <Link href="/" aria-label="HauxHunt home">
+        <Link href="/" aria-label="RentUp home">
           <Wordmark height={36} />
         </Link>
         <div className="flex items-center gap-1.5">

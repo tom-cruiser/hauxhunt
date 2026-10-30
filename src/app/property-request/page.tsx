@@ -61,7 +61,7 @@ export default function PropertyRequestPage() {
                   Sign in to request a property.
                 </h2>
                 <p className="text-carbon-600 mt-3 text-sm leading-6">
-                  Log in or create a HauxHunt account to submit a property
+                  Log in or create a RentUp account to submit a property
                   request and let verified partners respond with matching
                   options.
                 </p>

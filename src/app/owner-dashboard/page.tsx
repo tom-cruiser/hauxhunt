@@ -101,7 +101,7 @@ export default function OwnerOverviewPage() {
               <Image src={noDataIllustration} alt="" className="h-40 w-auto object-contain" />
               <h3 className="font-bricolage text-carbon-900 mt-5 text-2xl font-medium">No properties yet</h3>
               <p className="text-carbon-500 mt-2 max-w-md text-sm leading-6">
-                Add your first property to create a listing, manage applications, and start renting through HauxHunt.
+                Add your first property to create a listing, manage applications, and start renting through RentUp.
               </p>
               <Link href="/owner-dashboard/properties/new" className="font-bricolage mt-6 inline-flex h-11 items-center gap-2 rounded-full bg-black px-5 text-sm font-medium text-white">
                 <Plus aria-hidden="true" className="size-4" />

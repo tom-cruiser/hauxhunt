@@ -1,5 +1,5 @@
 /**
- * Typography — official HauxHunt brand identity.
+ * Typography — official RentUp brand identity.
  *
  * Aether is the single sitewide typeface: display weight for statements,
  * regular weight for body copy, and every step of the 12-token scale in

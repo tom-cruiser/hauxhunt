@@ -283,8 +283,8 @@ function ListingSection({ card }: { card: ProfessionalPropertyCard }) {
         <>
           <p className="text-carbon-500 mt-3 text-sm">
             {listing.status === "Draft" ? `Draft${listing.updatedAt ? ` · Last edited ${listing.updatedAt}` : ""}` : null}
-            {listing.status === "In Review" ? "Your listing has been submitted for HauxHunt review. We'll update its status here once the review is complete." : null}
-            {listing.status === "Live" ? "Published on HauxHunt." : null}
+            {listing.status === "In Review" ? "Your listing has been submitted for RentUp review. We'll update its status here once the review is complete." : null}
+            {listing.status === "Live" ? "Published on RentUp." : null}
             {listing.status === "Archived" ? "Archived." : null}
           </p>
 
@@ -410,7 +410,7 @@ function PropertyAccessSection({ card }: { card: ProfessionalPropertyCard }) {
           <div>
             <dt className="text-carbon-400 text-xs">Property Owner</dt>
             <dd className="mt-1 font-medium">{card.ownerName}</dd>
-            <dd className="text-carbon-500 mt-0.5 text-xs">HauxHunt account: Not connected</dd>
+            <dd className="text-carbon-500 mt-0.5 text-xs">RentUp account: Not connected</dd>
           </div>
           <div>
             <dt className="text-carbon-400 text-xs">Represented by</dt>
@@ -431,7 +431,7 @@ function PropertyAccessSection({ card }: { card: ProfessionalPropertyCard }) {
 }
 
 const STATUS_COPY: Record<AuthorizationStatus, { title: string; body: string }> = {
-  "Under Review": { title: "Authorization Under Review", body: "HauxHunt is reviewing your authorization to represent this property." },
+  "Under Review": { title: "Authorization Under Review", body: "RentUp is reviewing your authorization to represent this property." },
   Verified: { title: "Authorization Verified", body: "Your authorization to represent this property has been verified." },
   "Needs Attention": { title: "Authorization Needs Attention", body: "We need additional information before we can verify your authorization." },
   Rejected: { title: "Authorization Rejected", body: "We couldn't verify your authorization for this property." },

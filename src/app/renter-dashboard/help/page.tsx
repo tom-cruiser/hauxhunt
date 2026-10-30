@@ -36,7 +36,7 @@ const CATEGORIES: { slug: string; icon: LucideIcon; title: string; description: 
     slug: "getting-started",
     icon: Home,
     title: "Getting Started",
-    description: "Set up your account and find your first home on HauxHunt.",
+    description: "Set up your account and find your first home on RentUp.",
     articles: 8,
   },
   {
@@ -123,7 +123,7 @@ function roleDashboardHome(role: string | null): string {
 function MinimalHelpTopBar({ backHref }: { backHref: string }) {
   return (
     <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-black/10 bg-white px-5 sm:px-6 lg:px-11">
-      <Link href={backHref} aria-label="HauxHunt home">
+      <Link href={backHref} aria-label="RentUp home">
         <Wordmark height={28} />
       </Link>
       <Link href={backHref} className="text-carbon-600 inline-flex items-center gap-1 text-sm font-medium hover:text-black">

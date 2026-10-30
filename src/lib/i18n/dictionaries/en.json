@@ -13,7 +13,7 @@
     "rent": "Rent",
     "flatmates": "Flatmates",
     "list": "List",
-    "homeAriaLabel": "HauxHunt — home",
+    "homeAriaLabel": "RentUp — home",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "primaryLabel": "Primary"
@@ -26,7 +26,7 @@
     "rw": "Ikinyarwanda"
   },
   "footer": {
-    "homeAriaLabel": "HauxHunt home",
+    "homeAriaLabel": "RentUp home",
     "tagline": "A simpler, trusted way to discover homes across Rwanda, Nigeria, and Kenya.",
     "navLabel": "Footer",
     "groups": {
@@ -45,7 +45,7 @@
         "agencyTeams": "For agency teams"
       },
       "company": {
-        "title": "HauxHunt",
+        "title": "RentUp",
         "about": "About us",
         "help": "Help centre",
         "safety": "Safety",
@@ -53,12 +53,12 @@
       }
     },
     "socialAria": {
-      "instagram": "HauxHunt on Instagram",
-      "linkedin": "HauxHunt on LinkedIn",
-      "facebook": "HauxHunt on Facebook",
-      "whatsapp": "Contact HauxHunt on WhatsApp"
+      "instagram": "RentUp on Instagram",
+      "linkedin": "RentUp on LinkedIn",
+      "facebook": "RentUp on Facebook",
+      "whatsapp": "Contact RentUp on WhatsApp"
     },
-    "copyright": "© {{year}} HauxHunt. All rights reserved.",
+    "copyright": "© {{year}} RentUp. All rights reserved.",
     "privacy": "Privacy",
     "terms": "Terms"
   },
@@ -133,13 +133,13 @@
       "description": "Contact the property manager or agent behind the property and arrange your next step with confidence."
     },
     "partnerPanel": {
-      "growTitle": "Grow your property business with HauxHunt",
+      "growTitle": "Grow your property business with RentUp",
       "growDescription": "Property managers and agents can reach serious home seekers, manage listings, and respond to property requests in one place.",
       "joinUs": "Join us now",
       "appTitle": "Take your home search anywhere",
-      "appDescription": "Save listings, receive new-match alerts, and contact property professionals wherever you are with the HauxHunt app.",
-      "googlePlayAria": "Get HauxHunt on Google Play",
-      "appStoreAria": "Download HauxHunt on the App Store",
+      "appDescription": "Save listings, receive new-match alerts, and contact property professionals wherever you are with the RentUp app.",
+      "googlePlayAria": "Get RentUp on Google Play",
+      "appStoreAria": "Download RentUp on the App Store",
       "googlePlayAlt": "Get it on Google Play",
       "appStoreAlt": "Download on the App Store"
     }
@@ -191,7 +191,7 @@
     "removeFromFavouritesAria": "Remove {{title}} from favourites",
     "addToFavouritesAria": "Add {{title}} to favourites",
     "keepFavouritesTitle": "Keep favourite homes with an account.",
-    "keepFavouritesDescription": "Log in or create a HauxHunt account to add this home to your favourites and find it again from any device.",
+    "keepFavouritesDescription": "Log in or create a RentUp account to add this home to your favourites and find it again from any device.",
     "beds": "{{count}} beds",
     "baths": "{{count}} baths",
     "areaUnit": "{{area}} m²",
@@ -201,19 +201,19 @@
   },
   "requestPropertyDialog": {
     "title": "Sign in to request a property.",
-    "description": "Log in or create a HauxHunt account to submit a property request and let verified partners respond with matching options."
+    "description": "Log in or create a RentUp account to submit a property request and let verified partners respond with matching options."
   },
   "auth": {
     "back": "Back",
-    "homeAriaLabel": "HauxHunt home",
+    "homeAriaLabel": "RentUp home",
     "registrationImageAlt": "A calm modern interior with a wooden lounge chair",
-    "showcaseAria": "HauxHunt property showcase",
+    "showcaseAria": "RentUp property showcase",
     "login": {
       "welcomeTitle": "Welcome back.",
       "welcomeSubtitle": "Sign in to continue your property search, manage saved homes, or return to your listings."
     },
     "register": {
-      "joinTitle": "Join HauxHunt.",
+      "joinTitle": "Join RentUp.",
       "joinSubtitle": "Create one trusted account to find a home, list properties, and connect with serious renters, buyers, and property partners."
     },
     "form": {
@@ -253,16 +253,16 @@
       "confirmPassword": "Confirm password",
       "rememberMe": "Remember me",
       "forgotPassword": "Forgot password?",
-      "termsAgreement": "I agree to the HauxHunt terms and confirm that the information I provide is accurate.",
+      "termsAgreement": "I agree to the RentUp terms and confirm that the information I provide is accurate.",
       "createAccount": "Create account",
       "alreadyHaveAccount": "Already have an account?",
-      "newToHauxHunt": "New to HauxHunt?",
+      "newToRentUp": "New to RentUp?",
       "hidePassword": "Hide password",
       "showPassword": "Show password"
     },
     "mosaic": {
       "card1": {
-        "labelA": "HauxHunt",
+        "labelA": "RentUp",
         "titleA": "Find your fit.",
         "labelB": "Explore",
         "titleB": "See what fits."
@@ -295,7 +295,7 @@
   },
   "renterDashboard": {
     "nav": {
-      "homeAria": "HauxHunt renter home",
+      "homeAria": "RentUp renter home",
       "messages": "Messages",
       "groups": {
         "findHome": {
@@ -329,12 +329,12 @@
       "logOut": "Log Out"
     },
     "overview": {
-      "dashboardAriaLabel": "HauxHunt renter dashboard",
+      "dashboardAriaLabel": "RentUp renter dashboard",
       "heroTitle": "Find a home that fits your life.",
       "heroImageAlt": "Modern home standing in an open field",
       "searchAria": "Search homes",
       "searchPlaceholder": "Try '3-bedroom apartment in Kacyiru under USD 800'",
-      "exploreTitle": "Explore houses on HauxHunt",
+      "exploreTitle": "Explore houses on RentUp",
       "viewAllProperties": "View all properties",
       "filters": {
         "location": "Location",
@@ -384,7 +384,7 @@
       },
       "ctaAgent": {
         "title": "Become an agent",
-        "description": "Join HauxHunt and help renters find homes across Rwanda, Nigeria, and Kenya.",
+        "description": "Join RentUp and help renters find homes across Rwanda, Nigeria, and Kenya.",
         "action": "Apply now"
       },
       "listings": {
@@ -416,7 +416,7 @@
       "groupYesterday": "Yesterday",
       "groupEarlier": "Earlier",
       "emptyAllTitle": "You're all caught up",
-      "emptyAllDescription": "Important updates about your HauxHunt activity will appear here.",
+      "emptyAllDescription": "Important updates about your RentUp activity will appear here.",
       "emptyUnreadTitle": "No unread notifications",
       "emptyUnreadDescription": "You've seen all your latest updates."
     }

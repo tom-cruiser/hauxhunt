@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { AuthenticationPage } from "@/components/auth/authentication-page";
 
 export const metadata: Metadata = {
-  title: "Create an account | HauxHunt",
+  title: "Create an account | RentUp",
   description:
-    "Create a HauxHunt account as a renter, property manager, or agent.",
+    "Create a RentUp account as a renter, property manager, or agent.",
 };
 
 export default function RegisterPage() {

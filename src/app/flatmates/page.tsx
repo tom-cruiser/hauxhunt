@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { FlatmatesPageClient } from "./flatmates-client";
 
 export const metadata: Metadata = {
-  title: "Find a flatmate | HauxHunt",
+  title: "Find a flatmate | RentUp",
   description:
     "Find someone compatible to share a home and rent with across Rwanda, Kenya, and Nigeria.",
 };

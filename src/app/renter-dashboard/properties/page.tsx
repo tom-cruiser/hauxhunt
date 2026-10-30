@@ -6,8 +6,8 @@ import {
 } from "@/components/listings/catalogue-page";
 
 export const metadata: Metadata = {
-  title: "Explore houses | Renter dashboard | HauxHunt",
-  description: "Explore all available HauxHunt houses as a signed-in renter.",
+  title: "Explore houses | Renter dashboard | RentUp",
+  description: "Explore all available RentUp houses as a signed-in renter.",
 };
 
 export default async function RenterPropertiesPage({

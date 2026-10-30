@@ -2,7 +2,7 @@ import { getPaymentsFor } from "@/lib/pm-work";
 import { formatRwf } from "@/lib/owner-data";
 
 /**
- * The Payouts system -- where a Property Manager sends the rent HauxHunt
+ * The Payouts system -- where a Property Manager sends the rent RentUp
  * has collected on their behalf. Genuinely new to the app (there was no
  * multi-destination payout concept before this), built the same way as
  * every other data module here: sessionStorage-backed, scoped per
@@ -182,7 +182,7 @@ export function removeDestination(professionalId: string, destinationId: string)
 
 // ---------------------------------------------------------------------------
 // Fees -- a simple, clearly-labelled schedule. Real rates would come from
-// whichever payment/payout processor HauxHunt integrates; this is the
+// whichever payment/payout processor RentUp integrates; this is the
 // stand-in every other money feature in this app already uses ("a mock
 // action; no gateway" -- pm-work.ts, owner-dashboard/payments/page.tsx).
 // ---------------------------------------------------------------------------

@@ -147,14 +147,14 @@ export function PartnerSettingsContent() {
           clickable "one remaining step" with no actual completion flow
           anywhere in the product. Reworded to an honest, passive pending
           state: nothing here is being withheld from the professional, it's
-          waiting on HauxHunt. No documents, review timeline, or approval
+          waiting on RentUp. No documents, review timeline, or approval
           action are invented -- see the final audit's Admin Boundary. */}
       <SettingsCard icon={ShieldCheck} title="Verification" description="Verification builds trust and unlocks listing publication.">
         <div className="flex items-center gap-3 rounded-2xl bg-black/[0.035] p-4">
           <CheckCircle2 aria-hidden="true" className="size-5" />
           <div className="flex-1">
             <p className="font-medium">Contact details confirmed</p>
-            <p className="text-carbon-500 mt-0.5 text-sm">Your remaining verification step is being reviewed by HauxHunt.</p>
+            <p className="text-carbon-500 mt-0.5 text-sm">Your remaining verification step is being reviewed by RentUp.</p>
           </div>
           <span className="rounded-full bg-black px-3 py-1.5 text-xs font-medium text-white">In progress</span>
         </div>
@@ -168,7 +168,7 @@ export function PartnerSettingsContent() {
         )}
       </SettingsCard>
 
-      <SettingsCard icon={Bell} title="Notifications" description="Choose how HauxHunt reaches you.">
+      <SettingsCard icon={Bell} title="Notifications" description="Choose how RentUp reaches you.">
         {isPaidTier(tier) ? (
           <label className="flex items-center justify-between gap-4 rounded-xl border border-black/10 p-3.5">
             <div className="min-w-0">

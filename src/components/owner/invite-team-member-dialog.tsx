@@ -244,7 +244,7 @@ export function InviteTeamMemberDialog({
                   className="catalogue-filter-control min-w-0 flex-1 bg-transparent text-sm outline-none"
                 />
               </label>
-              <p className="text-carbon-500 mt-3 text-xs">Search registered HauxHunt {roleLabel.toLowerCase()}s.</p>
+              <p className="text-carbon-500 mt-3 text-xs">Search registered RentUp {roleLabel.toLowerCase()}s.</p>
               <div className="mt-3 space-y-2">
                 {results.map((p) => {
                   const membership = getMembershipFor(p.id, TEAM_ID);

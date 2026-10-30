@@ -27,7 +27,7 @@ export function PlanToggleCard({
         <div>
           <h3 className="font-bricolage text-lg font-medium">Plan</h3>
           <p className="text-carbon-500 mt-1 text-sm leading-6">
-            This is a demo toggle — HauxHunt has no payment provider yet, so
+            This is a demo toggle — RentUp has no payment provider yet, so
             switching plans here is instant and free, purely to preview the
             Paid experience.
           </p>
