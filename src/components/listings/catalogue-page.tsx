@@ -27,7 +27,8 @@ import { RenterMapCatalogue } from "@/components/renter/renter-map-catalogue";
 import { SaveSearchAction } from "@/components/renter/save-search-action";
 import { HistoryBackButton } from "@/components/navigation/history-back-button";
 import { CurrencyFilterSelect } from "@/components/currency/currency-selector";
-import { DEMO_LISTINGS, type MockListing } from "@/data/hero-search-demo";
+import type { MockListing } from "@/data/hero-search-demo";
+import { fetchListings } from "@/lib/api/listings";
 
 const LISTING_IMAGES: Record<string, StaticImageData> = {
   "kacyiru-2br": house1,
@@ -98,29 +99,10 @@ function valueOf(value: string | string[] | undefined) {
 }
 
 function listingType(listing: MockListing) {
-  if (
-    [
-      "gisenyi-lakefront-residence",
-      "gisenyi-lake-view-apartment",
-      "ikoyi-waterfront-apartment",
-      "ikoyi-3br",
-    ].includes(listing.id)
-  )
-    return "Beach Front Apartments";
-  const text = listing.title.toLowerCase();
-  if (text.includes("shared apartment")) return "Shared apartment";
-  if (text.includes("studio")) return "Studio apartment";
-  if (text.includes("penthouse")) return "Penthouse";
-  if (text.includes("single room")) return "Single room";
-  if (text.includes("mansion")) return "Mansion";
-  if (text.includes("hotel")) return "Hotel";
-  if (text.includes("apartment")) return "Apartment";
-  if (text.includes("duplex")) return "Duplex";
-  if (text.includes("villa")) return "Villa";
-  return "House";
+  return listing.typeLabel ?? "House";
 }
 
-export function CataloguePage({
+export async function CataloguePage({
   purpose,
   searchParams,
   audience = "guest",
@@ -151,8 +133,10 @@ export function CataloguePage({
         ? "/rent"
         : "/properties";
 
+  const allListings = await fetchListings();
   const filterListings = (filterByLocation: boolean) =>
-    DEMO_LISTINGS.filter(
+    allListings
+      .filter(
       (listing) =>
         (listing.purpose ?? "rent") === (purpose === "all" ? "rent" : purpose),
     )
@@ -185,8 +169,8 @@ export function CataloguePage({
         (listing) =>
           !bathrooms ||
           (bathroomsValue === "5+"
-            ? Math.max(1, listing.bedrooms - 1) >= 5
-            : Math.max(1, listing.bedrooms - 1) === bathrooms),
+            ? (listing.bathrooms ?? 1) >= 5
+            : listing.bathrooms === bathrooms),
       )
       .sort((a, b) => {
         if (sort === "price-low") return a.price - b.price;

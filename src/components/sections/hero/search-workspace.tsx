@@ -9,7 +9,7 @@ import { MapPin, Mic, Plus, Search } from "lucide-react";
 import { FilterToken } from "./filter-token";
 import { MatchRow } from "./match-row";
 import { heroEase } from "./hero-motion";
-import { matchListings } from "@/data/hero-search-demo";
+import { searchListings } from "@/lib/api/listings";
 import type { ParsedFilter, PropertyPreview } from "@/types";
 import {
   formatCurrencyRange,
@@ -285,8 +285,12 @@ export function SearchWorkspace() {
     ]);
   }
 
-  function handleShowMatches() {
-    setResults(matchListings(filters));
+  async function handleShowMatches() {
+    const applied = filters.filter((filter) => !filter.unclear);
+    const { results: matches } = await searchListings(
+      applied.map((filter) => filter.label).join(", "),
+    );
+    setResults(matches);
     setStage("results");
   }
 

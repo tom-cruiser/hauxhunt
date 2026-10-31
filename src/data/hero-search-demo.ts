@@ -25,6 +25,15 @@ export type MockListing = {
   bedrooms: number;
   amenities: string[];
   verified: boolean;
+  // Set on listings that come from the API.
+  apiId?: string;
+  bathrooms?: number;
+  areaM2?: number;
+  furnished?: boolean;
+  description?: string;
+  typeLabel?: string;
+  viewingFeeRwf?: number;
+  coordinates?: { latitude: number; longitude: number } | null;
 };
 
 export const DEMO_LISTINGS: MockListing[] = [

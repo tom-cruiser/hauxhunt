@@ -16,7 +16,7 @@ import { AutoSubmitFilterForm } from "@/components/listings/auto-submit-filter-f
 import { SearchQueryField } from "@/components/listings/search-query-field";
 import { CurrencyFilterSelect } from "@/components/currency/currency-selector";
 import { ListingCard } from "@/components/sections/featured-listings/listing-card";
-import { matchListings, parseQuery } from "@/data/hero-search-demo";
+import { fetchPreviews, searchListings } from "@/lib/api/listings";
 import type { PropertyPreview } from "@/types";
 
 const RESULT_IMAGES: Record<string, StaticImageData> = {
@@ -159,15 +159,16 @@ async function SearchResults({
   const type =
     requestedType ||
     (categoryKey === "beach-front-apartments" ? "Beach Front Apartments" : "");
-  const filters = query ? parseQuery(query) : [];
-  const allResults = matchListings([]).filter(
-    (property) => property.purpose === "rent",
-  );
+  const searched = query ? await searchListings(query) : null;
+  const filters = searched?.filters ?? [];
+  const allResults = searched
+    ? []
+    : (await fetchPreviews()).filter((property) => property.purpose === "rent");
   const hasStructuredFilters = Boolean(
     type || priceRange || bedroomsValue || bathroomsValue,
   );
-  const baseResults = query
-    ? matchListings(filters).filter((property) => property.purpose === "rent")
+  const baseResults = searched
+    ? searched.results.filter((property) => property.purpose === "rent")
     : category
       ? allResults.filter((property) =>
           category.propertyIds.includes(property.id),

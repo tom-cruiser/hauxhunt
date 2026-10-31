@@ -31,7 +31,8 @@ import { CurrencyAmount } from "@/components/currency/currency-selector";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
 import { RequestViewingButton } from "@/components/renter/request-viewing-button";
 import { HistoryBackButton } from "@/components/navigation/history-back-button";
-import { DEMO_LISTINGS } from "@/data/hero-search-demo";
+import { ApiError } from "@/lib/api/client";
+import { fetchListing } from "@/lib/api/listings";
 
 const HOUSE_IMAGES = [house1, house2, house3, house4, house5, house6];
 
@@ -184,8 +185,8 @@ type PropertyPageProps = {
   searchParams: Promise<{ from?: string }>;
 };
 
-export function generateStaticParams() {
-  return DEMO_LISTINGS.map((listing) => ({ id: listing.id }));
+function hashIndex(id: string) {
+  return [...id].reduce((total, char) => total + char.charCodeAt(0), 0);
 }
 
 export default async function PropertyPage({
@@ -194,23 +195,30 @@ export default async function PropertyPage({
 }: PropertyPageProps) {
   const { id } = await params;
   const renterView = (await searchParams).from === "renter";
-  const property = DEMO_LISTINGS.find((listing) => listing.id === id);
-  if (!property) notFound();
+  const property = await fetchListing(id).catch((error: unknown) => {
+    if (error instanceof ApiError && error.status === 404) notFound();
+    throw error;
+  });
 
-  const detail = DETAILS[id] ?? {
-    bathrooms: Math.max(1, property.bedrooms - 1),
-    area: Math.max(60, property.bedrooms * 55),
-    furnished: property.amenities.includes("Furnished"),
-    type: "House",
-    coordinates: property.matchLocations.some((location) =>
-      ["lagos", "lekki", "ikoyi", "abuja", "wuse", "maitama"].includes(
-        location,
-      ),
-    )
-      ? { latitude: 6.5244, longitude: 3.3792 }
-      : { latitude: -1.9441, longitude: 30.0619 },
+  const detail = {
+    ...DETAILS[id],
+    bathrooms: property.bathrooms ?? 1,
+    area: property.areaM2 ?? 0,
+    furnished: property.furnished ?? false,
+    type: property.typeLabel ?? "House",
+    // Exact coordinates are a Paid feature, so guests get the area centre.
+    coordinates:
+      property.coordinates ??
+      DETAILS[id]?.coordinates ??
+      (property.matchLocations.some((location) =>
+        ["lagos", "lekki", "ikoyi", "abuja", "wuse", "maitama"].includes(
+          location,
+        ),
+      )
+        ? { latitude: 6.5244, longitude: 3.3792 }
+        : { latitude: -1.9441, longitude: 30.0619 }),
   };
-  const startIndex = DEMO_LISTINGS.findIndex((listing) => listing.id === id);
+  const startIndex = hashIndex(id);
   const gallery = Array.from(
     { length: 7 },
     (_, index) => HOUSE_IMAGES[(startIndex + index) % HOUSE_IMAGES.length],
