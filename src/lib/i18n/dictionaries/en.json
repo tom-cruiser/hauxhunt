@@ -431,6 +431,1607 @@
       "emptyAllDescription": "Important updates about your RentUp activity will appear here.",
       "emptyUnreadTitle": "No unread notifications",
       "emptyUnreadDescription": "You've seen all your latest updates."
+    },
+    "account": {
+      "actions": {
+        "cancel": "Cancel",
+        "saveChanges": "Save Changes"
+      },
+      "heading": "My Account",
+      "methods": {
+        "addButton": "Add Payment Method",
+        "defaultBadge": "Default",
+        "edit": "Edit",
+        "heading": "Payment Methods",
+        "info": {
+          "description": "How you pay.",
+          "label": "Payment Methods:",
+          "note": "Rent, transactions, and receipts remain under My Home → Payments."
+        },
+        "remove": "Remove",
+        "setAsDefault": "Set as Default",
+        "subtitle": "Manage the payment methods you can use for rent and other rental payments.",
+        "toastAddBeforeRemoving": "Add another payment method before removing this one",
+        "toastRemoved": "{{name}} removed",
+        "toastSetDefault": "{{name}} is now your default"
+      },
+      "modal": {
+        "addMethod": {
+          "addButton": "Add {{kind}}",
+          "back": "Back",
+          "kinds": {
+            "bankAccount": "Bank Account",
+            "card": "Card",
+            "mobileMoney": "Mobile Money"
+          },
+          "title": "Add Payment Method",
+          "toastAdded": "Payment method added"
+        },
+        "deleteAccount": {
+          "closeAria": "Close delete account dialog",
+          "description": "Your RentUp account, profile, and saved account data will be permanently deleted. This cannot be undone.",
+          "illustrationAlt": "Delete account illustration",
+          "title": "Delete Account?",
+          "toastRequested": "Account deletion requested"
+        },
+        "editMethod": {
+          "title": "Edit Payment Method",
+          "toastUpdated": "Payment method updated"
+        },
+        "fields": {
+          "accountName": "Account Name",
+          "accountNumber": "Account Number",
+          "bank": "Bank",
+          "cardNumber": "Card Number",
+          "cvv": "CVV",
+          "expiryDate": "Expiry Date",
+          "mobileProvider": "Mobile network / provider",
+          "nameOnCard": "Name on Card"
+        },
+        "generated": {
+          "bankNote": "Account ending in {{last4}}",
+          "cardNote": "Expires {{expiry}}"
+        },
+        "removeMethod": {
+          "closeAria": "Close remove payment method dialog",
+          "description": "{{name}} {{detail}} will no longer be available for rental payments.",
+          "illustrationAlt": "Remove payment method illustration",
+          "title": "Remove payment method?"
+        },
+        "sessions": {
+          "description": "You'll remain signed in on this device.",
+          "title": "Log out of all other devices?",
+          "toastLoggedOut": "Other sessions logged out"
+        }
+      },
+      "personal": {
+        "countryRegion": "Country / Region",
+        "preferredLanguage": "Preferred Language",
+        "profilePhoto": {
+          "changePhoto": "Change Photo",
+          "heading": "Profile Photo",
+          "noPhotoSr": "No profile photo selected",
+          "removePhoto": "Remove Photo",
+          "toastRemoved": "Profile photo removed",
+          "toastUpdated": "Profile photo updated",
+          "uploadPhoto": "Upload Photo"
+        }
+      },
+      "plan": {
+        "features": {
+          "houseReviews": {
+            "free": "Locked",
+            "label": "House reviews",
+            "paid": "Included"
+          },
+          "listingAccess": {
+            "free": "All listings",
+            "label": "Listing access",
+            "paid": "All listings"
+          },
+          "maintenanceRequests": {
+            "free": "Locked",
+            "label": "In-app maintenance requests",
+            "paid": "Included"
+          },
+          "mapView": {
+            "free": "Locked",
+            "label": "Map view & location link",
+            "paid": "Included"
+          },
+          "messaging": {
+            "free": "Up to 3 per month",
+            "label": "Agent/landlord messaging",
+            "paid": "Unlimited"
+          },
+          "priorityAlerts": {
+            "free": "Locked",
+            "label": "Priority alert on requests",
+            "paid": "Included"
+          },
+          "viewingFee": {
+            "free": "Market rate",
+            "label": "Viewing fee",
+            "paid": "Capped at 5,000 RWF"
+          },
+          "whatsappAlerts": {
+            "free": "Locked",
+            "label": "WhatsApp alerts",
+            "paid": "Included"
+          }
+        }
+      },
+      "preferences": {
+        "channels": {
+          "email": "Email",
+          "inApp": "In-app",
+          "sms": "SMS",
+          "whatsapp": "WhatsApp"
+        },
+        "columnNotification": "Notification",
+        "groups": {
+          "flatmates": {
+            "items": {
+              "newFlatmateMatch": "New flatmate match",
+              "newFlatmateMessage": "New flatmate message",
+              "someoneInterested": "Someone interested in your profile"
+            },
+            "title": "Flatmates"
+          },
+          "hauxhuntUpdates": {
+            "items": {
+              "productUpdatesFeatures": "Product updates and new features",
+              "tipsRecommendations": "Tips and recommendations"
+            },
+            "title": "RentUp Updates"
+          },
+          "messagePreferences": {
+            "items": {
+              "messageFromRepresentative": "Message from a property representative",
+              "newMessageReceived": "New message received"
+            },
+            "title": "Message Preferences"
+          },
+          "propertySearch": {
+            "items": {
+              "availabilityChanges": "Property availability changes",
+              "newMatches": "New matches from Saved Searches",
+              "priceChanges": "Price changes on favourite properties"
+            },
+            "title": "Property Search"
+          },
+          "rentalPayments": {
+            "items": {
+              "maintenanceUpdates": "Maintenance updates",
+              "paymentSuccessFailed": "Payment successful or failed",
+              "rentDueSoon": "Rent due soon",
+              "rentalSetupUpdates": "Rental setup updates"
+            },
+            "title": "Rental & Payments"
+          },
+          "viewingsApplications": {
+            "items": {
+              "additionalInfoRequested": "Additional information requested",
+              "applicationStatusUpdates": "Application status updates",
+              "rentalInvitations": "Rental invitations",
+              "viewingConfirmations": "Viewing confirmations and changes"
+            },
+            "title": "Viewings & Applications"
+          }
+        },
+        "whatsappAlertsLabel": "WhatsApp alerts"
+      },
+      "sectionsNavAria": "Account sections",
+      "security": {
+        "accountData": {
+          "deleteAccountButton": "Delete Account",
+          "deleteAccountDescription": "Permanently delete your RentUp account, profile, and saved account data. This action cannot be undone.",
+          "deleteAccountHeading": "Delete Account",
+          "title": "Account Data"
+        },
+        "changePassword": {
+          "confirmNewPasswordLabel": "Confirm New Password",
+          "confirmNewPasswordPlaceholder": "Repeat new password",
+          "currentPasswordLabel": "Current Password",
+          "currentPasswordPlaceholder": "Enter current password",
+          "lastChanged": "Last changed {{date}}",
+          "newPasswordLabel": "New Password",
+          "newPasswordPlaceholder": "At least 8 characters",
+          "title": "Change Password",
+          "toastUpdated": "Password updated",
+          "updateButton": "Update Password"
+        },
+        "devices": {
+          "logOut": "Log out",
+          "logOutOthers": "Log Out Other Sessions",
+          "subtitle": "Your recent account activity.",
+          "title": "Devices where you are logged in",
+          "toastLoggedOut": "{{device}} logged out"
+        },
+        "updateContact": {
+          "emailPlaceholder": "Enter your email address",
+          "emailVerifiedToast": "Email address verified",
+          "otpDigitAria": "{{label}}, digit {{index}}",
+          "otpLabel": "Enter OTP sent to {{destination}}:",
+          "phoneVerifiedToast": "Phone number verified",
+          "title": "Update Email & Phone Number",
+          "verificationSentToast": "Verification code sent to {{destination}}"
+        }
+      },
+      "subheading": "Manage your profile, security, payment methods, and communication preferences.",
+      "tabs": {
+        "loginSecurity": "Login & Security",
+        "notificationsPreferences": "Notifications & Preferences",
+        "paymentMethods": "Payment Methods",
+        "personalInformation": "Personal Information",
+        "planBilling": "Plan & Billing"
+      },
+      "toast": {
+        "accountChangesSaved": "Account changes saved"
+      },
+      "verified": "Verified",
+      "verify": "Verify"
+    },
+    "applicationDetail": {
+      "actionRequired": {
+        "body": "{{representative}} has requested your {{documentType}}.",
+        "dueOn": "Due: 17 August 2026",
+        "heading": "Action required",
+        "removeSelectedDocumentAria": "Remove selected document",
+        "replaceDocument": "Replace Document",
+        "requestedOn": "Requested: 14 August 2026",
+        "submitDocument": "Submit Document",
+        "uploadDocument": "Upload Document"
+      },
+      "activity": {
+        "additionalDocumentRequested": "Additional document requested",
+        "applicationSubmitted": "Application submitted",
+        "dates": {
+          "aug10": "14 Aug",
+          "aug12": "14 Aug",
+          "aug14": "14 Aug"
+        },
+        "documentUploadedAndSubmitted": "{{documentName}} uploaded and submitted",
+        "documentsUploaded": "Documents uploaded",
+        "movedToUnderReview": "Application moved to Under Review",
+        "today": "Today"
+      },
+      "applicationIdLabel": "Application ID",
+      "backToApplications": "Back to Applications",
+      "documents": {
+        "identityDocument": "Identity document",
+        "noneAvailableDescription": "No uploaded files are attached to this application.",
+        "noneAvailableTitle": "No documents available",
+        "referenceDocument": "Reference document",
+        "statusPending": "Pending",
+        "statusReceived": "Received",
+        "statusRequested": "Requested",
+        "statusSelected": "Selected",
+        "statusVerified": "Verified",
+        "upload": "Upload",
+        "view": "View"
+      },
+      "fallback": {
+        "date": "Submitted today",
+        "message": "Your application has been received."
+      },
+      "heading": "{{title}} Application",
+      "preview": {
+        "ariaLabel": "Preview {{name}}",
+        "closeAria": "Close document preview",
+        "documentPreviewLabel": "Document preview",
+        "unavailableDescription": "A preview of {{name}} is not available.",
+        "unavailableTitle": "Preview unavailable"
+      },
+      "progressCaption": {
+        "completeOn": "10 Aug · Complete",
+        "current": "Current",
+        "pending": "Pending"
+      },
+      "progressSteps": {
+        "actionRequired": "Action required",
+        "applicationSubmitted": "Application submitted",
+        "decision": "Decision Pending",
+        "decisionPending": "Decision Pending",
+        "documentsReceived": "Documents received",
+        "underReview": "Under review"
+      },
+      "reviewer": {
+        "heading": "Reviewed by",
+        "message": "Message",
+        "propertyManagerFallbackRole": "Property Manager"
+      },
+      "sections": {
+        "activity": "Activity",
+        "documents": "Documents",
+        "progress": "Application progress",
+        "summary": "Application summary"
+      },
+      "statusLabels": {
+        "actionRequired": "Action Required",
+        "approved": "Approved",
+        "completed": "Completed",
+        "decisionPending": "Decision Pending",
+        "draft": "Draft",
+        "notSelected": "Not Selected",
+        "submitted": "Submitted",
+        "underReview": "Under Review",
+        "withdrawn": "Withdrawn"
+      },
+      "summary": {
+        "applicant": "Applicant",
+        "coApplicant": "Co-applicant",
+        "employedFallback": "Employed",
+        "incomeAndRentPayment": "Income & Rent Payment",
+        "incomeRangeProvided": "Income range provided",
+        "incomeSourceProvided": "Income source provided",
+        "leaseLabel": "Lease: {{value}}",
+        "moveInLabel": "Move-in: {{value}}",
+        "noCoApplicant": "No co-applicant",
+        "noPets": "No pets",
+        "occupantsCount": "{{count}} occupants",
+        "paymentMethodProvided": "Payment method provided",
+        "primaryApplicant": "Primary applicant",
+        "rentalPreferences": "Rental preferences"
+      },
+      "toasts": {
+        "documentUploaded": "Document uploaded successfully.",
+        "readyToSubmit": "{{fileName}} is ready to submit."
+      },
+      "viewProperty": "View Property"
+    },
+    "applicationNew": {
+      "alreadyApplied": {
+        "allApplications": "All Applications",
+        "body": "You have already applied for {{title}}. Open your application to check its progress instead of submitting a duplicate.",
+        "heading": "You already applied",
+        "illustrationAlt": "Application already received illustration",
+        "viewApplication": "View Application"
+      },
+      "applicationsLink": "Applications",
+      "applyingFor": "Applying for",
+      "back": "Back",
+      "coApplicantHelp": "A co-applicant shares responsibility for the lease and provides their own details.",
+      "continue": "Continue",
+      "documents": {
+        "addedClickToReplace": "Added · Click to replace",
+        "chooseFile": "Choose file",
+        "identityDocument": "Identity document",
+        "referenceDocument": "Reference document",
+        "requirement": "An identity document is required. PDF, JPG or PNG."
+      },
+      "draftSavedToast": "Application saved to drafts",
+      "employmentOptions": {
+        "employed": "Employed",
+        "other": "Other",
+        "retired": "Retired",
+        "selfEmployed": "Self-employed",
+        "student": "Student"
+      },
+      "fields": {
+        "coApplicant": "Co-applicant",
+        "email": "Email",
+        "employment": "Employment status",
+        "fullName": "Full name",
+        "income": "Monthly income",
+        "incomeSource": "Source of income",
+        "lease": "Lease length",
+        "moveIn": "Preferred move-in date",
+        "occupants": "Number of occupants",
+        "pets": "Pets",
+        "phone": "Phone number",
+        "reason": "Reason for moving",
+        "referenceName": "Reference name",
+        "referencePhone": "Reference phone",
+        "relationship": "Relationship",
+        "rentPayment": "How will you pay the rent?"
+      },
+      "incomeRanges": {
+        "above": "Above {{amount}}",
+        "between": "Between {{min}} and {{max}}",
+        "under": "Under {{amount}}"
+      },
+      "incomeSources": {
+        "familySupport": "Family support",
+        "freelanceOrContractWork": "Freelance or contract work",
+        "investmentsOrRentalIncome": "Investments or rental income",
+        "other": "Other",
+        "pensionOrRetirementIncome": "Pension or retirement income",
+        "salaryOrWages": "Salary or wages",
+        "selfEmploymentOrBusiness": "Self-employment or business"
+      },
+      "occupantsHelp": "Include everyone who will live in the home, including you.",
+      "placeholders": {
+        "leaseLength": "Lease length",
+        "noPets": "No pets",
+        "none": "None",
+        "reasonForMoving": "Reason for moving",
+        "relationshipExample": "Relationship"
+      },
+      "rentPaymentMethods": {
+        "bankTransfer": "Bank transfer",
+        "cashDeposit": "Cash deposit",
+        "employerPaidHousingAllowance": "Employer-paid housing allowance",
+        "mobileMoney": "Mobile Money",
+        "other": "Other",
+        "standingOrderOrDirectDebit": "Standing order or direct debit"
+      },
+      "review": {
+        "applicant": "Applicant",
+        "consent": "I confirm that the information provided is accurate and I consent to it being shared with the property representative.",
+        "documents": "Documents",
+        "documentsAttachedOne": "{{count}} document attached",
+        "documentsAttachedOther": "{{count}} documents attached",
+        "leaseLabel": "Lease: {{value}}",
+        "moveInLabel": "Move-in: {{value}}",
+        "notProvided": "Not provided",
+        "occupantsLabel": "Occupants: {{value}}",
+        "property": "Property",
+        "rentalDetails": "Rental details"
+      },
+      "saveDraft": "Save draft",
+      "selectPrompts": {
+        "employment": "Select employment status",
+        "income": "Select monthly income",
+        "incomeSource": "Select source of income",
+        "rentPayment": "Select payment method"
+      },
+      "stepProgress": "Step {{current}} of {{total}}",
+      "steps": {
+        "aboutYou": "About you",
+        "documents": "Documents",
+        "employment": "Employment",
+        "household": "Household",
+        "references": "References",
+        "rentalNeeds": "Rental needs",
+        "review": "Review"
+      },
+      "submitApplication": "Submit Application",
+      "submitted": {
+        "applicationIdLabel": "Application ID",
+        "body": "Your application for {{title}} has been sent.",
+        "heading": "Application submitted",
+        "illustrationAlt": "Application received illustration",
+        "message": "Message",
+        "statusLabel": "Status",
+        "statusValue": "Submitted",
+        "viewApplication": "View Application"
+      }
+    },
+    "applicationsList": {
+      "card": {
+        "applicationProgress": "Application progress",
+        "deleteDraftAria": "Delete draft",
+        "message": "Message",
+        "primary": {
+          "completeRequest": "Complete Request",
+          "continueApplication": "Continue Application",
+          "startRentalSetup": "Start Rental Setup",
+          "viewApplication": "View Application",
+          "viewSimilarHomes": "View Similar Homes"
+        },
+        "progressComplete": "{{progress}}% complete",
+        "viewListing": "View Listing",
+        "withdrawApplicationAria": "Withdraw application"
+      },
+      "confirmDialog": {
+        "closeAria": "Close dialog",
+        "deleteBody": "Your progress on this application will be removed.",
+        "deleteDraft": "Delete Draft",
+        "deleteIllustrationAlt": "Delete draft illustration",
+        "deleteTitle": "Delete draft?",
+        "keepApplication": "Keep Application",
+        "keepDraft": "Keep Draft",
+        "withdraw": "Withdraw",
+        "withdrawBody": "Your application for {{title}} will no longer be considered.",
+        "withdrawIllustrationAlt": "Withdraw application illustration",
+        "withdrawTitle": "Withdraw application?"
+      },
+      "empty": {
+        "active": {
+          "description": "Applications you submit will appear here so you can track their progress.",
+          "title": "No active applications"
+        },
+        "browseListings": "Browse Listings",
+        "drafts": {
+          "description": "Applications you start and save for later will appear here.",
+          "title": "No draft applications"
+        },
+        "past": {
+          "description": "Completed, withdrawn and unsuccessful applications will appear here.",
+          "title": "No past applications"
+        }
+      },
+      "heading": "Applications",
+      "noMatches": {
+        "clearFilters": "Clear filters",
+        "description": "Try another property name or application status.",
+        "title": "No matching applications"
+      },
+      "searchAria": "Search by property name",
+      "searchPlaceholder": "Search by property name",
+      "statusFilterAria": "Filter by application status",
+      "statusLabels": {
+        "actionRequired": "Action Required",
+        "all": "All statuses",
+        "approved": "Approved",
+        "completed": "Completed",
+        "decisionPending": "Decision Pending",
+        "draft": "Draft",
+        "notSelected": "Not Selected",
+        "submitted": "Submitted",
+        "underReview": "Under Review",
+        "withdrawn": "Withdrawn"
+      },
+      "statusMessages": {
+        "actionRequired": "Action Required",
+        "approved": "Approved",
+        "completed": "Completed",
+        "decisionPending": "Decision Pending",
+        "notSelected": "Not Selected",
+        "submitted": "Submitted",
+        "underReview": "Under Review"
+      },
+      "subheading": "Track your rental applications and see what needs your attention.",
+      "tabs": {
+        "active": "Active",
+        "drafts": "Drafts",
+        "past": "Past"
+      },
+      "withdrawnMessage": "You withdrew this application."
+    },
+    "flatmateMatches": {
+      "backToCatalog": "Back to catalogue",
+      "card": {
+        "browseHomesTogether": "Browse Homes Together",
+        "discussLivingArrangement": "Discuss Living Arrangement",
+        "housingPlan": "Housing Plan",
+        "imInterestedToo": "I'm Interested Too",
+        "interestedInYouNote": "Interested in being flatmates with you",
+        "matchedToday": "Matched today",
+        "message": "Message",
+        "monthlyBudget": "Monthly Budget",
+        "moveInDate": "Move-in Date",
+        "notForMe": "Not for Me",
+        "perMonth": "/ month",
+        "removeInterest": "Remove Interest",
+        "situation": {
+          "hasPlace": "Already has a place",
+          "looking": "Looking for a place"
+        },
+        "viewProfile": "View Profile",
+        "waitingForResponse": "Waiting for response"
+      },
+      "empty": {
+        "imageAlt": "No results found",
+        "matches": {
+          "description": "When you and another renter both show interest, you will see them here.",
+          "title": "No matches yet"
+        },
+        "received": {
+          "description": "Renters who show interest in you will appear here.",
+          "title": "No interests received"
+        },
+        "sent": {
+          "description": "Renters you show interest in will appear here.",
+          "title": "No interests sent"
+        }
+      },
+      "heading": "Flatmate Matches",
+      "modal": {
+        "combinedEstimate": "Combined estimate: {{min}} – {{max}}",
+        "description": "Learn more about {{name}} before exploring living together.",
+        "expectedMonthlyShare": "Expected Monthly Share",
+        "eyebrow": "Co-living Connection",
+        "imageAlt": "You're a match illustration",
+        "livingArrangementArea": "Living Arrangement Area",
+        "potentialCombinedBudget": "Potential Combined Budget",
+        "preferredAreasOverlap": "Preferred Areas Overlap",
+        "startChat": "Start Chat",
+        "title": "You're a Match!"
+      },
+      "subheading": "People you have connected with and those interested in you.",
+      "tabs": {
+        "matches": "Matches",
+        "received": "Received",
+        "sent": "Sent"
+      }
+    },
+    "flatmateProfile": {
+      "backToBrowse": "Back to Browse Flatmates",
+      "form": {
+        "common": {
+          "add": "Add",
+          "female": "Female",
+          "flexible": "Flexible",
+          "male": "Male"
+        },
+        "example": "e.g. {{value}}",
+        "housing": {
+          "areas": {
+            "addPlaceholder": "Add other area/neighborhood...",
+            "label": "Preferred Areas / Neighborhoods"
+          },
+          "budget": {
+            "helperHasPlace": "Monthly rent you expect the flatmate to pay.",
+            "helperLooking": "Maximum rent you are willing to contribute.",
+            "labelHasPlace": "Expected Share (RWF)",
+            "labelLooking": "Monthly Budget (RWF)"
+          },
+          "currentSituation": "Your Current Situation",
+          "furnishing": {
+            "label": "Furnishing",
+            "options": {
+              "furnishedPreferred": "Furnished preferred",
+              "semiFurnished": "Semi-furnished"
+            }
+          },
+          "genderPreference": {
+            "label": "Gender Preference"
+          },
+          "heading": "Housing Situation & Budget",
+          "moveIn": {
+            "label": "Target Move-In",
+            "options": {
+              "availableNow": "Available now",
+              "nov2026": "November 2026",
+              "oct2026": "October 2026",
+              "sep2026": "September 2026"
+            }
+          },
+          "propertyType": {
+            "label": "Preferred Property Type",
+            "options": {
+              "houseVilla": "House / Villa",
+              "penthouse": "Penthouse",
+              "sharedDuplex": "Shared Duplex"
+            }
+          },
+          "rentals": {
+            "apartmentPrivateParking": "2-bedroom apartment with private parking (Lekki, Lagos)",
+            "familyHomeGarden": "3-bedroom family home with garden (Remera, Kigali)",
+            "modern2br": "Modern 2-bedroom (Nyarutarama, Kigali)"
+          },
+          "sharingRental": {
+            "helper": "Associates your flatmate profile with your current rental (will not be publicly listed again).",
+            "label": "Which of your current rentals are you sharing?"
+          },
+          "situation": {
+            "hasPlace": {
+              "description": "I currently rent a place and have a room available.",
+              "label": "Already have a place"
+            },
+            "looking": {
+              "description": "I want to find flatmates and search for a home together.",
+              "label": "Looking for a place"
+            }
+          },
+          "stay": {
+            "label": "Preferred Stay",
+            "options": {
+              "sixToTwelve": "6–12 months",
+              "twelvePlus": "12+ months"
+            }
+          },
+          "subheading": "What kind of living arrangement are you looking for?"
+        },
+        "lifestyle": {
+          "addTagPlaceholder": "Add other lifestyle tag...",
+          "cleanliness": {
+            "label": "Cleanliness",
+            "options": {
+              "cleanSharedSpaces": "Clean shared spaces",
+              "veryTidy": "Very tidy"
+            }
+          },
+          "description": "Choose the tags that best describe your lifestyle, routines, and habits (maximum three). These tags will be shown on your profile card.",
+          "detailsHeading": "Lifestyle & Compatibility Details",
+          "detailsSubheading": "Set your routines and preferences to find compatible roommate matches.",
+          "guests": {
+            "label": "Guests Preference",
+            "options": {
+              "friendsOccasionally": "Friends occasionally",
+              "noOvernightGuests": "No overnight guests",
+              "occasionalVisitors": "Occasional visitors"
+            }
+          },
+          "heading": "What Best Describes You",
+          "pets": {
+            "label": "Pets Preference",
+            "options": {
+              "cats": "Okay with cats",
+              "dogs": "Okay with dogs",
+              "none": "No pets",
+              "smallPets": "Okay with small pets"
+            }
+          },
+          "sleepSchedule": {
+            "label": "Sleep Schedule",
+            "options": {
+              "earlyRiser": "Early riser",
+              "earlySleeper": "Early sleeper",
+              "nightOwl": "Night owl"
+            }
+          },
+          "socialStyle": {
+            "label": "Social Style",
+            "options": {
+              "balanced": "Balanced",
+              "quietHome": "Quiet home",
+              "quietWeekdaysSocialWeekends": "Quiet weekdays, social weekends",
+              "socialHome": "Social home / Enjoys hosting"
+            }
+          }
+        },
+        "personal": {
+          "age": "Age",
+          "city": "Current City",
+          "country": "Country",
+          "firstName": "First Name",
+          "gender": "Your Gender",
+          "heading": "Personal Profile",
+          "occupation": "Occupation",
+          "photoAlt": "{{name}}'s photo",
+          "verifiedPhoto": "Verified photo · {{location}}"
+        }
+      },
+      "heading": "My Flatmate Profile",
+      "publishProfile": "Publish Profile",
+      "subheading": "Set up your housing preferences and lifestyle compatibility so potential flatmates can find you.",
+      "tabs": {
+        "edit": "Edit Profile",
+        "preview": "Live Preview"
+      },
+      "tags": {
+        "cooksAtHome": "Cooks at home",
+        "fitnessEnthusiast": "Fitness enthusiast",
+        "hybridProfessional": "Hybrid professional",
+        "nonSmoker": "Non-smoker",
+        "remoteWorker": "Remote worker",
+        "respectfulOfPrivacy": "Respectful of privacy",
+        "vegetarian": "Vegetarian"
+      },
+      "toast": {
+        "published": "Your Flatmate Profile is published and active!"
+      }
+    },
+    "maintenanceDetail": {
+      "backLink": "Back to Maintenance",
+      "cards": {
+        "issueDetailsTitle": "Issue Details",
+        "issueResolvedTitle": "Issue Resolved",
+        "propertyManagerTitle": "Property Manager",
+        "requestClosedTitle": "Request Closed",
+        "scheduledVisitTitle": "Scheduled Visit",
+        "statusTimelineTitle": "Status Timeline",
+        "updatesTitle": "Updates"
+      },
+      "dialog": {
+        "actions": {
+          "cancel": "Cancel Request",
+          "information": "Send Information",
+          "reopen": "Reopen Request",
+          "reschedule": "Request Change"
+        },
+        "addInfoDefaultText": "Add the requested details.",
+        "addPhotosLabel": "Add Photos",
+        "cancelButton": "Cancel",
+        "cancelDescription": "{{title}} will be marked as cancelled.",
+        "cancelReasonPlaceholder": "Issue fixed itself, no longer needed...",
+        "closeAria": "Close dialog",
+        "currentAppointment": "Current appointment: {{date}} · {{time}}",
+        "keepRequestButton": "Keep Request",
+        "noteLabel": "Note",
+        "notePlaceholder": "Add a helpful note",
+        "preferredDateLabel": "Preferred date",
+        "reasonForRescheduleLabel": "Reason for requesting another time",
+        "reasonLabel": "Reason",
+        "reopenPrompt": "Tell us what still needs attention.",
+        "rescheduleReasonPlaceholder": "Explain why the current appointment no longer works...",
+        "timeWindowLabel": "Time window",
+        "timeWindows": {
+          "afternoon": "Afternoon",
+          "evening": "Evening",
+          "morning": "Morning"
+        },
+        "titles": {
+          "cancel": "Cancel Maintenance Request?",
+          "reopen": "Reopen Maintenance Request?",
+          "reschedule": "Request Another Time"
+        }
+      },
+      "fields": {
+        "category": "Category",
+        "completed": "Completed",
+        "date": "Date",
+        "issuePhotoAlt": "Issue photo",
+        "maintenanceContact": "Maintenance contact",
+        "time": "Time",
+        "urgency": "Urgency"
+      },
+      "informationNeeded": {
+        "addInformationButton": "Add Information",
+        "badge": "Information Needed",
+        "heading": "The property manager requested more details.",
+        "messageManagerLink": "Message Manager",
+        "sentLabel": "Information Sent"
+      },
+      "maintenanceLabelPrefix": "Maintenance: {{title}}",
+      "managedThrough": "Managed through {{name}} · {{role}}",
+      "messagePropertyManagerLink": "Message Property Manager",
+      "moreActionsAria": "More request actions",
+      "openMessagesLink": "Open Messages",
+      "requestIdPrefix": "Request {{id}}",
+      "requestNewTimeButton": "Request New Time",
+      "resolved": {
+        "confirmFixedButton": "Yes, It's Fixed",
+        "confirmQuestion": "Is the issue resolved?",
+        "confirmedFixedMessage": "You confirmed that this issue is fixed.",
+        "defaultResolutionText": "The maintenance work was completed.",
+        "stillExistsButton": "Issue Still Exists"
+      },
+      "status": {
+        "cancelled": "Cancelled",
+        "inProgress": "In Progress",
+        "resolved": "Resolved",
+        "scheduled": "Scheduled",
+        "submitted": "Submitted",
+        "underReview": "Under Review",
+        "waitingForRenter": "Waiting for Renter"
+      },
+      "submittedPrefix": "Submitted {{date}}",
+      "timeline": {
+        "current": "Current",
+        "pending": "Pending"
+      },
+      "toasts": {
+        "informationSent": "Information sent",
+        "newTimeRequested": "New time requested",
+        "requestCancelled": "Maintenance request cancelled",
+        "requestClosed": "Request closed",
+        "requestReopened": "Maintenance request reopened"
+      },
+      "updates": {
+        "requestSubmitted": "Request submitted.",
+        "reviewedRequest": "Property manager reviewed the request.",
+        "technicianAssigned": "Technician assigned.",
+        "visitScheduled": "Visit scheduled for 17 August."
+      },
+      "urgency": {
+        "normal": "Normal",
+        "urgent": "Urgent"
+      }
+    },
+    "maintenanceList": {
+      "access": {
+        "contactMeFirst": "Contact me first",
+        "no": "No",
+        "yes": "Yes"
+      },
+      "allRentalsOption": "All Rentals",
+      "areas": {
+        "balcony": "Balcony",
+        "bedroom": "Bedroom",
+        "commonArea": "Common area",
+        "entrance": "Entrance",
+        "kitchen": "Kitchen",
+        "livingRoom": "Living room",
+        "mainBathroom": "Main bathroom",
+        "other": "Other"
+      },
+      "card": {
+        "messageLink": "Message",
+        "viewDetailsLink": "View Details",
+        "viewLink": "View"
+      },
+      "categories": {
+        "appliance": "Appliance",
+        "bathroom": "Bathroom",
+        "cleaningCommonArea": "Cleaning / Common Area",
+        "doorsLocks": "Doors / Locks",
+        "electrical": "Electrical",
+        "heatingCooling": "Heating / Cooling",
+        "internetUtilities": "Internet / Utilities",
+        "kitchen": "Kitchen",
+        "other": "Other",
+        "pest": "Pest",
+        "plumbing": "Plumbing",
+        "structural": "Structural",
+        "waterLeak": "Water Leak"
+      },
+      "contactMethod": {
+        "email": "Email",
+        "hauxhuntMessages": "RentUp Messages",
+        "phone": "Phone"
+      },
+      "emptyResults": {
+        "description": "Requests for this rental will appear here.",
+        "heading": "No {{status}} requests"
+      },
+      "emptyState": {
+        "clearCommunicationDescription": "Get quick feedback on maintenance requests without having to play the waiting game.",
+        "clearCommunicationTitle": "Clear Communication",
+        "createSendDescription": "Send your landlord requests for maintenance as soon as issues",
+        "createSendTitle": "Create and Send Repair Requests",
+        "startRequest": "Start a Request",
+        "title": "Get Maintenance Help Fast",
+        "trackProgressDescription": "Get updates about your repair progress from start to finish.",
+        "trackProgressTitle": "Track Progress"
+      },
+      "fields": {
+        "accessQuestion": "Can someone enter if you're not home?",
+        "category": "Category",
+        "completed": "Completed",
+        "contact": "Contact",
+        "describeProblem": "Describe the problem",
+        "describeProblemPlaceholder": "The kitchen tap has been leaking continuously since yesterday...",
+        "issue": "Issue",
+        "issueCategory": "Issue Category",
+        "issueTitle": "Issue Title",
+        "issueTitlePlaceholder": "Leaking kitchen tap",
+        "latestUpdate": "Latest update",
+        "photos": "Photos",
+        "photosAttached": "{{count}} attached",
+        "preferredContactMethod": "Preferred contact method",
+        "preferredVisit": "Preferred visit",
+        "preferredVisitTime": "Preferred Visit Time",
+        "property": "Property",
+        "propertyAccess": "Property access",
+        "rental": "Rental",
+        "requestId": "Request ID",
+        "status": "Status",
+        "urgency": "Urgency",
+        "whereIsIssue": "Where is the issue?"
+      },
+      "filterByRentalAria": "Filter by rental",
+      "noActiveRental": {
+        "description": "Maintenance requests are available once you have an active RentUp rental.",
+        "title": "No Active Rental",
+        "viewMyRentals": "View My Rentals"
+      },
+      "reportDialog": {
+        "addPhotos": {
+          "addLabel": "Add",
+          "description": "Photos can help the property manager understand the issue",
+          "previewAlt": "Issue preview",
+          "removeAria": "Remove photo",
+          "title": "Add Photos"
+        },
+        "cancelButton": "Cancel",
+        "closeAria": "Close dialog",
+        "defaultLatestUpdate": "Request received by the property manager",
+        "review": {
+          "backButton": "Back",
+          "submitButton": "Submit Request"
+        },
+        "reviewRequestButton": "Review Request",
+        "stepLabels": {
+          "issueDetails": "Issue details",
+          "review": "Review"
+        },
+        "success": {
+          "backButton": "Back to Maintenance",
+          "sentMessage": "Your request has been sent to the property manager.",
+          "toast": "Maintenance request submitted",
+          "viewRequestButton": "View Request"
+        },
+        "successTitle": "Maintenance Request Submitted",
+        "title": "Report a Maintenance Issue",
+        "urgentWarning": "For immediate danger, contact local emergency services or your property manager directly. RentUp does not provide emergency"
+      },
+      "reportIssueButton": "Report an Issue",
+      "status": {
+        "cancelled": "Cancelled",
+        "inProgress": "In Progress",
+        "resolved": "Resolved",
+        "scheduled": "Scheduled",
+        "submitted": "Submitted",
+        "underReview": "Under Review",
+        "waitingForRenter": "Waiting for Renter"
+      },
+      "subtitle": "Report and track maintenance issues for your RentUp rentals.",
+      "tabs": {
+        "all": "All",
+        "open": "Open",
+        "resolved": "Resolved"
+      },
+      "timeOfDay": {
+        "afternoon": "Afternoon",
+        "evening": "Evening",
+        "morning": "Morning"
+      },
+      "urgency": {
+        "normal": "Normal",
+        "urgent": "Urgent"
+      }
+    },
+    "messages": {
+      "backToFlatmatesAria": "Back to Flatmates",
+      "camera": {
+        "captureAria": "Take photo",
+        "closeAria": "Close camera",
+        "dialogAria": "Take a photo",
+        "permissionError": "Couldn't access your camera. Check your browser's camera permission and try again."
+      },
+      "composer": {
+        "attachAria": "Attach",
+        "camera": "Camera",
+        "document": "Document",
+        "photo": "Photo",
+        "placeholder": "Type a message",
+        "sendAria": "Send message"
+      },
+      "contextActions": {
+        "continueSetup": "Continue Setup",
+        "viewApplication": "View Application",
+        "viewProfile": "View Profile",
+        "viewProperty": "View Property",
+        "viewRental": "View Rental",
+        "viewRequest": "View Request",
+        "viewViewing": "View Viewing"
+      },
+      "sidebar": {
+        "documentPreview": "📄 {{name}}",
+        "emptyState": {
+          "clearSearch": "Clear search",
+          "noConversationsUnderFilter": "No conversations under {{filter}} yet.",
+          "noMessagesBody": "You don't have any messages yet. When you receive a message, it will appear here.",
+          "noMessagesTitle": "No Messages",
+          "noReadBody": "Messages you've opened will appear here.",
+          "noReadTitle": "No Read Messages",
+          "noResultsBody": "Try a different name or property, or clear your search.",
+          "noResultsTitle": "No results found for \"{{query}}\"",
+          "noUnreadBody": "You're all caught up. New messages will appear here.",
+          "noUnreadTitle": "No Unread Messages"
+        },
+        "filters": {
+          "clearFilter": "Clear filter",
+          "flatmateMatches": "Flatmate Matches",
+          "listingEnquiries": "Listing Enquiries",
+          "more": "More...",
+          "myRental": "My Rental",
+          "propertySearch": "Property Search"
+        },
+        "noMessagesYet": "No messages yet",
+        "photoPreview": "📷 Photo",
+        "resizeAria": "Resize conversation list",
+        "searchAriaLabel": "Search messages",
+        "searchPlaceholder": "Search",
+        "tabs": {
+          "all": "All",
+          "read": "Read",
+          "unread": "Unread"
+        }
+      },
+      "thread": {
+        "backAria": "Back to conversations",
+        "callAria": "Call {{name}}",
+        "closeSearchAria": "Close search",
+        "moreOptionsAria": "More options",
+        "noResultsBody": "No messages match \"{{query}}\" in this conversation.",
+        "noResultsTitle": "No messages found",
+        "searchAria": "Search in conversation",
+        "searchPlaceholder": "Search in conversation with {{name}}",
+        "selectConversationBody": "Choose a conversation from the list to view messages.",
+        "selectConversationTitle": "Select a conversation"
+      },
+      "time": {
+        "daysAgo": "{{count}} days ago",
+        "justNow": "Just now"
+      },
+      "verifiedAria": "Verified"
+    },
+    "notificationsPage": {
+      "subtitle": "Updates about your applications, viewings, rentals and payments.",
+      "timeDaysAgo": "{{count}} days ago",
+      "timeHoursAgo": "{{count}} hr ago",
+      "timeJustNow": "Just now",
+      "timeMinutesAgo": "{{count}} min ago"
+    },
+    "rentalDetail": {
+      "activity": {
+        "items": {
+          "agreementAdded": {
+            "date": "15 Aug",
+            "description": "Rental agreement added"
+          },
+          "applicationApproved": {
+            "date": "10 Aug",
+            "description": "Application approved"
+          },
+          "depositReceived": {
+            "date": "12 Aug",
+            "description": "Deposit marked as received"
+          },
+          "viewingCompleted": {
+            "date": "8 Aug",
+            "description": "Viewing completed"
+          }
+        }
+      },
+      "documents": {
+        "closePreviewAria": "Close document preview",
+        "depositReceipt": "Deposit receipt",
+        "depositReceiptDescription": "Confirmation that the security deposit was received for this rental.",
+        "documentStatusLabel": "Document status",
+        "managedByLabel": "Managed by",
+        "monthlyRentLabel": "Monthly rent",
+        "moveInReport": "Move-in report",
+        "moveInReportDescription": "A record of the property's condition, fixtures, and meter readings at move-in.",
+        "paymentReceipts": "Payment receipts",
+        "paymentReceiptsDescription": "A summary of rent payments recorded against this rental.",
+        "previewLabel": "Document preview",
+        "propertyManagerLabel": "Property manager",
+        "propertyRepresentativeLabel": "Property representative",
+        "rentalAgreement": "Rental agreement",
+        "rentalIdLabel": "Rental ID",
+        "rentalLabel": "Rental",
+        "rentalPeriodLabel": "Rental period",
+        "rentalTerms": "Rental terms",
+        "rentalTermsBody": "Rent is due monthly for the rental period shown above. The renter agrees to care for the property and report maintenance issues promptly.",
+        "renterSignatureLabel": "Renter signature",
+        "statusAvailable": "Available",
+        "statusLabel": "Status",
+        "statusPending": "Pending",
+        "statusSigned": "Signed",
+        "view": "View",
+        "viewAriaLabel": "View {{name}}"
+      },
+      "endingSoon": {
+        "currentAgreementEnds": "Current agreement ends",
+        "description": "Your {{title}} agreement ends on {{end}}. Request a renewal and your representative will confirm the new dates, rent, and agreement terms.",
+        "enabledAfterRenewal": "Enabled after renewal is confirmed",
+        "eyebrow": "Rental ending soon",
+        "renewalRequested": "Renewal Requested",
+        "requestRenewal": "Request Renewal",
+        "septemberPaymentLabel": "September payment",
+        "title": "Renew your rental agreement"
+      },
+      "maintenance": {
+        "exampleIssue": "Leaking kitchen tap · In Progress",
+        "historyAvailable": "Maintenance history available",
+        "noOpenRequests": "No open requests",
+        "oneOpenRequest": "1 open request",
+        "reportIssue": "Report an Issue",
+        "viewMaintenance": "View Maintenance"
+      },
+      "messageManager": "Message Manager",
+      "moveIn": {
+        "checklist": {
+          "agreementReviewed": "Rental agreement reviewed",
+          "depositPaid": "Deposit paid",
+          "firstRentPaid": "First rent paid",
+          "inspectionPending": "Move-in inspection pending",
+          "keysPending": "Keys pending"
+        },
+        "contactInstructions": "Contact {{manager}} for move-in instructions.",
+        "dateLabel": "Move-in date:"
+      },
+      "overview": {
+        "deposit": "Deposit",
+        "monthlyRent": "Monthly Rent",
+        "nextPayment": "Next Payment",
+        "occupants": "Occupants",
+        "rentalEnd": "Rental End",
+        "rentalStart": "Rental Start"
+      },
+      "payments": {
+        "makePayment": "Make Payment",
+        "nextDue": "Next due: {{date}}",
+        "noPaymentDue": "No payment is due after the current agreement ends. A new schedule will appear if renewal is confirmed.",
+        "viewAll": "View All Payments"
+      },
+      "pendingRenewal": "Pending renewal",
+      "property": {
+        "bathroomsCount": " · {{count}} bathrooms",
+        "bedroomsCount": "{{count}} bedrooms",
+        "bedroomsPending": "Bedroom details pending",
+        "residentialHome": "Residential home",
+        "viewFullProperty": "View Full Property"
+      },
+      "propertyOwnerFallback": "the property owner",
+      "renewalToast": "Renewal request sent to {{recipient}}.",
+      "rentPerMonth": "{{amount}} / month",
+      "sections": {
+        "documents": "Documents",
+        "maintenance": "Maintenance",
+        "managedBy": "Managed by",
+        "moveIn": "Move-in",
+        "overview": "Rental overview",
+        "payments": "Payments",
+        "property": "Property",
+        "recentActivity": "Recent activity",
+        "timeline": "Rental timeline"
+      },
+      "statusBadge": {
+        "active": "Active",
+        "ended": "Ended",
+        "endingSoon": "Ending Soon",
+        "upcoming": "Upcoming"
+      },
+      "timeline": {
+        "steps": {
+          "activeRental": "Active rental",
+          "applicationApproved": "Application approved",
+          "leaseEnd": "Lease end",
+          "moveIn": "Move-in",
+          "rentalConfirmed": "Rental confirmed"
+        }
+      }
+    },
+    "rentalSetup": {
+      "agreement": {
+        "continueToPayments": "Continue to Payments",
+        "documentTitle": "{{property}} Rental Agreement",
+        "endDateToBeConfirmed": "End date to be confirmed",
+        "keyTerms": "Key Terms",
+        "readCheckbox": "I have read and reviewed the rental agreement.",
+        "rows": {
+          "deposit": "Deposit",
+          "monthlyRent": "Monthly rent",
+          "noticePeriod": "Notice period",
+          "rentDue": "Rent due",
+          "thirtyDays": "30 days"
+        },
+        "signButton": "Sign Agreement",
+        "signedLabel": "Agreement Signed · {{date}}",
+        "subtitle": "Review your rental agreement carefully before signing.",
+        "understoodCheckbox": "I understand the rental terms and obligations.",
+        "viewFull": "View Full Agreement"
+      },
+      "agreementDocument": {
+        "awaitingSignature": "Awaiting signature",
+        "fields": {
+          "propertyRepresentative": "Property Representative",
+          "propertyRepresentativeSignature": "Property representative",
+          "rentalPeriod": "Rental period",
+          "renter": "Renter",
+          "renterSignature": "Renter signature"
+        },
+        "representativeSigned": "Signed by {{manager}}",
+        "sections": {
+          "careOfProperty": "3. Care of the property",
+          "careOfPropertyBody": "The renter agrees to keep the home in reasonable condition and report maintenance issues promptly.",
+          "notice": "4. Notice",
+          "noticeBody": "Either party should provide at least 30 days' notice where notice is permitted by the agreement.",
+          "rentAndDeposit": "2. Rent and deposit",
+          "rentAndDepositBody": "Rent of {{rent}} is due on the {{dueDay}}. A security deposit of {{deposit}} is payable before move-in.",
+          "rentalTerm": "1. Rental term",
+          "rentalTermOpenEnd": "The rental starts on {{start}}. The end date is to be confirmed.",
+          "rentalTermWithEnd": "The rental starts on {{start}} and ends on {{end}}."
+        },
+        "title": "Residential Rental Agreement",
+        "uploadedBy": "Uploaded by {{manager}}"
+      },
+      "complete": {
+        "description": "Your rental for {{property}} is confirmed. Your move-in date is {{startDate}}.",
+        "goToMyRentals": "Go to My Rentals",
+        "imageAlt": "Rental agreement completed",
+        "title": "Your Rental Is Ready"
+      },
+      "dateUnavailable": "Date unavailable",
+      "declineInvitation": "Decline Invitation",
+      "declined": {
+        "textWithProperty": "You chose not to continue the rental setup for {{property}}.",
+        "title": "Invitation declined",
+        "viewApplication": "View Application"
+      },
+      "details": {
+        "continueToAgreement": "Continue to Agreement",
+        "questionLink": "Something doesn't look right",
+        "reviewedCheckbox": "I have reviewed the rental details above.",
+        "rows": {
+          "managedBy": "Managed By",
+          "monthly": "Monthly",
+          "monthlyRent": "Monthly Rent",
+          "paymentFrequency": "Payment Frequency",
+          "property": "Property",
+          "rentDue": "Rent Due",
+          "rentalEnd": "Rental End",
+          "rentalStart": "Rental Start",
+          "securityDeposit": "Security Deposit"
+        },
+        "subtitle": "Review the terms provided by the verified property representative."
+      },
+      "invitedBy": "Invited by ",
+      "messageManager": "Message Manager",
+      "modal": {
+        "confirmMockPayment": "Confirm Mock Payment",
+        "confirmSign": "Confirm & Sign",
+        "declineTitle": "Decline this rental invitation?",
+        "paymentBody": "Payment of {{amount}} covers your security deposit and first month's rent.",
+        "paymentTitle": "Pay Security Deposit & First Month",
+        "questionBody": "Contact the property representative before continuing if the rent, dates, deposit, or terms are incorrect.",
+        "questionTitle": "Question these rental details?",
+        "receiptBody": "{{amount}} · Security deposit & first month's rent · {{reference}}",
+        "receiptTitle": "Payment Receipt",
+        "signTitle": "Sign Rental Agreement",
+        "typeYourName": "Type your full name to confirm your signature."
+      },
+      "moveIn": {
+        "checklist": {
+          "keysPending": "Keys pending",
+          "moveInInspectionPending": "Move-in inspection pending",
+          "rentalAgreementSigned": "Rental agreement signed",
+          "rentalDetailsConfirmed": "Rental details confirmed",
+          "requiredPaymentCompleted": "Required payment completed"
+        },
+        "completeSetup": "Complete Setup",
+        "instructions": "Instructions",
+        "instructionsList": {
+          "bringId": "Bring identification.",
+          "completeInspection": "Complete the inspection before accepting keys.",
+          "meetManager": "Meet {{manager}} at the property."
+        },
+        "keyHandoverTime": "At the property · 10:00 AM",
+        "notStarted": "Not Started",
+        "rows": {
+          "contact": "Contact",
+          "keyHandover": "Key Handover",
+          "moveInDate": "Move-in Date",
+          "moveInInspection": "Move-in Inspection"
+        },
+        "title": "Move-in Details"
+      },
+      "notReady": {
+        "backToApplications": "Back to Applications",
+        "description": "Your application was approved, but your property manager hasn't sent your rental setup yet. Check back soon.",
+        "title": "Rental setup not ready yet"
+      },
+      "payments": {
+        "continueToMoveIn": "Continue to Move-in",
+        "payButton": "Pay Deposit & First Month",
+        "reference": "Reference {{reference}}",
+        "rows": {
+          "firstMonthsRent": "First Month's Rent",
+          "totalDueNow": "Total Due Now"
+        },
+        "status": {
+          "paid": "Paid",
+          "pending": "Pending"
+        },
+        "successful": "Payment Successful",
+        "title": "Required Payments",
+        "viewReceipt": "View Receipt"
+      },
+      "requirementsProgress": "{{completed}} of 4 requirements complete",
+      "statusBadge": {
+        "inProgress": "Setup in progress",
+        "readyForMoveIn": "Ready for Move-in"
+      },
+      "steps": {
+        "complete": "Complete",
+        "moveIn": "Move-in",
+        "payments": "Payments",
+        "rentalAgreement": "Rental Agreement",
+        "rentalDetails": "Rental Details"
+      },
+      "toBeConfirmed": "To be confirmed",
+      "verifiedRoleLabel": "Verified {{role}}",
+      "viewProperty": "View Property"
+    },
+    "rentalsList": {
+      "bathAbbrev": " · {{count}} bath",
+      "bedAbbrev": " · {{count}} bed",
+      "emptyState": {
+        "description": "Once you're invited to complete a rental agreement or manage rent through RentUp, your home will appear here.",
+        "findHome": "Find a Home",
+        "pastDescription": "Your previous RentUp rentals will appear here once a rental ends.",
+        "pastTitle": "No Past Rentals",
+        "title": "No Rentals Yet",
+        "viewApplications": "View Applications"
+      },
+      "noMatch": {
+        "description": "Try another property name or rental status.",
+        "title": "No matching rentals"
+      },
+      "pendingRenewal": "Pending renewal",
+      "periodTo": "to {{end}}",
+      "searchByPropertyAria": "Search by property name",
+      "sharedRentalFallback": {
+        "nextPaymentSetupPaid": "Setup paid · next rent due after move-in",
+        "propertyRepresentative": "Your property representative"
+      },
+      "statusBadge": {
+        "active": "Active",
+        "ended": "Ended",
+        "endingSoon": "Ending Soon",
+        "upcoming": "Upcoming"
+      },
+      "statusFilterAria": "Filter by rental status",
+      "statusOptions": {
+        "active": "Active",
+        "all": "All statuses",
+        "ended": "Ended",
+        "endingSoon": "Ending Soon",
+        "upcoming": "Upcoming"
+      },
+      "subtitle": "Manage the homes you're currently renting and review your rental history.",
+      "table": {
+        "managedBy": "Managed by",
+        "monthlyRent": "Monthly rent",
+        "nextPayment": "Next payment",
+        "property": "Property",
+        "rentalPeriod": "Rental period",
+        "status": "Status"
+      },
+      "tabs": {
+        "current": "Current",
+        "past": "Past"
+      },
+      "viewMoreInfo": "View More Info"
+    },
+    "saved": {
+      "alreadyFavourited": "This home is already in your favourites",
+      "countOne": "1 favourite home",
+      "countOther": "{{count}} favourite homes",
+      "emptyState": {
+        "action": "Browse Homes",
+        "description": "Tap the heart on a home you like and it will appear here for easy comparison.",
+        "imageAlt": "No favourite homes",
+        "title": "No favourite homes yet"
+      },
+      "heading": "Favourite Homes",
+      "sortLabel": "Sort:",
+      "sortOptions": {
+        "newest": "Newest first",
+        "oldest": "Oldest first"
+      },
+      "subtitle": "Keep promising homes together, revisit their details, and remove any that no longer fit."
+    },
+    "savedSearches": {
+      "card": {
+        "alertStatus": {
+          "daily": "Daily alerts",
+          "instant": "Instant alerts",
+          "paused": "Alerts paused",
+          "weekly": "Weekly alerts"
+        },
+        "deleteSearch": "Delete Search",
+        "editCriteria": "Edit criteria",
+        "mapTitle": "Map of {{location}}",
+        "matchesOne": "1 matching home",
+        "matchesOther": "{{count}} matching homes",
+        "newBadge": "{{count}} new",
+        "noMatches": "No matching homes",
+        "pauseAlertsAria": "Pause alerts",
+        "renameAria": "Rename {{name}}",
+        "resumeAlertsAria": "Resume alerts",
+        "seeResults": "See Results"
+      },
+      "createRequest": "Create a property request",
+      "dialog": {
+        "cancel": "Cancel",
+        "deleteConfirmText": "will be removed from your saved searches and you will stop receiving alerts for it.",
+        "deleteTitle": "Delete saved search?",
+        "editTitle": "Edit Search",
+        "homeTypeLabel": "Home type",
+        "renameTitle": "Rename saved search",
+        "save": "Save",
+        "saveChanges": "Save Changes",
+        "searchNameLabel": "Search name"
+      },
+      "emptyRequests": {
+        "title": "No property requests yet"
+      },
+      "emptySearches": {
+        "action": "New Search",
+        "description": "Save your preferred location, budget and property preferences so you can easily return to them and discover new matching",
+        "title": "Save a search and let RentUp keep looking"
+      },
+      "mapAttribution": "© OpenStreetMap contributors",
+      "myRequestsHeading": "My Requests",
+      "newSearch": "New Search",
+      "request": {
+        "bedOne": "1 bed",
+        "bedOther": "{{count}} beds",
+        "delete": "Delete",
+        "moveIn": "Move-in {{date}}",
+        "pendingBadge": "Pending",
+        "priorityAlertLabel": "Priority alert",
+        "priorityAlertSent": "Priority alert sent",
+        "submitted": "Submitted {{date}}",
+        "titleTemplate": "{{type}} in {{city}}"
+      },
+      "requestsSubtitle": "Tell us what you need and let verified property partners respond with relevant options.",
+      "searchesSubtitle": "Keep track of the searches that matter to you and get notified when new homes match your preferences."
+    },
+    "visits": {
+      "allStatuses": "All statuses",
+      "card": {
+        "actions": {
+          "acceptNewTime": "Accept New Time",
+          "applyNow": "Apply Now",
+          "cancelRequest": "Cancel Request",
+          "cancelViewing": "Cancel Viewing",
+          "changeRequestedTime": "Change Requested Time",
+          "getDirections": "Get Directions",
+          "message": "Message",
+          "notInterested": "Not Interested",
+          "requestAnotherTime": "Request Another Time",
+          "reschedule": "Reschedule",
+          "suggestAnotherTime": "Suggest Another Time",
+          "viewDetails": "View Details",
+          "viewListing": "View Listing"
+        },
+        "awaitingConfirmationNotice": "The property representative has not confirmed this viewing yet.",
+        "newTimeSuggestedLabel": "New time suggested",
+        "verified": "Verified"
+      },
+      "dialog": {
+        "cancel": "Cancel",
+        "cancelNotice": "The property representative will be notified that you can no longer",
+        "cancelTitle": "Cancel this viewing?",
+        "cancelledIllustrationAlt": "Cancelled appointment illustration",
+        "closeCancelDialogAria": "Close cancel viewing dialog",
+        "closeRescheduleDialogAria": "Close reschedule dialog",
+        "currentSlot": "Current: {{date}} · {{time}}",
+        "detailsTitle": "Viewing Details",
+        "markNotInterested": "Mark Not Interested",
+        "noReason": "No reason",
+        "notInterestedDescription": "This helps keep your viewing history organized. A reason is",
+        "notInterestedTitle": "Mark as not interested?",
+        "notesLabel": "Notes",
+        "reasons": {
+          "foundAnotherProperty": "Found another property",
+          "other": "Other",
+          "propertyCondition": "Property condition",
+          "sizeLayout": "Size/layout",
+          "tooExpensive": "Too expensive"
+        },
+        "requestNewTime": "Request New Time",
+        "rescheduleNotice": "The property representative will need to confirm the new time.",
+        "rescheduleTitle": "Choose another date and time",
+        "saveNote": "Save Note",
+        "scheduleIllustrationAlt": "Calendar and clock illustration",
+        "viewFullListing": "View Full Listing",
+        "viewingSectionTitle": "Viewing"
+      },
+      "emptyState": {
+        "past": {
+          "action": "Find a Home",
+          "description": "Properties you've visited will appear here.",
+          "title": "No viewing history yet"
+        },
+        "pending": {
+          "description": "Any viewing requests awaiting confirmation will appear here.",
+          "title": "No viewing requests waiting"
+        },
+        "upcoming": {
+          "action": "Browse Listings",
+          "description": "Found a home you like? Request a viewing to see it in person.",
+          "title": "No upcoming viewings"
+        }
+      },
+      "heading": "My Viewings",
+      "noMatching": {
+        "clearFilters": "Clear filters",
+        "description": "Try another property name or viewing status.",
+        "title": "No matching viewings"
+      },
+      "roles": {
+        "agent": "Agent",
+        "propertyManager": "Property Manager",
+        "verifiedAgent": "Verified Agent"
+      },
+      "searchByPropertyName": "Search by property name",
+      "status": {
+        "awaitingConfirmation": "Awaiting Confirmation",
+        "cancelled": "Cancelled",
+        "completed": "Completed",
+        "confirmed": "Confirmed",
+        "newTimeSuggested": "New Time Suggested",
+        "notInterested": "Not Interested",
+        "rescheduleRequested": "Reschedule Requested",
+        "viewingUnavailable": "Viewing Unavailable"
+      },
+      "statusFilterAria": "Filter by viewing status",
+      "subtitle": "Manage your upcoming property visits and keep track of homes you've already viewed.",
+      "tabs": {
+        "past": "Past",
+        "pending": "Pending",
+        "upcoming": "Upcoming"
+      }
     }
   }
 }
