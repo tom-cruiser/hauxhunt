@@ -1,5 +1,6 @@
 "use client";
 
+import { logout } from "@/lib/api/session";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -37,7 +38,6 @@ import {
   getOwnerUnreadNotificationCount,
   subscribeToOwnerNotifications,
 } from "@/lib/owner-notifications";
-import { clearTier } from "@/hooks/use-tier";
 
 // Owner dashboard nav follows a different information architecture than the
 // Agent/Property Manager shell (components/partner/dashboard-shell.tsx):
@@ -209,10 +209,7 @@ function OwnerProfileMenu() {
             <Link
               href="/login"
               role="menuitem"
-              onClick={() => {
-                window.sessionStorage.removeItem("hauxhunt-authenticated-role");
-                clearTier();
-              }}
+              onClick={() => void logout()}
               className="flex h-12 items-center justify-between rounded-xl px-3 font-medium transition-colors hover:bg-black/4.5"
             >
               Log out

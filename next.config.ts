@@ -7,6 +7,15 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.join(__dirname),
   },
+  // The API sits behind the same origin so its cookies stay first-party.
+  async rewrites() {
+    return [
+      {
+        source: "/v1/:path*",
+        destination: `${process.env.API_URL ?? "http://localhost:4000"}/v1/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

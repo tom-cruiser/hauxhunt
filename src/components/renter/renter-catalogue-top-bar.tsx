@@ -1,5 +1,6 @@
 "use client";
 
+import { logout } from "@/lib/api/session";
 import Image from "next/image";
 import Link from "next/link";
 import { Bell, ChevronDown, MessageCircle } from "lucide-react";
@@ -259,11 +260,7 @@ export function RenterCatalogueTopBar() {
                     <Link
                       href="/login"
                       role="menuitem"
-                      onClick={() => {
-                        window.sessionStorage.removeItem(
-                          "hauxhunt-authenticated-role",
-                        );
-                      }}
+                      onClick={() => void logout()}
                       className="flex h-11 items-center rounded-xl px-3 text-sm hover:bg-black/[0.055]"
                     >
                       {t("renterDashboard.profileMenu.logOut")}

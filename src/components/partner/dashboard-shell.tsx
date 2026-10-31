@@ -1,5 +1,6 @@
 "use client";
 
+import { logout } from "@/lib/api/session";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useReducer, useState, type ReactNode } from "react";
@@ -29,7 +30,6 @@ import { Wordmark } from "@/components/layout/wordmark";
 import { VoiceInputButton } from "@/components/listings/voice-input-button";
 import appIllustration from "@/assets/images/illustrated-black-man-using-mobile-phone.png";
 import { usePartnerRole, setPartnerRole } from "@/components/partner/use-partner-role";
-import { clearTier } from "@/hooks/use-tier";
 import {
   REGISTERED_PROFESSIONALS,
   clearPreviewProfessional,
@@ -527,10 +527,7 @@ function ProfileMenuContent({
         <Link
           href="/login"
           role="menuitem"
-          onClick={() => {
-            window.sessionStorage.removeItem("hauxhunt-authenticated-role");
-            clearTier();
-          }}
+          onClick={() => void logout()}
           className="flex h-12 items-center justify-between rounded-xl px-3 font-medium transition-colors hover:bg-black/[0.045]"
         >
           Log out

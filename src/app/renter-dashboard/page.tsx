@@ -1,5 +1,6 @@
 "use client";
 
+import { logout } from "@/lib/api/session";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -46,7 +47,6 @@ import houseFive from "@/assets/images/house5.jpg";
 import houseSix from "@/assets/images/house6.jpeg";
 import julienProfile from "@/assets/images/julien.jpg";
 import emptyIllustration from "@/assets/images/empty.png";
-import { clearTier } from "@/hooks/use-tier";
 
 const LISTINGS = [
   {
@@ -1051,10 +1051,7 @@ function ProfileMenu() {
           <Link
             href="/login"
             role="menuitem"
-            onClick={() => {
-              window.sessionStorage.removeItem("hauxhunt-authenticated-role");
-              clearTier();
-            }}
+            onClick={() => void logout()}
             className="flex h-11 items-center rounded-xl px-3 text-sm hover:bg-black/[0.055]"
           >
             {t("renterDashboard.profileMenu.logOut")}

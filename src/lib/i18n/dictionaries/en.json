@@ -258,7 +258,8 @@
       "alreadyHaveAccount": "Already have an account?",
       "newToRentUp": "New to RentUp?",
       "hidePassword": "Hide password",
-      "showPassword": "Show password"
+      "showPassword": "Show password",
+      "serviceUnavailable": "We could not reach RentUp. Please try again."
     },
     "mosaic": {
       "card1": {
@@ -291,6 +292,17 @@
         "labelB": "Your next move",
         "titleB": "Start somewhere good."
       }
+    },
+    "reset": {
+      "requestTitle": "Reset your password",
+      "newPasswordTitle": "Choose a new password",
+      "emailLabel": "Email",
+      "passwordLabel": "New password",
+      "submit": "Continue",
+      "sent": "If that email has an account, a reset link is on its way.",
+      "changed": "Your password has been changed. You can log in now.",
+      "failed": "We could not complete that. The link may have expired.",
+      "backToLogin": "Back to log in"
     }
   },
   "renterDashboard": {

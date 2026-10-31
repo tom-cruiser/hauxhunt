@@ -4,9 +4,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { setPartnerRole } from "@/components/partner/use-partner-role";
 import { saveProperty } from "@/hooks/use-saved-properties";
-import { setTier } from "@/hooks/use-tier";
+import { ApiError } from "@/lib/api/client";
+import {
+  dashboardFor,
+  login,
+  register,
+  type UserRole,
+} from "@/lib/api/session";
 import { useTranslation } from "@/components/language/use-translation";
 import {
   Building2,
@@ -18,6 +23,12 @@ import {
   KeyRound,
   UserRound,
 } from "lucide-react";
+
+const COUNTRY_CODES: Record<string, string> = {
+  Rwanda: "RW",
+  Nigeria: "NG",
+  Kenya: "KE",
+};
 
 type AuthenticationFormProps = {
   mode: "login" | "register";
@@ -63,13 +74,14 @@ export function AuthenticationForm({
   const [accountType, setAccountType] = useState("renter");
   const [error, setError] = useState("");
   const [complete, setComplete] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const isRegister = mode === "register";
   const isDark = variant === "dark";
   const returnTo = typeof window !== "undefined"
     ? new URLSearchParams(window.location.search).get("returnTo")
     : null;
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     const form = event.currentTarget;
@@ -91,6 +103,7 @@ export function AuthenticationForm({
     const email = String(data.get("email") ?? "")
       .trim()
       .toLowerCase();
+    const password = String(data.get("password") ?? "");
     const searchParams = new URLSearchParams(window.location.search);
     const pendingPropertyId = searchParams.get("save");
     const pendingPropertyAlreadySaved = searchParams.get("already") === "1";
@@ -108,77 +121,49 @@ export function AuthenticationForm({
       router.replace(`${destination.pathname}${destination.search}`);
     };
 
-    if (!isRegister) {
-      if (email === "renter@gmail.com") {
-        window.sessionStorage.setItem("hauxhunt-authenticated-role", "renter");
-        window.sessionStorage.setItem("hauxhunt-has-flatmate-profile", "true");
-        setTier("free");
-        if (pendingPropertyId) {
+    setSubmitting(true);
+    try {
+      if (!isRegister) {
+        const me = await login(email, password);
+        if (me.role === "renter" && pendingPropertyId) {
           finishPendingRenterSave();
         } else {
           router.replace(
-            returnTo?.startsWith("/") ? returnTo : "/renter-dashboard",
+            returnTo?.startsWith("/") ? returnTo : dashboardFor(me.role),
           );
         }
         return;
       }
 
-      if (email === "partner@gmail.com") {
-        window.sessionStorage.setItem(
-          "hauxhunt-authenticated-role",
-          "property_manager",
-        );
-        setPartnerRole("property_manager");
-        setTier("free");
-        router.replace(
-          returnTo?.startsWith("/") ? returnTo : "/partner-dashboard",
-        );
-        return;
-      }
-
-      if (email === "agent@gmail.com") {
-        window.sessionStorage.setItem("hauxhunt-authenticated-role", "agent");
-        setPartnerRole("agent");
-        setTier("free");
-        router.replace(
-          returnTo?.startsWith("/") ? returnTo : "/partner-dashboard",
-        );
-        return;
-      }
-
-      if (email === "owner@gmail.com") {
-        window.sessionStorage.setItem("hauxhunt-authenticated-role", "owner");
-        setTier("free");
-        router.replace(returnTo?.startsWith("/") ? returnTo : "/owner-dashboard");
-        return;
-      }
-
-      setError(t("auth.form.wrongCredentials"));
-      return;
-    }
-
-    setTier("free");
-
-    if (accountType === "renter") {
-      window.sessionStorage.setItem("hauxhunt-authenticated-role", "renter");
-      if (pendingPropertyId) {
+      const me = await register({
+        role: accountType as UserRole,
+        fullName: String(data.get("fullName") ?? "").trim(),
+        agencyName: String(data.get("businessName") ?? "").trim() || undefined,
+        email,
+        phone: String(data.get("phone") ?? "").trim(),
+        country:
+          COUNTRY_CODES[String(data.get("country") ?? "")] ?? "RW",
+        password,
+        acceptTerms: true,
+      });
+      if (me.role === "renter" && pendingPropertyId) {
         finishPendingRenterSave();
         return;
       }
-    } else if (accountType === "owner") {
-      window.sessionStorage.setItem("hauxhunt-authenticated-role", "owner");
-    } else if (accountType === "property_manager") {
-      window.sessionStorage.setItem(
-        "hauxhunt-authenticated-role",
-        "property_manager",
-      );
-      setPartnerRole("property_manager");
-    } else if (accountType === "agent") {
-      window.sessionStorage.setItem("hauxhunt-authenticated-role", "agent");
-      setPartnerRole("agent");
+      setComplete(true);
+    } catch (caught) {
+      if (caught instanceof ApiError) {
+        setError(
+          caught.code === "INVALID_CREDENTIALS" || caught.status === 401
+            ? t("auth.form.wrongCredentials")
+            : caught.message,
+        );
+      } else {
+        setError(t("auth.form.serviceUnavailable"));
+      }
+    } finally {
+      setSubmitting(false);
     }
-
-    setComplete(true);
   }
 
   if (complete) {
@@ -370,12 +355,12 @@ export function AuthenticationForm({
             />
             {t("auth.form.rememberMe")}
           </label>
-          <button
-            type="button"
+          <Link
+            href="/reset-password"
             className={`font-medium ${isDark ? "text-white/75 hover:text-white" : ""}`}
           >
             {t("auth.form.forgotPassword")}
-          </button>
+          </Link>
         </div>
       )}
 
@@ -404,6 +389,7 @@ export function AuthenticationForm({
 
       <button
         type="submit"
+        disabled={submitting}
         className={`font-bricolage inline-flex w-full items-center justify-center gap-2 rounded-full px-7 font-medium transition-colors ${compact ? "mt-4 h-11" : "mt-7 h-12"} ${isDark ? "bg-white text-black hover:bg-white/85" : "bg-black text-white hover:bg-black/80"}`}
       >
         {isRegister ? t("auth.form.createAccount") : t("common.login")}

@@ -258,7 +258,8 @@
       "alreadyHaveAccount": "Vous avez déjà un compte ?",
       "newToRentUp": "Nouveau sur RentUp ?",
       "hidePassword": "Masquer le mot de passe",
-      "showPassword": "Afficher le mot de passe"
+      "showPassword": "Afficher le mot de passe",
+      "serviceUnavailable": "Impossible de joindre RentUp. Réessayez."
     },
     "mosaic": {
       "card1": {
@@ -291,6 +292,17 @@
         "labelB": "Votre prochaine étape",
         "titleB": "Commencez du bon pied."
       }
+    },
+    "reset": {
+      "requestTitle": "Réinitialiser votre mot de passe",
+      "newPasswordTitle": "Choisissez un nouveau mot de passe",
+      "emailLabel": "E-mail",
+      "passwordLabel": "Nouveau mot de passe",
+      "submit": "Continuer",
+      "sent": "Si cet e-mail a un compte, un lien de réinitialisation arrive.",
+      "changed": "Votre mot de passe a été modifié. Vous pouvez vous connecter.",
+      "failed": "Action impossible. Le lien a peut-être expiré.",
+      "backToLogin": "Retour à la connexion"
     }
   },
   "renterDashboard": {

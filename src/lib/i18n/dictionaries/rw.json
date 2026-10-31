@@ -258,7 +258,8 @@
       "alreadyHaveAccount": "Ufite konti yawe?",
       "newToRentUp": "Uri mushya kuri RentUp?",
       "hidePassword": "Hisha ijambo ry'ibanga",
-      "showPassword": "Erekana ijambo ry'ibanga"
+      "showPassword": "Erekana ijambo ry'ibanga",
+      "serviceUnavailable": "Ntitwabashije kugera kuri RentUp. Ongera ugerageze."
     },
     "mosaic": {
       "card1": {
@@ -291,6 +292,17 @@
         "labelB": "Intambwe ikurikira",
         "titleB": "Tangira ahantu heza."
       }
+    },
+    "reset": {
+      "requestTitle": "Hindura ijambo ry’ibanga",
+      "newPasswordTitle": "Hitamo ijambo ry’ibanga rishya",
+      "emailLabel": "Imeri",
+      "passwordLabel": "Ijambo ry’ibanga rishya",
+      "submit": "Komeza",
+      "sent": "Niba iyo meri ifite konti, ihuza ryo guhindura riroherezwa.",
+      "changed": "Ijambo ry’ibanga ryahinduwe. Ushobora kwinjira.",
+      "failed": "Ntibyakunze. Ihuza rishobora kuba ryarataye agaciro.",
+      "backToLogin": "Subira ku kwinjira"
     }
   },
   "renterDashboard": {

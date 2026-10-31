@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { MotionConfig } from "framer-motion";
 import { siteConfig } from "@/config/site";
 import { PrototypeReset } from "@/components/prototype-reset";
+import { SessionSync } from "@/components/auth/session-sync";
 import { LanguageHtmlSync } from "@/components/language/language-html-sync";
 import "./globals.css";
 
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="theme-paper bg-canvas text-fg flex min-h-full flex-col">
         <PrototypeReset />
         <LanguageHtmlSync />
+        <SessionSync />
         {/* `reducedMotion="user"` makes every Framer Motion transform/layout
             animation sitewide respect prefers-reduced-motion automatically
             (2026-08-05 motion decision) — one place to enforce it, not a
