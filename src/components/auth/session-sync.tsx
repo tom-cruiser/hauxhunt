@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { ApiError } from "@/lib/api/client";
+import { hydrateStores } from "@/lib/api/hydrate";
 import {
   clearSessionMirror,
   dashboardFor,
@@ -34,6 +35,7 @@ export function SessionSync() {
       .then((me) => {
         if (cancelled) return;
         mirrorSession(me);
+        void hydrateStores(me).catch(() => {});
         if (dashboard && !dashboard[1].includes(me.role)) {
           router.replace(dashboardFor(me.role));
         }

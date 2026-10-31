@@ -1,5 +1,6 @@
 "use client";
 
+import { useStoresReady } from "@/lib/api/hydrate";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -31,11 +32,12 @@ export default function PropertyBoundListingPage() {
   // silent dead end, never a bypass.
   const blocked = card ? !canManageListingFor(card) || card.listing?.status === "In Review" : false;
 
+  const storesReady = useStoresReady();
   useEffect(() => {
     if (blocked && card) router.replace(`/partner-dashboard/properties/${card.propertyId}`);
   }, [blocked, card, router]);
 
-  if (!professional || !card) return notFound();
+  if (!professional || !card) return storesReady ? notFound() : null;
   if (blocked) return null;
 
   const [neighbourhood, ...cityParts] = card.location.split(",").map((part) => part.trim());

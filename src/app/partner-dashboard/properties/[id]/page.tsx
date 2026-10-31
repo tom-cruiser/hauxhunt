@@ -1,5 +1,6 @@
 "use client";
 
+import { useStoresReady } from "@/lib/api/hydrate";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
@@ -58,10 +59,11 @@ export default function PartnerPropertyDetailPage() {
   useEffect(() => subscribeToProfessionalWork(forceUpdate), []);
   useEffect(() => subscribeToPmWork(forceUpdate), []);
 
+  const storesReady = useStoresReady();
   const professional = useDemoProfessional(role);
   const card = professional ? getPropertyAccessDetail(professional.id, params.id) : null;
 
-  if (!professional || !card) return notFound();
+  if (!professional || !card) return storesReady ? notFound() : null;
 
   // Property Manager Dashboard phase -- Section 16: responsibility-based
   // progressive disclosure. A PM only sees Leasing Activity if they hold a

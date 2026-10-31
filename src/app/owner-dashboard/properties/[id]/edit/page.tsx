@@ -1,5 +1,6 @@
 "use client";
 
+import { useStoresReady } from "@/lib/api/hydrate";
 import { useRouter, useParams } from "next/navigation";
 import { notFound } from "next/navigation";
 import { useState } from "react";
@@ -9,12 +10,13 @@ import { OwnerDashboardShell } from "@/components/owner/owner-dashboard-shell";
 import { getOwnerProperty, updateProperty } from "@/lib/owner-data";
 
 export default function EditOwnerPropertyPage() {
+  const storesReady = useStoresReady();
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const property = getOwnerProperty(params.id);
   const [saved, setSaved] = useState(false);
 
-  if (!property) return notFound();
+  if (!property) return storesReady ? notFound() : null;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

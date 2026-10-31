@@ -20,56 +20,25 @@ import cardMethodImage from "@/assets/images/card.png";
 import mobileMethodImage from "@/assets/images/mobile.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
 import { useTranslation } from "@/components/language/use-translation";
-import { getOwnerPayments, updateOwnerPayment } from "@/lib/owner-data";
+import { api } from "@/lib/api/client";
+import { refreshStores } from "@/lib/api/hydrate";
+import { formatRwf, getOwnerPayments, propertyTitle } from "@/lib/owner-data";
 import { REGISTERED_PROFESSIONALS } from "@/lib/team-data";
 import { pushProfessionalNotification } from "@/lib/professional-work";
 import { pushOwnerNotification } from "@/lib/owner-notifications";
 
-// Cross-Role Lifecycle Synchronization phase -- Section 20-24/54: this page
-// is otherwise untouched (a large, self-contained mock payment-state
-// machine -- Section 47/48 caution against a broader rebuild here). One
-// targeted connection: paying a property that has a real, matching
-// OwnerPayment record also marks that SAME record Paid, so PM/Owner see it
-// -- covering the manual test's Kacyiru/Remera scenarios without touching
-// visual design or the rest of the flow.
-const PROPERTY_TO_ID: Record<string, string> = {
-  "Kacyiru Residence": "kacyiru-2br",
-  "Nyarutarama Garden Apartment": "nyarutarama-2br",
-  "Remera Family House": "remera-3br",
+const PAYMENT_METHOD_CODES: Record<string, string> = {
+  "Mobile Money": "mobile_money",
+  Card: "card",
+  "Bank Transfer": "bank_transfer",
 };
 
-function markSharedPaymentPaid(propertyName: string) {
-  const propertyId = PROPERTY_TO_ID[propertyName];
-  if (!propertyId) return;
-  const due = getOwnerPayments().find(
-    (p) =>
-      p.propertyId === propertyId &&
-      (p.status === "Due" || p.status === "Overdue" || p.status === "Pending"),
-  );
-  if (!due) return;
-  updateOwnerPayment(due.id, { status: "Paid", date: "Just now" });
-
-  // Section 45: "Renter pays -> PM: Payment received -> Owner: Payment received."
-  const manager = due.managedBy
-    ? REGISTERED_PROFESSIONALS.find((p) => p.name === due.managedBy)
-    : undefined;
-  if (manager) {
-    pushProfessionalNotification({
-      professionalId: manager.id,
-      category: "payment",
-      title: "Payment received",
-      body: `${due.renter} paid ${due.purpose} for ${propertyName}.`,
-      actionLabel: "View Payment",
-      actionHref: `/partner-dashboard/payments?propertyId=${encodeURIComponent(propertyId)}`,
-    });
-  }
-  pushOwnerNotification({
-    category: "payment",
-    title: "Payment received",
-    body: `${due.renter} paid ${due.purpose} for ${propertyName}.`,
-    actionLabel: "View Payments",
-    actionHref: "/owner-dashboard/payments",
+async function payNow(paymentId: string, method: string) {
+  await api(`/payments/${paymentId}/pay`, {
+    method: "POST",
+    body: { method: PAYMENT_METHOD_CODES[method] ?? "mobile_money" },
   });
+  await refreshStores();
 }
 
 type PageState = "active" | "due" | "overdue";
@@ -88,6 +57,7 @@ type Modal =
   | null;
 type HistoryFilter = "All" | "Rent" | "Deposits";
 type PayablePayment = {
+  id: string;
   purpose: string;
   property: string;
   amount: string;
@@ -95,102 +65,84 @@ type PayablePayment = {
   manager: string;
 };
 
-const rental = {
-  id: "HH-RENT-104",
-  propertyId: "kacyiru-2br",
-  title: "Kacyiru Residence",
-  manager: "Jean Mugisha",
-  rent: "RWF 850,000",
-  due: "1 September 2026",
+
+type UpcomingPayment = {
+  id: string;
+  title: string;
+  property: string;
+  amount: string;
+  due: string;
+  manager: string;
 };
 
-const upcomingPayments = [
-  {
-    title: "September Rent",
-    property: "Kacyiru Residence",
-    amount: "RWF 850,000",
-    due: "1 September 2026",
-    manager: "Jean Mugisha",
-  },
-  {
-    title: "September Rent",
-    property: "Nyarutarama Garden Apartment",
-    amount: "RWF 920,000",
-    due: "5 September 2026",
-    manager: "Aline Uwase",
-  },
-];
-
-const upcomingTotal = "RWF 1,770,000";
-const hasPaymentDueToday = true;
-const linkedRentalPayments: Record<string, PayablePayment> = {
-  "HH-RENT-104": {
-    purpose: "September Rent",
-    property: "Kacyiru Residence",
-    amount: "RWF 850,000",
-    due: "1 September 2026",
-    manager: "Jean Mugisha",
-  },
-  "HH-RENT-112": {
-    purpose: "September Rent",
-    property: "Nyarutarama Garden Apartment",
-    amount: "RWF 920,000",
-    due: "5 September 2026",
-    manager: "Aline Uwase",
-  },
-  "HH-RENT-087": {
-    purpose: "August Rent",
-    property: "Remera Family House",
-    amount: "RWF 780,000",
-    due: "16 August 2026",
-    manager: "Sarah Uwase",
-  },
+type HistoryItem = {
+  date: string;
+  description: string;
+  type: "Rent" | "Deposits";
+  amount: string;
+  method: string;
+  reference: string;
+  property: string;
+  manager: string;
 };
 
-const history = [
-  {
-    date: "1 Aug 2026",
-    description: "August Rent",
-    type: "Rent" as const,
-    amount: "RWF 850,000",
-    method: "Mobile Money",
-    reference: "HH-PAY-19842",
-    property: "Kacyiru Residence",
-    manager: "Jean Mugisha",
-  },
-  {
-    date: "28 Jul 2026",
-    description: "Security Deposit",
-    type: "Deposits" as const,
-    amount: "RWF 850,000",
-    method: "Mobile Money",
-    reference: "HH-PAY-19204",
-    property: "Kacyiru Residence",
-    manager: "Jean Mugisha",
-  },
-  {
-    date: "1 Jul 2026",
-    description: "July Rent",
-    type: "Rent" as const,
-    amount: "RWF 850,000",
-    method: "Mobile Money",
-    reference: "HH-PAY-18766",
-    property: "Kacyiru Residence",
-    manager: "Jean Mugisha",
-  },
-  {
-    date: "1 Jun 2026",
-    description: "June Rent",
-    type: "Rent" as const,
-    amount: "RWF 780,000",
-    method: "Bank Transfer",
-    reference: "HH-PAY-17931",
-    property: "Remera Family House",
-    manager: "Sarah Uwase",
-  },
-];
+function upcomingFromStore(): UpcomingPayment[] {
+  return getOwnerPayments()
+    .filter((payment) => payment.status !== "Paid" && payment.status !== "Failed")
+    .map((payment) => ({
+      id: payment.id,
+      title: payment.purpose,
+      property: propertyTitle(payment.propertyId),
+      amount: payment.amount,
+      due: payment.date,
+      manager: "",
+    }));
+}
+
+function historyFromStore(): HistoryItem[] {
+  return getOwnerPayments()
+    .filter((payment) => payment.status === "Paid")
+    .map((payment) => ({
+      date: payment.date,
+      description: payment.purpose,
+      type: payment.purpose.endsWith("Rent") ? "Rent" : "Deposits",
+      amount: payment.amount,
+      method: payment.method,
+      reference: payment.reference,
+      property: propertyTitle(payment.propertyId),
+      manager: "",
+    }));
+}
+
+
+
+function currentRental() {
+  const next = upcomingFromStore()[0];
+  const row = getOwnerPayments().find((payment) => payment.id === next?.id);
+  return {
+    id: row?.rentalId ?? "",
+    propertyId: row?.propertyId ?? "",
+    title: next?.property ?? "",
+    manager: "",
+    rent: next?.amount ?? "",
+    due: next?.due ?? "",
+  };
+}
+
+function totalOf(payments: UpcomingPayment[]) {
+  return formatRwf(
+    payments.reduce(
+      (total, payment) => total + Number(payment.amount.replace(/\D/g, "")),
+      0,
+    ),
+  );
+}
 
 export default function PaymentsPage() {
+  const upcomingPayments = upcomingFromStore();
+  const history = historyFromStore();
+  const nextPayment = upcomingPayments[0];
+  const hasPaymentDueToday = Boolean(nextPayment);
   const [paymentAccess, setPaymentAccess] = useState<PaymentAccess>("enabled");
   const [pageState, setPageState] = useState<PageState>(
     hasPaymentDueToday ? "due" : "active",
@@ -198,43 +150,35 @@ export default function PaymentsPage() {
   const [modal, setModal] = useState<Modal>(null);
   const [method, setMethod] = useState<PaymentMethod>("Mobile Money");
   const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("All");
-  const [receipt, setReceipt] = useState(history[0]);
+  const [receipt, setReceipt] = useState<HistoryItem>(history[0]);
   const [selectedPayment, setSelectedPayment] = useState<PayablePayment | null>(
     null,
   );
   const visibleHistory = history.filter(
     (item) => historyFilter === "All" || item.type === historyFilter,
   );
-  const currentPayment: PayablePayment =
-    pageState === "due"
-      ? {
-          purpose: "August Rent",
-          due: "16 August 2026",
-          property: rental.title,
-          amount: rental.rent,
-          manager: rental.manager,
-        }
-      : pageState === "overdue"
-        ? {
-            purpose: "August Rent",
-            due: "1 August 2026",
-            property: rental.title,
-            amount: rental.rent,
-            manager: rental.manager,
-          }
-        : {
-            purpose: "September Rent",
-            due: rental.due,
-            property: rental.title,
-            amount: rental.rent,
-            manager: rental.manager,
-          };
+  const currentPayment: PayablePayment = {
+    id: nextPayment?.id ?? "",
+    purpose: nextPayment?.title ?? "",
+    due: nextPayment?.due ?? "",
+    property: nextPayment?.property ?? "",
+    amount: nextPayment?.amount ?? "",
+    manager: "",
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const rentalId = params.get("pay");
     const receiptRef = params.get("receipt");
-    const linkedPayment = rentalId ? linkedRentalPayments[rentalId] : null;
+    const linkedRow = rentalId
+      ? getOwnerPayments().find(
+          (payment) =>
+            payment.rentalId === rentalId && payment.status !== "Paid",
+        )
+      : undefined;
+    const linkedPayment = linkedRow
+      ? upcomingPayments.find((payment) => payment.id === linkedRow.id)
+      : undefined;
     if (receiptRef) {
       const target = history.find((item) => item.reference === receiptRef);
       if (target) {
@@ -247,8 +191,8 @@ export default function PaymentsPage() {
     }
     if (!linkedPayment) return;
     const openLinkedPayment = window.setTimeout(() => {
-      setSelectedPayment(linkedPayment);
-      setPageState(linkedPayment.due === "16 August 2026" ? "due" : "active");
+      setSelectedPayment({ ...linkedPayment, purpose: linkedPayment.title });
+      setPageState("due");
       setModal("pay");
     }, 0);
     return () => window.clearTimeout(openLinkedPayment);
@@ -306,6 +250,7 @@ export default function PaymentsPage() {
             openModal={setModal}
             payUpcoming={(payment) => {
               setSelectedPayment({
+                id: payment.id,
                 purpose: payment.title,
                 property: payment.property,
                 amount: payment.amount,
@@ -372,6 +317,7 @@ function EmptyPayments() {
 }
 
 function Invitation({ onSetup }: { onSetup: () => void }) {
+  const rental = currentRental();
   return (
     <div className="px-5 py-10 sm:px-6 lg:px-11 xl:px-[52px]">
       <section className="mx-auto max-w-[820px] rounded-2xl bg-white/75 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.06)] ring-1 ring-white/70 backdrop-blur-xl sm:p-9">
@@ -423,12 +369,16 @@ function ActivePayments({
   pageState: PageState;
   historyFilter: HistoryFilter;
   setHistoryFilter: (value: HistoryFilter) => void;
-  visibleHistory: typeof history;
+  visibleHistory: HistoryItem[];
   method: PaymentMethod;
   openModal: (modal: Modal) => void;
-  openReceipt: (item: (typeof history)[number]) => void;
-  payUpcoming: (payment: (typeof upcomingPayments)[number]) => void;
+  openReceipt: (item: HistoryItem) => void;
+  payUpcoming: (payment: UpcomingPayment) => void;
 }) {
+  const rental = currentRental();
+  const upcomingPayments = upcomingFromStore();
+  const history = historyFromStore();
+  const upcomingTotal = totalOf(upcomingPayments);
   const overdue = pageState === "overdue";
   const due = pageState === "due";
   const upcoming = pageState === "active";
@@ -592,7 +542,7 @@ function ActivePayments({
               Paid during rental setup after the agreement was signed.
             </p>
             <button
-              onClick={() => openReceipt(history[1])}
+              onClick={() => openReceipt(history[0])}
               className="mt-5 text-sm font-medium underline underline-offset-4"
             >
               View Receipt
@@ -693,13 +643,14 @@ function PaymentModal({
 }: {
   modal: NonNullable<Modal>;
   method: PaymentMethod;
-  receipt: (typeof history)[number];
+  receipt: HistoryItem;
   payment: PayablePayment;
-  setReceipt: (item: (typeof history)[number]) => void;
+  setReceipt: (item: HistoryItem) => void;
   setMethod: (method: PaymentMethod) => void;
   setModal: (modal: Modal) => void;
   enablePayments: () => void;
 }) {
+  const rental = currentRental();
   const close = () => setModal(null);
   if (modal === "setup-success")
     return (
@@ -889,15 +840,18 @@ function PaymentModal({
           </button>
           <div className="mt-7 flex flex-wrap gap-3">
             <button
-              onClick={() => {
-                markSharedPaymentPaid(payment.property);
+              onClick={async () => {
+                await payNow(payment.id, method);
+                const paid = getOwnerPayments().find(
+                  (item) => item.id === payment.id,
+                );
                 setReceipt({
-                  date: "16 Aug 2026",
+                  date: paid?.date ?? "",
                   description: payment.purpose,
                   type: "Rent",
                   amount: payment.amount,
                   method,
-                  reference: "HH-PAY-20481",
+                  reference: paid?.reference ?? "",
                   property: payment.property,
                   manager: payment.manager,
                 });
@@ -969,7 +923,7 @@ function Receipt({
   item,
   close,
 }: {
-  item: (typeof history)[number];
+  item: HistoryItem;
   close: () => void;
 }) {
   async function download() {
@@ -1068,7 +1022,7 @@ function Receipt({
   );
 }
 
-async function createReceiptPdf(item: (typeof history)[number]) {
+async function createReceiptPdf(item: HistoryItem) {
   const canvas = document.createElement("canvas");
   canvas.width = 1240;
   canvas.height = 1754;

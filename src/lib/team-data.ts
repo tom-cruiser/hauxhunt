@@ -103,20 +103,7 @@ export type RegisteredProfessional = {
   avatar?: StaticImageData;
 };
 
-export const REGISTERED_PROFESSIONALS: RegisteredProfessional[] = [
-  // Agents
-  { id: "kevin-nshuti", name: "Kevin Nshuti", role: "agent", verified: true, location: "Kigali, Rwanda", email: "kevin.nshuti@example.com", avatar: kevinPortrait },
-  { id: "aline-uwase", name: "Aline Uwase", role: "agent", verified: true, location: "Kigali, Rwanda", email: "aline.uwase@example.com", avatar: alinePortrait },
-  { id: "sarah-uwase", name: "Sarah Uwase", role: "agent", verified: true, location: "Kigali, Rwanda", email: "sarah.uwase@example.com", avatar: sarahPortrait },
-  { id: "david-m", name: "David M.", role: "agent", verified: false, location: "Kigali, Rwanda", email: "david.m@example.com", avatar: davidPortrait },
-  { id: "emmanuel-bizimana", name: "Emmanuel Bizimana", role: "agent", verified: true, location: "Kigali, Rwanda", email: "emmanuel.b@example.com", avatar: emmanuelPortrait },
-  { id: "eric-rugamba", name: "Eric Rugamba", role: "agent", verified: false, location: "Kigali, Rwanda", email: "eric.rugamba@example.com" },
-  // Property Managers
-  { id: "jean-mugisha", name: "Jean Mugisha", role: "property_manager", verified: true, location: "Kigali, Rwanda", email: "jean.mugisha@example.com", avatar: jeanPortrait },
-  { id: "patrick", name: "Patrick", role: "property_manager", verified: false, location: "Kigali, Rwanda", email: "patrick@example.com", avatar: patrickPortrait },
-  { id: "grace-umutoni", name: "Grace Umutoni", role: "property_manager", verified: true, location: "Kigali, Rwanda", email: "grace.umutoni@example.com", avatar: gracePortrait },
-  { id: "immaculee-mukamana", name: "Immaculee Mukamana", role: "property_manager", verified: true, location: "Kigali, Rwanda", email: "immaculee.m@example.com", avatar: immaculeePortrait },
-];
+export const REGISTERED_PROFESSIONALS: RegisteredProfessional[] = [];
 
 export function getProfessional(id: string): RegisteredProfessional | undefined {
   return REGISTERED_PROFESSIONALS.find((p) => p.id === id);
@@ -184,22 +171,7 @@ export type TeamInvitation = {
   ts: number;
 };
 
-const SEED_INVITATIONS: TeamInvitation[] = [
-  { id: "inv-kevin", teamId: TEAM_ID, professionalId: "kevin-nshuti", role: "agent", status: "Accepted", invitedBy: "You", invitedAt: "18 Aug 2026", ts: Date.parse("2026-08-18") },
-  { id: "inv-aline", teamId: TEAM_ID, professionalId: "aline-uwase", role: "agent", status: "Accepted", invitedBy: "You", invitedAt: "16 Aug 2026", ts: Date.parse("2026-08-16") },
-  { id: "inv-sarah", teamId: TEAM_ID, professionalId: "sarah-uwase", role: "agent", status: "Accepted", invitedBy: "You", invitedAt: "14 Aug 2026", ts: Date.parse("2026-08-14") },
-  { id: "inv-david", teamId: TEAM_ID, professionalId: "david-m", role: "agent", status: "Accepted", invitedBy: "You", invitedAt: "20 Aug 2026", ts: Date.parse("2026-08-20") },
-  { id: "inv-jean", teamId: TEAM_ID, professionalId: "jean-mugisha", role: "property_manager", status: "Accepted", invitedBy: "You", invitedAt: "15 Aug 2026", ts: Date.parse("2026-08-15") },
-  { id: "inv-patrick", teamId: TEAM_ID, professionalId: "patrick", role: "property_manager", status: "Accepted", invitedBy: "You", invitedAt: "12 Aug 2026", ts: Date.parse("2026-08-12") },
-  { id: "inv-grace", teamId: TEAM_ID, professionalId: "grace-umutoni", role: "property_manager", status: "Accepted", invitedBy: "You", invitedAt: "17 Aug 2026", ts: Date.parse("2026-08-17") },
-  { id: "inv-emmanuel", teamId: TEAM_ID, professionalId: "emmanuel-bizimana", role: "agent", status: "Pending", invitedBy: "You", invitedAt: "20 Aug 2026", ts: Date.parse("2026-08-20") },
-  { id: "inv-immaculee", teamId: TEAM_ID, professionalId: "immaculee-mukamana", role: "property_manager", status: "Pending", invitedBy: "You", invitedAt: "19 Aug 2026", ts: Date.parse("2026-08-19") },
-  { id: "inv-eric", teamId: TEAM_ID, professionalId: "eric-rugamba", role: "agent", status: "Declined", invitedBy: "You", invitedAt: "10 Aug 2026", ts: Date.parse("2026-08-10") },
-  // Phase 3 -- Kevin's second Team membership, on a completely different
-  // Owner's team. "You" wouldn't mean anything from Kevin's point of view
-  // here, so invitedBy is Kigali Homes' own owner name.
-  { id: "inv-kevin-kigali", teamId: "kigali-homes-team", professionalId: "kevin-nshuti", role: "agent", status: "Accepted", invitedBy: "Diane Umuhoza", invitedAt: "3 Aug 2026", ts: Date.parse("2026-08-03") },
-];
+const SEED_INVITATIONS: TeamInvitation[] = [];
 
 // ---------------------------------------------------------------------------
 // Team membership -- exists independently of property assignment. An Active
@@ -218,17 +190,7 @@ export type TeamMembership = {
   canManageAgents?: boolean; // Property Manager only
 };
 
-const SEED_MEMBERSHIPS: TeamMembership[] = [
-  { id: "mem-kevin", teamId: TEAM_ID, professionalId: "kevin-nshuti", role: "agent", status: "Active", joinedAt: "18 Aug 2026" },
-  { id: "mem-aline", teamId: TEAM_ID, professionalId: "aline-uwase", role: "agent", status: "Active", joinedAt: "16 Aug 2026" },
-  { id: "mem-sarah", teamId: TEAM_ID, professionalId: "sarah-uwase", role: "agent", status: "Active", joinedAt: "14 Aug 2026" },
-  { id: "mem-david", teamId: TEAM_ID, professionalId: "david-m", role: "agent", status: "Active", joinedAt: "20 Aug 2026" },
-  { id: "mem-jean", teamId: TEAM_ID, professionalId: "jean-mugisha", role: "property_manager", status: "Active", joinedAt: "15 Aug 2026", canManageAgents: true },
-  { id: "mem-patrick", teamId: TEAM_ID, professionalId: "patrick", role: "property_manager", status: "Active", joinedAt: "12 Aug 2026", canManageAgents: false },
-  { id: "mem-grace", teamId: TEAM_ID, professionalId: "grace-umutoni", role: "property_manager", status: "Active", joinedAt: "17 Aug 2026", canManageAgents: false },
-  // Phase 3 -- Kevin also belongs to a second, unrelated team.
-  { id: "mem-kevin-kigali", teamId: "kigali-homes-team", professionalId: "kevin-nshuti", role: "agent", status: "Active", joinedAt: "3 Aug 2026" },
-];
+const SEED_MEMBERSHIPS: TeamMembership[] = [];
 
 // ---------------------------------------------------------------------------
 // Property assignments -- the only thing that grants a team member access
@@ -253,107 +215,7 @@ export type PropertyAssignment = {
   assignedByProfessionalId?: string;
 };
 
-const SEED_ASSIGNMENTS: PropertyAssignment[] = [
-  {
-    id: "asn-jean-kacyiru",
-    teamId: TEAM_ID,
-    propertyId: "kacyiru-2br",
-    professionalId: "jean-mugisha",
-    role: "property_manager",
-    status: "Active",
-    assignedBy: "You",
-    responsibilities: [
-      "Manage enquiries & viewings",
-      "Review applications",
-      "Manage rental setup",
-      "Manage active rentals",
-      "Track rent payments",
-      "Handle maintenance",
-      "Communicate with renters",
-    ],
-  },
-  // Jean's second managed property -- gives the Phase 2 demo identity a
-  // real, multi-property scope to enforce against (Kacyiru + Remera are
-  // Jean's; Nyarutarama, Modern Family Home, and Kimironko are NOT, per the
-  // Phase 2 brief's property-scope example).
-  {
-    id: "asn-jean-remera",
-    teamId: TEAM_ID,
-    propertyId: "remera-3br",
-    professionalId: "jean-mugisha",
-    role: "property_manager",
-    status: "Active",
-    assignedBy: "You",
-    responsibilities: [
-      "Manage enquiries & viewings",
-      "Review applications",
-      "Manage rental setup",
-      "Manage active rentals",
-      "Track rent payments",
-      "Handle maintenance",
-      "Communicate with renters",
-    ],
-  },
-  {
-    id: "asn-aline-nyarutarama",
-    teamId: TEAM_ID,
-    propertyId: "nyarutarama-2br",
-    professionalId: "aline-uwase",
-    role: "agent",
-    status: "Active",
-    assignedBy: "You",
-    responsibilities: ["Manage listing", "Respond to enquiries", "Manage viewings", "Assist with applications"],
-  },
-  {
-    id: "asn-sarah-remera",
-    teamId: TEAM_ID,
-    propertyId: "remera-3br",
-    professionalId: "sarah-uwase",
-    role: "agent",
-    status: "Active",
-    assignedBy: "You",
-    responsibilities: ["Manage listing", "Respond to enquiries", "Manage viewings", "Assist with applications"],
-  },
-  {
-    id: "asn-patrick-kibagabaga",
-    teamId: TEAM_ID,
-    propertyId: "kibagabaga-modern-family-home",
-    professionalId: "patrick",
-    role: "property_manager",
-    status: "Active",
-    assignedBy: "You",
-    responsibilities: ["Review applications", "Communicate with renters"],
-  },
-  {
-    id: "asn-kevin-kibagabaga",
-    teamId: TEAM_ID,
-    propertyId: "kibagabaga-modern-family-home",
-    professionalId: "kevin-nshuti",
-    role: "agent",
-    status: "Active",
-    assignedBy: "You",
-    responsibilities: ["Manage listing", "Respond to enquiries", "Manage viewings"],
-  },
-  // Grace Umutoni and David M. are deliberately left with no assignment
-  // here -- they are the "Active team member, zero properties" example
-  // required by the phase spec. Kevin is also deliberately NOT pre-assigned
-  // to any of Jean's properties (Kacyiru/Remera) -- that assignment is the
-  // live Phase 2 demo action (see the phase report, Scenario D).
-  //
-  // Phase 3 -- Kevin's Kigali Homes assignment. Its property facts (title,
-  // location, image) live in professional-properties.ts, not owner-data.ts
-  // -- Kimihurura Apartment does not belong to Pacifique's portfolio.
-  {
-    id: "asn-kevin-kimihurura",
-    teamId: "kigali-homes-team",
-    propertyId: "kimihurura-apartment",
-    professionalId: "kevin-nshuti",
-    role: "agent",
-    status: "Active",
-    assignedBy: "Diane Umuhoza",
-    responsibilities: ["Manage listing", "Respond to enquiries", "Manage viewings", "Assist with applications"],
-  },
-];
+const SEED_ASSIGNMENTS: PropertyAssignment[] = [];
 
 // ---------------------------------------------------------------------------
 // Session-persisted state. Each store keeps the FULL current list (seed +
@@ -396,6 +258,17 @@ export function subscribeToTeam(callback: () => void) {
     window.removeEventListener(TEAM_EVENT, callback);
     window.removeEventListener("storage", callback);
   };
+}
+
+/** Replaces the team records with what the API returned. */
+export function setRemoteTeam(team: {
+  memberships: TeamMembership[];
+  invitations: TeamInvitation[];
+  assignments: PropertyAssignment[];
+}) {
+  SEED_MEMBERSHIPS.splice(0, SEED_MEMBERSHIPS.length, ...team.memberships);
+  SEED_INVITATIONS.splice(0, SEED_INVITATIONS.length, ...team.invitations);
+  SEED_ASSIGNMENTS.splice(0, SEED_ASSIGNMENTS.length, ...team.assignments);
 }
 
 export function getTeamInvitations(): TeamInvitation[] {

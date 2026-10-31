@@ -1,5 +1,6 @@
 "use client";
 
+import { useStoresReady } from "@/lib/api/hydrate";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { useParams, useSearchParams } from "next/navigation";
@@ -82,11 +83,12 @@ function OwnerPropertyDetailPageInner() {
   // Rental Setup / recorded Payment / status change is visible here too.
   const [, forceUpdate] = useReducer((n: number) => n + 1, 0);
   useEffect(() => subscribeToOwnerApplications(forceUpdate), []);
+  const storesReady = useStoresReady();
   useEffect(() => subscribeToOwnerRentals(forceUpdate), []);
   useEffect(() => subscribeToOwnerPayments(forceUpdate), []);
   useEffect(() => subscribeToMaintenance(forceUpdate), []);
 
-  if (!property) return notFound();
+  if (!property) return storesReady ? notFound() : null;
 
   const listing = OWNER_LISTINGS.find((l) => l.propertyId === property.id) ?? null;
   const rentals = getOwnerRentals().filter((r) => r.propertyId === property.id);

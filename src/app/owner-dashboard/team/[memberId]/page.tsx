@@ -1,5 +1,6 @@
 "use client";
 
+import { useStoresReady } from "@/lib/api/hydrate";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, useParams, useRouter } from "next/navigation";
@@ -37,12 +38,13 @@ export default function TeamMemberDetailPage() {
   const professional = membership ? getProfessional(membership.professionalId) : undefined;
 
   const [assignOpen, setAssignOpen] = useState(false);
+  const storesReady = useStoresReady();
   const [manageAssignment, setManageAssignment] = useState<PropertyAssignment | null>(null);
   const [removeFromPropertyTarget, setRemoveFromPropertyTarget] = useState<PropertyAssignment | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
   const [removeFromTeamOpen, setRemoveFromTeamOpen] = useState(false);
 
-  if (!membership || !professional || membership.status !== "Active") return notFound();
+  if (!membership || !professional || membership.status !== "Active") return storesReady ? notFound() : null;
 
   const assignments = getActiveAssignmentsFor(membership.professionalId, membership.teamId);
   const roleLabel = membership.role === "agent" ? "Agent" : "Property Manager";

@@ -146,73 +146,7 @@ export type OwnerProperty = OwnerPropertyFacts & {
   agent: AgentAssignment | null;
 };
 
-export const BASE_OWNER_PROPERTIES: OwnerPropertyFacts[] = [
-  {
-    id: "kacyiru-2br",
-    title: "Kacyiru Residence",
-    location: "Kacyiru, Kigali",
-    type: "Apartment",
-    bedrooms: 2,
-    bathrooms: 2,
-    size: 96,
-    amenities: ["Furnished", "Parking", "Backup generator", "Quiet street"],
-    image: house1,
-    rent: "RWF 850,000 / month",
-    listingStatus: "Not Listed",
-  },
-  {
-    id: "nyarutarama-2br",
-    title: "Nyarutarama Garden Apartment",
-    location: "Nyarutarama, Kigali",
-    type: "Apartment",
-    bedrooms: 2,
-    bathrooms: 2,
-    size: 104,
-    amenities: ["Pool access", "Gym", "Secure compound"],
-    image: house2,
-    rent: "RWF 920,000 / month",
-    listingStatus: "Paused",
-  },
-  {
-    id: "remera-3br",
-    title: "Remera Family House",
-    location: "Remera, Kigali",
-    type: "House",
-    bedrooms: 3,
-    bathrooms: 2,
-    size: 168,
-    amenities: ["Garden", "Quiet compound", "Parking"],
-    image: house3,
-    rent: "RWF 780,000 / month",
-    listingStatus: "Not Listed",
-  },
-  {
-    id: "kibagabaga-modern-family-home",
-    title: "Modern Family Home",
-    location: "Kibagabaga, Kigali",
-    type: "House",
-    bedrooms: 3,
-    bathrooms: 2,
-    size: 186,
-    amenities: ["Furnished", "Parking", "Garden", "Backup power"],
-    image: house4,
-    rent: "RWF 830,000 / month",
-    listingStatus: "Live",
-  },
-  {
-    id: "kimironko-1br",
-    title: "Kimironko Apartment",
-    location: "Kimironko, Kigali",
-    type: "Apartment",
-    bedrooms: 1,
-    bathrooms: 1,
-    size: 52,
-    amenities: ["Balcony", "Water tank"],
-    image: house5,
-    rent: null,
-    listingStatus: "Draft",
-  },
-];
+export const BASE_OWNER_PROPERTIES: OwnerPropertyFacts[] = [];
 
 export function managementStatusFor(property: Pick<OwnerProperty, "propertyManager" | "agent">): ManagementStatus {
   if (property.propertyManager && property.agent) return "Managed + Agent represented";
@@ -379,100 +313,7 @@ export type OwnerApplication = {
   assistedByRole?: string;
 };
 
-export const OWNER_APPLICATIONS: OwnerApplication[] = [
-  {
-    id: "HH-APP-0241",
-    propertyId: "kacyiru-2br",
-    applicant: "Julien Mugisha",
-    status: "Under Review",
-    submitted: "10 August 2026",
-    handledBy: "Jean Mugisha",
-    handledByRole: "Property Manager",
-    proposedRent: "RWF 850,000 / month",
-    moveIn: "1 September 2026",
-    requiresOwnerApproval: false,
-    note: "Jean Mugisha is reviewing references and identity documents.",
-  },
-  {
-    id: "HH-APP-0248",
-    propertyId: "nyarutarama-2br",
-    applicant: "Julien Mugisha",
-    status: "Action Required",
-    submitted: "13 August 2026",
-    handledBy: "Aline Uwase",
-    handledByRole: "Agent",
-    proposedRent: "RWF 920,000 / month",
-    moveIn: "1 September 2026",
-    requiresOwnerApproval: false,
-    note: "Aline Uwase requested an updated reference document from the applicant.",
-  },
-  {
-    id: "HH-APP-0250",
-    propertyId: "remera-3br",
-    applicant: "Julien Mugisha",
-    status: "Decision Pending",
-    submitted: "14 August 2026",
-    handledBy: "Sarah Uwase",
-    handledByRole: "Agent",
-    proposedRent: "RWF 780,000 / month",
-    moveIn: "1 September 2026",
-    requiresOwnerApproval: true,
-    note: "Sarah Uwase recommends approving this renewal — the current tenancy is ending soon.",
-    // Cross-Role Lifecycle Synchronization phase -- Section 58's own test
-    // scenario: Sarah (Agent) already assisted; Jean (PM, "Review
-    // applications" on remera-3br) must see this application and Sarah's
-    // recommendation even though handledBy still names Sarah.
-    recommendation: "Approve",
-    recommendedBy: "Sarah Uwase",
-    assistedBy: "Sarah Uwase",
-    assistedByRole: "Agent",
-  },
-  {
-    id: "HH-APP-0239",
-    propertyId: "kibagabaga-modern-family-home",
-    applicant: "Divine Keza",
-    status: "Submitted",
-    submitted: "15 August 2026",
-    handledBy: "Patrick",
-    handledByRole: "Property Manager",
-    proposedRent: "RWF 830,000 / month",
-    moveIn: "5 September 2026",
-    requiresOwnerApproval: false,
-    note: "Patrick has received the application and has not started review yet.",
-  },
-  {
-    id: "HH-APP-0198",
-    propertyId: "kibagabaga-modern-family-home",
-    applicant: "Eric Niyonzima",
-    status: "Not Selected",
-    submitted: "2 August 2026",
-    handledBy: "Patrick",
-    handledByRole: "Property Manager",
-    proposedRent: "RWF 830,000 / month",
-    moveIn: "1 August 2026",
-    requiresOwnerApproval: false,
-    note: "This application was not selected.",
-  },
-  // Owner Applications phase -- Section 46's own required test scenario:
-  // kimironko-1br has no Team assignment at all (fully self-managed, see
-  // team-data.ts's SEED_ASSIGNMENTS), so this is the one application with
-  // nobody else involved. handledBy names the Owner themselves, exactly
-  // like an Owner-decided property elsewhere -- Application Detail reads
-  // this as "Managed by You" rather than a professional card.
-  {
-    id: "HH-APP-0255",
-    propertyId: "kimironko-1br",
-    applicant: "Divine Keza",
-    status: "Submitted",
-    submitted: "19 August 2026",
-    handledBy: OWNER.name,
-    handledByRole: OWNER.role,
-    proposedRent: "RWF 480,000 / month",
-    moveIn: "1 September 2026",
-    requiresOwnerApproval: false,
-    note: "Divine Keza applied directly. No Agent or Property Manager is assigned to this property.",
-  },
-];
+export const OWNER_APPLICATIONS: OwnerApplication[] = [];
 
 // ---------------------------------------------------------------------------
 // Application overrides -- same session-only override pattern as property
@@ -550,60 +391,7 @@ export type OwnerRental = {
   note: string;
 };
 
-export const OWNER_RENTALS: OwnerRental[] = [
-  {
-    id: "HH-RENT-104",
-    propertyId: "kacyiru-2br",
-    renter: "Julien Mugisha",
-    status: "Active",
-    rent: "RWF 850,000 / month",
-    start: "1 September 2025",
-    end: "31 August 2027",
-    agreementStatus: "Signed",
-    depositStatus: "Paid",
-    paymentStatus: "Paid",
-    note: "Next rent payment due 1 September 2026.",
-  },
-  {
-    id: "HH-RENT-112",
-    propertyId: "nyarutarama-2br",
-    renter: "Julien Mugisha",
-    status: "Upcoming",
-    rent: "RWF 920,000 / month",
-    start: "1 September 2026",
-    end: "31 August 2027",
-    agreementStatus: "Awaiting Owner Approval",
-    depositStatus: "Pending",
-    paymentStatus: "Pending",
-    note: "Aline Uwase prepared the agreement. It needs your approval before the deposit is requested.",
-  },
-  {
-    id: "HH-RENT-087",
-    propertyId: "remera-3br",
-    renter: "Julien Mugisha",
-    status: "Ending Soon",
-    rent: "RWF 780,000 / month",
-    start: "1 September 2025",
-    end: "31 August 2026",
-    agreementStatus: "Signed",
-    depositStatus: "Paid",
-    paymentStatus: "Overdue",
-    note: "This tenancy ends in 16 days. A renewal application is awaiting your approval.",
-  },
-  {
-    id: "HH-RENT-041",
-    propertyId: "kibagabaga-modern-family-home",
-    renter: "Divine Keza",
-    status: "Ended",
-    rent: "RWF 650,000 / month",
-    start: "1 January 2025",
-    end: "31 December 2025",
-    agreementStatus: "Completed",
-    depositStatus: "Refunded",
-    paymentStatus: "Paid",
-    note: "This 12-month tenancy was completed.",
-  },
-];
+export const OWNER_RENTALS: OwnerRental[] = [];
 
 // ---------------------------------------------------------------------------
 // Rental overrides/additions -- same session-only override pattern as
@@ -711,78 +499,7 @@ export type OwnerPayment = {
   managedBy: string | null;
 };
 
-export const OWNER_PAYMENTS: OwnerPayment[] = [
-  {
-    id: "HH-PAY-20551",
-    propertyId: "kacyiru-2br",
-    rentalId: "HH-RENT-104",
-    renter: "Julien Mugisha",
-    purpose: "August Rent",
-    amount: "RWF 850,000",
-    amountValue: 850_000,
-    status: "Paid",
-    date: "1 August 2026",
-    method: "Mobile Money",
-    reference: "HH-PAY-20551",
-    managedBy: "Jean Mugisha",
-  },
-  {
-    id: "HH-PAY-20481",
-    propertyId: "nyarutarama-2br",
-    rentalId: "HH-RENT-112",
-    renter: "Julien Mugisha",
-    purpose: "Rental Setup — Deposit & First Month",
-    amount: "RWF 1,700,000",
-    amountValue: 1_700_000,
-    status: "Pending",
-    date: "Requested once the agreement is approved",
-    method: "Bank Transfer",
-    reference: "HH-PAY-20481",
-    managedBy: "Aline Uwase",
-  },
-  {
-    id: "HH-PAY-20397",
-    propertyId: "remera-3br",
-    rentalId: "HH-RENT-087",
-    renter: "Julien Mugisha",
-    purpose: "August Rent",
-    amount: "RWF 780,000",
-    amountValue: 780_000,
-    status: "Overdue",
-    date: "Due 1 August 2026 · 5 days overdue",
-    method: "—",
-    reference: "HH-PAY-20397",
-    managedBy: "Sarah Uwase",
-  },
-  {
-    id: "HH-PAY-20602",
-    propertyId: "kacyiru-2br",
-    rentalId: "HH-RENT-104",
-    renter: "Julien Mugisha",
-    purpose: "September Rent",
-    amount: "RWF 850,000",
-    amountValue: 850_000,
-    status: "Due",
-    date: "Due 1 September 2026",
-    method: "—",
-    reference: "HH-PAY-20602",
-    managedBy: "Jean Mugisha",
-  },
-  {
-    id: "HH-PAY-19998",
-    propertyId: "kibagabaga-modern-family-home",
-    rentalId: "HH-RENT-041",
-    renter: "Divine Keza",
-    purpose: "December Rent (final month)",
-    amount: "RWF 650,000",
-    amountValue: 650_000,
-    status: "Paid",
-    date: "1 December 2025",
-    method: "Card",
-    reference: "HH-PAY-19998",
-    managedBy: "Patrick",
-  },
-];
+export const OWNER_PAYMENTS: OwnerPayment[] = [];
 
 // ---------------------------------------------------------------------------
 // Payment overrides/additions -- same pattern as Rentals above. PM marking a
@@ -968,7 +685,7 @@ export const OWNER_MAINTENANCE: OwnerMaintenanceRequest[] = [
 // ---------------------------------------------------------------------------
 
 export function propertyTitle(propertyId: string): string {
-  return BASE_OWNER_PROPERTIES.find((property) => property.id === propertyId)?.title ?? propertyId;
+  return BASE_OWNER_PROPERTIES.find((property) => property.id === propertyId)?.title ?? "Property";
 }
 
 export function propertyLocation(propertyId: string): string {
