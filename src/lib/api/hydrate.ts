@@ -165,6 +165,37 @@ type ApiTeam = {
   })[];
 };
 
+type ApiMyTeam = {
+  membershipId: string;
+  teamId: string;
+  role: TeamMembership["role"];
+  canManageAgents: boolean;
+  joinedAt: string;
+  assignments: {
+    id: string;
+    teamId: string;
+    propertyId: string;
+    responsibilities: string[];
+  }[];
+};
+
+const RESPONSIBILITY_LABELS: Record<string, string> = {
+  manage_listing: "Manage listing",
+  manage_enquiries_viewings: "Manage enquiries & viewings",
+  review_applications: "Review applications",
+  manage_rental_setup: "Manage rental setup",
+  manage_active_rentals: "Manage active rentals",
+  track_rent_payments: "Track rent payments",
+  handle_maintenance: "Handle maintenance",
+  communicate_with_renters: "Communicate with renters",
+  respond_to_enquiries: "Respond to enquiries",
+  manage_viewings: "Manage viewings",
+  assist_with_applications: "Assist with applications",
+};
+
+const responsibilityLabels = (codes: string[]) =>
+  codes.map((code) => RESPONSIBILITY_LABELS[code] ?? code);
+
 const titleCase = (value: string) =>
   value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 
@@ -341,6 +372,34 @@ function toMaintenance(item: ApiMaintenance): MaintenanceRequest {
   };
 }
 
+function hydrateMyTeams(teams: ApiMyTeam[], me: Me) {
+  const role = me.role as TeamMembership["role"];
+  setRemoteTeam({
+    memberships: teams.map((team) => ({
+      id: team.membershipId,
+      teamId: team.teamId,
+      professionalId: me.id,
+      role,
+      status: "Active",
+      joinedAt: longDate(team.joinedAt),
+      canManageAgents: team.canManageAgents,
+    })),
+    invitations: [],
+    assignments: teams.flatMap((team) =>
+      team.assignments.map((assignment) => ({
+        id: assignment.id,
+        teamId: team.teamId,
+        propertyId: assignment.propertyId,
+        professionalId: me.id,
+        role,
+        responsibilities: responsibilityLabels(assignment.responsibilities),
+        status: "Active" as const,
+        assignedBy: "You",
+      })),
+    ),
+  });
+}
+
 function hydrateTeam(team: ApiTeam | null, me: Me) {
   const professionals = new Map<string, RegisteredProfessional>();
   if (me.role === "agent" || me.role === "property_manager") {
@@ -385,6 +444,7 @@ function hydrateTeam(team: ApiTeam | null, me: Me) {
     assignments: (team?.assignments ?? []).map((assignment) => ({
       ...assignment,
       teamId: TEAM_ID,
+      responsibilities: responsibilityLabels(assignment.responsibilities),
       status: titleCase(assignment.status) as PropertyAssignment["status"],
       assignedBy: "You",
     })),
@@ -490,7 +550,7 @@ export async function hydrateStores(me: Me) {
   currentUser = me;
   const isRenter = me.role === "renter";
   const isOwner = me.role === "owner";
-  const [rentals, payments, maintenance, applications, properties, listings, team] =
+  const [rentals, payments, maintenance, applications, properties, listings, team, myTeams] =
     await Promise.all([
       api<List<ApiRental>>("/me/rentals", { query: { pageSize: 100 } }),
       api<List<ApiPayment>>("/me/payments", { query: { pageSize: 100 } }),
@@ -507,6 +567,9 @@ export async function hydrateStores(me: Me) {
         ? Promise.resolve({ data: [] as ApiListing[] })
         : api<List<ApiListing>>("/me/listings", { query: { pageSize: 100 } }),
       isOwner ? api<ApiTeam>("/owner/team") : Promise.resolve(null),
+      isOwner || isRenter
+        ? Promise.resolve({ data: [] as ApiMyTeam[] })
+        : api<List<ApiMyTeam>>("/me/teams"),
     ]);
 
   clearDemoOverrides();
@@ -567,6 +630,7 @@ export async function hydrateStores(me: Me) {
     replace(OWNER_APPLICATIONS, applications.data.map(toOwnerApplication));
   }
   hydrateTeam(team, me);
+  if (!isOwner && !isRenter) hydrateMyTeams(myTeams.data, me);
   await hydrateConversations(me);
 
   ready = true;

@@ -694,7 +694,7 @@ export function getPropertyAccessDetail(professionalId: string, propertyId: stri
 // id, e.g. "assigned to {title}". Falls back to the raw id, matching
 // owner-data.ts's propertyTitle() convention.
 export function resolveAnyPropertyTitle(propertyId: string): string {
-  return resolveTeamPropertyFacts(propertyId)?.title ?? getIndependentProperty(propertyId)?.title ?? propertyId;
+  return resolveTeamPropertyFacts(propertyId)?.title ?? getIndependentProperty(propertyId)?.title ?? "Property";
 }
 
 export function resolveAnyPropertyLocation(propertyId: string): string {
