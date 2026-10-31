@@ -112,6 +112,15 @@ export const DATA_CHANGED_EVENT = "rentup-data-changed";
 
 export const WRITE_FAILED_EVENT = "rentup-write-failed";
 
+/** Shows the failure toast for a write the user is waiting on. */
+export function reportWriteFailure(error: unknown) {
+  window.dispatchEvent(
+    new CustomEvent(WRITE_FAILED_EVENT, {
+      detail: error instanceof Error ? error.message : "Please try again.",
+    }),
+  );
+}
+
 /**
  * Runs store writes against the API in order, then asks the stores to reload.
  * Stores update optimistically, so a failure is announced to the user and the
@@ -126,13 +135,7 @@ export function syncWrites(
         previous.then(() => api(path, { method, body })),
       Promise.resolve(),
     )
-    .catch((error: unknown) => {
-      window.dispatchEvent(
-        new CustomEvent(WRITE_FAILED_EVENT, {
-          detail: error instanceof Error ? error.message : "Please try again.",
-        }),
-      );
-    })
+    .catch(reportWriteFailure)
     .finally(() => window.dispatchEvent(new Event(DATA_CHANGED_EVENT)));
 }
 

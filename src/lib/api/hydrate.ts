@@ -25,12 +25,13 @@ import {
   OWNER_APPLICATIONS,
   OWNER_PAYMENTS,
   OWNER_RENTALS,
-  formatRwf,
+  formatMoney,
   type OwnerApplication,
   type OwnerPayment,
   type OwnerPropertyFacts,
   type OwnerRental,
 } from "@/lib/owner-data";
+import { setRemoteRentalSetups, type ApiRentalSetup } from "@/lib/pm-work";
 import {
   setRemoteProfessionalWork,
   type Enquiry,
@@ -60,6 +61,7 @@ type ApiRental = {
   status: string;
   monthlyRent: number;
   securityDeposit: number;
+  currency: string;
   startDate: string;
   endDate: string;
   agreementStatus: string;
@@ -76,6 +78,7 @@ type ApiPayment = {
   kind: "setup" | "rent";
   periodMonth: string;
   amount: number;
+  currency: string;
   status: string;
   processing: boolean;
   dueDate: string;
@@ -271,7 +274,7 @@ function toRental(rental: ApiRental): OwnerRental {
     propertyId: rental.propertyId,
     renter: rental.renterName,
     status: titleCase(rental.status) as OwnerRental["status"],
-    rent: `${formatRwf(rental.monthlyRent)} / month`,
+    rent: `${formatMoney(rental.currency, rental.monthlyRent)} / month`,
     start: longDate(rental.startDate),
     end: longDate(rental.endDate),
     agreementStatus: titleCase(rental.agreementStatus),
@@ -293,7 +296,7 @@ function toRenterRental(rental: ApiRental, manager: string): RenterRental {
     beds: 0,
     baths: 0,
     furnishing: "",
-    rent: formatRwf(rental.monthlyRent),
+    rent: formatMoney(rental.currency, rental.monthlyRent),
     nextPayment: longDate(rental.nextPaymentDate),
     start: longDate(rental.startDate),
     end: longDate(rental.endDate),
@@ -315,7 +318,7 @@ function toPayment(payment: ApiPayment): OwnerPayment {
     rentalId: payment.rentalId,
     renter: payment.renterName,
     purpose: label,
-    amount: formatRwf(payment.amount),
+    amount: formatMoney(payment.currency, payment.amount),
     amountValue: payment.amount,
     status: titleCase(
       payment.processing ? "pending" : payment.status,
@@ -592,6 +595,18 @@ function clearDemoOverrides() {
 let ready = false;
 let currentUser: Me | null = null;
 
+/** There is no list endpoint, and a setup only exists once an application is approved. */
+async function fetchRentalSetups(applications: ApiApplication[]) {
+  const setups = await Promise.all(
+    applications
+      .filter(({ status }) => status === "approved" || status === "completed")
+      .map(({ id }) =>
+        api<ApiRentalSetup>(`/rental-setups/${id}`).catch(() => null),
+      ),
+  );
+  return setups.filter((setup) => setup !== null);
+}
+
 /** Reloads every store after a write. */
 export function refreshStores() {
   return currentUser ? hydrateStores(currentUser) : Promise.resolve();
@@ -683,6 +698,9 @@ export async function hydrateStores(me: Me) {
     replace(OWNER_APPLICATIONS, applications.data.map(toOwnerApplication));
   }
   hydrateTeam(team, me);
+  setRemoteRentalSetups(
+    isOwner || isRenter ? await fetchRentalSetups(applications.data) : [],
+  );
   if (!isOwner && !isRenter) {
     hydrateMyTeams(myTeams.data, me);
     const [enquiries, viewings] = await Promise.all([

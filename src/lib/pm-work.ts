@@ -24,14 +24,17 @@
 //     stays external metadata, never a registered account.
 
 import {
-  createOwnerPayment,
-  createOwnerRental,
+  DATA_CHANGED_EVENT,
+  api,
+  reportWriteFailure,
+  uploadFile,
+} from "@/lib/api/client";
+import {
+  formatMoney,
   getOwnerPayments,
   getOwnerRentals,
   subscribeToOwnerPayments,
   subscribeToOwnerRentals,
-  updateOwnerPayment,
-  updateOwnerRental,
   type OwnerPayment,
   type OwnerRental,
 } from "@/lib/owner-data";
@@ -44,12 +47,7 @@ import { getActiveAssignmentsFor } from "@/lib/team-data";
 import {
   getPropertyAccessDetail,
   getProfessionalPropertyCards,
-  resolveAnyPropertyTitle,
 } from "@/lib/professional-properties";
-import { getApplication, pushProfessionalNotification } from "@/lib/professional-work";
-import { pushOwnerNotification } from "@/lib/owner-notifications";
-import { pushNotification as pushRenterNotification } from "@/lib/notifications";
-import { completeApplicationAutomatically } from "@/lib/application-workflow";
 
 function accessiblePropertyIds(professionalId: string): Set<string> {
   return new Set(
@@ -208,66 +206,162 @@ export { subscribeToOwnerPayments };
 export type RentalSetupStatus =
   "Draft" | "Sent to Renter" | "Completed" | "Cancelled";
 
+export type ApiRentalSetup = {
+  id: string;
+  applicationId: string;
+  propertyId: string;
+  propertyTitle: string;
+  propertyLocation: string;
+  renterName: string;
+  initiatedBy: string;
+  initiatedByRole: string;
+  status: "draft" | "sent_to_renter" | "completed" | "cancelled";
+  monthlyRent: number;
+  securityDeposit: number;
+  currency: string;
+  startDate: string | null;
+  endDate: string | null;
+  paymentDueDay: number;
+  agreementAttached: boolean;
+  agreementFileName: string | null;
+  signedAt: string | null;
+  rentalId: string | null;
+  setupPayment: {
+    id: string;
+    status: string;
+    reference: string;
+    chargeStartedAt: string | null;
+  } | null;
+};
+
+export type RentalSetupTerms = {
+  monthlyRent: number;
+  securityDeposit: number;
+  startDate: string;
+  endDate: string;
+  paymentDueDay: number;
+};
+
 export type RentalSetupDraft = {
   id: string;
   applicationId: string;
   propertyId: string;
-  // Owner Rental Setup Continuity phase -- Section 3/4: professionalId
-  // stays PM-only and is now optional (absent for an Owner-initiated
-  // draft -- the Owner is not a RegisteredProfessional, so there is no id
-  // to store). initiatedBy/initiatedByRole is the one generic, role-
-  // agnostic identity every draft carries regardless of who created it --
-  // read by the Owner/PM UI and by the renter's setup screen for
-  // attribution, instead of a professional-only lookup.
-  professionalId?: string;
+  propertyTitle: string;
+  propertyLocation: string;
   initiatedBy: string;
   initiatedByRole: string;
   renterName: string;
   status: RentalSetupStatus;
-  // Rental Details
+  currency: string;
+  // Formatted for display. `terms` holds the values the API stores.
   monthlyRent: string;
   securityDeposit: string;
+  totalDue: string;
   startDate: string;
   endDate: string;
   paymentDueDay: string;
-  // Agreement
+  terms: RentalSetupTerms;
   agreementAttached: boolean;
-  // Result, once sent
+  agreementFileName: string | null;
+  signedAt: string | null;
   rentalId?: string;
+  setupPayment: ApiRentalSetup["setupPayment"];
 };
 
-const RENTAL_SETUP_KEY = "hauxhunt-rental-setup-drafts";
 const PM_EVENT = "hauxhunt-pm-work-changed";
 
-function setupPaymentTotal(monthlyRent: string, securityDeposit: string) {
-  const currency = monthlyRent.match(/^[A-Z]{3}/)?.[0] ?? "RWF";
-  const monthlyValue = Number(monthlyRent.replace(/[^0-9]/g, "")) || 0;
-  const depositValue = Number(securityDeposit.replace(/[^0-9]/g, "")) || 0;
+const SETUP_STATUSES: Record<ApiRentalSetup["status"], RentalSetupStatus> = {
+  draft: "Draft",
+  sent_to_renter: "Sent to Renter",
+  completed: "Completed",
+  cancelled: "Cancelled",
+};
+
+const SETUP_ROLES: Record<string, string> = {
+  owner: "Property Owner",
+  property_manager: "Property Manager",
+  agent: "Agent",
+};
+
+function setupDate(value: string | null) {
+  return value
+    ? new Date(value).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        timeZone: "UTC",
+      })
+    : "";
+}
+
+function ordinal(day: number) {
+  if (day % 10 === 1 && day !== 11) return `${day}st`;
+  if (day % 10 === 2 && day !== 12) return `${day}nd`;
+  if (day % 10 === 3 && day !== 13) return `${day}rd`;
+  return `${day}th`;
+}
+
+function toDraft(setup: ApiRentalSetup): RentalSetupDraft {
+  const { currency, monthlyRent, securityDeposit, paymentDueDay } = setup;
   return {
-    label: `${currency} ${(monthlyValue + depositValue).toLocaleString("en-US")}`,
-    value: monthlyValue + depositValue,
+    id: setup.id,
+    applicationId: setup.applicationId,
+    propertyId: setup.propertyId,
+    propertyTitle: setup.propertyTitle,
+    propertyLocation: setup.propertyLocation,
+    initiatedBy: setup.initiatedBy,
+    initiatedByRole:
+      SETUP_ROLES[setup.initiatedByRole] ?? setup.initiatedByRole,
+    renterName: setup.renterName,
+    status: SETUP_STATUSES[setup.status],
+    currency,
+    monthlyRent: `${formatMoney(currency, monthlyRent)} / month`,
+    securityDeposit: formatMoney(currency, securityDeposit),
+    totalDue: formatMoney(currency, monthlyRent + securityDeposit),
+    startDate: setupDate(setup.startDate),
+    endDate: setupDate(setup.endDate),
+    paymentDueDay: `${ordinal(paymentDueDay)} of every month`,
+    terms: {
+      monthlyRent,
+      securityDeposit,
+      startDate: setup.startDate?.slice(0, 10) ?? "",
+      endDate: setup.endDate?.slice(0, 10) ?? "",
+      paymentDueDay,
+    },
+    agreementAttached: setup.agreementAttached,
+    agreementFileName: setup.agreementFileName,
+    signedAt: setup.signedAt,
+    rentalId: setup.rentalId ?? undefined,
+    setupPayment: setup.setupPayment,
   };
 }
 
-function readDrafts(): RentalSetupDraft[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.sessionStorage.getItem(RENTAL_SETUP_KEY);
-    const parsed = raw ? (JSON.parse(raw) as RentalSetupDraft[]) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+let rentalSetups: RentalSetupDraft[] = [];
+
+export function setRemoteRentalSetups(setups: ApiRentalSetup[]) {
+  rentalSetups = setups.map(toDraft);
+  window.dispatchEvent(new Event(PM_EVENT));
 }
 
-function writeDrafts(drafts: RentalSetupDraft[]) {
-  if (typeof window === "undefined") return;
-  try {
-    window.sessionStorage.setItem(RENTAL_SETUP_KEY, JSON.stringify(drafts));
-  } catch {
-    // Storage full/unavailable -- change still applies for this render via the dispatched event below.
-  }
+function keepRentalSetup(setup: ApiRentalSetup) {
+  const draft = toDraft(setup);
+  rentalSetups = [...rentalSetups.filter((d) => d.id !== draft.id), draft];
   window.dispatchEvent(new Event(PM_EVENT));
+  window.dispatchEvent(new Event(DATA_CHANGED_EVENT));
+  return draft;
+}
+
+// Each step waits on its own result before moving on, so these resolve to the
+// saved setup, or to null once the failure has been shown.
+async function writeRentalSetup(path: string, body?: unknown, method = "POST") {
+  try {
+    return keepRentalSetup(
+      await api<ApiRentalSetup>(path, { method, body }),
+    );
+  } catch (error) {
+    reportWriteFailure(error);
+    return null;
+  }
 }
 
 export function subscribeToRentalSetup(callback: () => void) {
@@ -282,226 +376,96 @@ export function subscribeToRentalSetup(callback: () => void) {
 export function getRentalSetupDraft(
   applicationId: string,
 ): RentalSetupDraft | undefined {
-  return readDrafts().find((d) => d.applicationId === applicationId);
+  return rentalSetups.find((d) => d.applicationId === applicationId);
 }
 
-// Starts (or resumes) a draft, prefilled from the Application/Property --
-// Section 30: "Do not ask for known data again."
-export function startRentalSetup(input: {
-  applicationId: string;
-  propertyId: string;
-  renterName: string;
-  monthlyRent: string;
-  moveIn: string;
-  initiatedBy: string;
-  initiatedByRole: string;
-  professionalId?: string;
-}): RentalSetupDraft {
-  const existing = getRentalSetupDraft(input.applicationId);
-  if (existing) return existing;
-  const draft: RentalSetupDraft = {
-    id: `setup-${input.applicationId}`,
-    applicationId: input.applicationId,
-    propertyId: input.propertyId,
-    professionalId: input.professionalId,
-    initiatedBy: input.initiatedBy,
-    initiatedByRole: input.initiatedByRole,
-    renterName: input.renterName,
-    status: "Draft",
-    monthlyRent: input.monthlyRent,
-    securityDeposit: input.monthlyRent.replace(/\s*\/\s*month\s*$/i, ""),
-    startDate: input.moveIn,
-    endDate: "",
-    paymentDueDay: "1st of every month",
-    agreementAttached: false,
-  };
-  writeDrafts([...readDrafts(), draft]);
-  return draft;
-}
-
-export function saveRentalSetupDraft(
-  applicationId: string,
-  patch: Partial<RentalSetupDraft>,
-) {
-  writeDrafts(
-    readDrafts().map((d) =>
-      d.applicationId === applicationId ? { ...d, ...patch } : d,
-    ),
-  );
-}
-
-// The one place a new Rental (and its first Payment) comes into existence --
-// Section 33: "Send Rental Setup." Owner and PM read the identical record
-// afterward via getOwnerRentals()/getOwnerPayments().
-export function sendRentalSetup(
-  applicationId: string,
-  propertyTitle: string,
-): string | null {
-  const draft = getRentalSetupDraft(applicationId);
-  if (!draft) return null;
-  if (draft.rentalId) return draft.rentalId;
-
-  const rentalId = `HH-RENT-${Date.now().toString(36).toUpperCase()}`;
-  const totalDue = setupPaymentTotal(draft.monthlyRent, draft.securityDeposit);
-  const rental: OwnerRental = {
-    id: rentalId,
-    propertyId: draft.propertyId,
-    renter: draft.renterName,
-    status: "Upcoming",
-    rent: draft.monthlyRent,
-    start: draft.startDate,
-    end: draft.endDate || "—",
-    agreementStatus: "Awaiting Renter Signature",
-    depositStatus: "Pending",
-    paymentStatus: "Pending",
-    note: `Rental setup sent for ${propertyTitle}. Awaiting renter review and signature.`,
-  };
-  createOwnerRental(rental);
-
-  createOwnerPayment({
-    id: `HH-PAY-${Date.now().toString(36).toUpperCase()}`,
-    propertyId: draft.propertyId,
-    rentalId,
-    renter: draft.renterName,
-    purpose: "Rental Setup — Deposit & First Month",
-    amount: totalDue.label,
-    amountValue: totalDue.value,
-    status: "Pending",
-    date: "Requested once the agreement is signed",
-    method: "—",
-    reference: `HH-PAY-${rentalId}`,
-    managedBy: null,
-  });
-
-  writeDrafts(
-    readDrafts().map((d) =>
-      d.applicationId === applicationId
-        ? { ...d, status: "Sent to Renter", rentalId }
-        : d,
-    ),
-  );
-
-  // Section 45: "PM sends Rental Setup -> Renter: Rental setup ready."
-  pushRenterNotification({
-    category: "rental-setup",
-    title: "Rental setup ready",
-    body: `Your rental setup for ${propertyTitle} is ready to review.`,
-    actionLabel: "Review Setup",
-    actionHref: `/renter-dashboard/rental-setup/${applicationId}`,
-  });
-
-  return rentalId;
-}
-
-// Cross-Role Lifecycle Synchronization phase -- Section 10/12: the renter
-// reaches this same draft either by applicationId (from Applications, before
-// a rentalId exists) or by rentalId (from My Rentals, after it does) -- one
-// shared record, looked up either way, never two.
+// The renter reaches the same setup by application id (from Applications) or
+// by rental id (from My Rentals).
 export function getRentalSetupByAnyId(
   id: string,
 ): RentalSetupDraft | undefined {
-  return readDrafts().find((d) => d.applicationId === id || d.rentalId === id);
+  return rentalSetups.find(
+    (d) => d.id === id || d.applicationId === id || d.rentalId === id,
+  );
 }
 
-// Section 16: the renter accepting/signing updates the SAME Rental record
-// PM and Owner already read -- never a second, renter-only rental.
-export function completeRentalSetup(applicationId: string) {
-  const draft = getRentalSetupDraft(applicationId);
-  if (!draft || !draft.rentalId) return;
-  const startsInFuture = new Date(draft.startDate).getTime() > Date.now();
-  updateOwnerRental(draft.rentalId, {
-    status: startsInFuture ? "Upcoming" : "Active",
-    agreementStatus: "Signed",
-    depositStatus: "Paid",
-    paymentStatus: "Paid",
-    note: startsInFuture
-      ? `Setup complete and paid. Move-in is scheduled for ${draft.startDate}.`
-      : "Rental setup complete and initial payment received.",
-  });
-  writeDrafts(
-    readDrafts().map((d) =>
-      d.applicationId === applicationId ? { ...d, status: "Completed" } : d,
-    ),
-  );
+const starting = new Set<string>();
 
-  // Applicant Lifecycle State Machine phase -- the one place `Completed`
-  // (system-only, never a manual button -- see `SYSTEM_ONLY_STATUSES`) is
-  // actually set: the lease is signed and the deposit paid the instant this
-  // function runs (agreementStatus/depositStatus above), so the linked
-  // Application moves to its own terminal state in the same beat, logged to
-  // its status history as a system event.
-  const linkedApplication = getApplication(applicationId);
-  if (linkedApplication) {
-    completeApplicationAutomatically(applicationId, linkedApplication.source, linkedApplication.status);
+/** Starts the setup, prefilled by the API from the application and listing. */
+export async function startRentalSetup(applicationId: string) {
+  if (starting.has(applicationId)) return null;
+  starting.add(applicationId);
+  try {
+    return await writeRentalSetup(`/applications/${applicationId}/rental-setup`);
+  } finally {
+    starting.delete(applicationId);
   }
-
-  // Section 45: "Renter completes Rental Setup -> Owner: ..."
-  const propertyTitle = resolveAnyPropertyTitle(draft.propertyId);
-  // Owner Rental Setup Continuity phase -- an Owner-initiated draft has no
-  // professionalId (the Owner isn't a RegisteredProfessional), so there was
-  // never a professional inbox to notify here even before Rentals was
-  // removed as a partner-dashboard surface (rental setup is Owner-only now,
-  // so `draft.professionalId` is always unset -- this used to also cover a
-  // PM-initiated draft, which can no longer happen). The Owner is still
-  // notified below, unconditionally, exactly as before.
-  pushOwnerNotification({
-    category: "rental-setup",
-    title: "Rental setup completed",
-    body: `${draft.renterName} completed rental setup for ${propertyTitle}. The rental is now active.`,
-    actionLabel: "View Rental",
-    actionHref: `/owner-dashboard/rentals?open=${draft.rentalId}`,
-  });
 }
 
-// Section 16 (decline path): recorded on the same draft/rental so PM/Owner
-// see it too, rather than a renter-only local dismissal.
-export function declineRentalSetup(applicationId: string) {
-  const draft = getRentalSetupDraft(applicationId);
-  if (draft?.rentalId)
-    updateOwnerRental(draft.rentalId, {
-      status: "Ended",
-      note: "The renter declined this rental setup invitation.",
-    });
-  writeDrafts(
-    readDrafts().map((d) =>
-      d.applicationId === applicationId ? { ...d, status: "Cancelled" } : d,
-    ),
+export function saveRentalSetupDraft(
+  id: string,
+  { endDate, startDate, ...terms }: Partial<RentalSetupTerms>,
+) {
+  return writeRentalSetup(
+    `/rental-setups/${id}`,
+    {
+      ...terms,
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
+    },
+    "PATCH",
   );
 }
 
-// Section 20-23: marks the Rental Setup's initial deposit-and-first-month
-// Payment "Paid" -- the SAME OwnerPayment record PM/Owner see, and updates
-// the Rental's own depositStatus alongside it. A mock action; no gateway.
-export function markInitialSetupPaymentPaid(rentalId: string) {
-  const payment = getOwnerPayments().find(
-    (p) =>
-      p.rentalId === rentalId &&
-      p.purpose === "Rental Setup — Deposit & First Month",
-  );
-  if (payment)
-    updateOwnerPayment(payment.id, { status: "Paid", date: "Just now" });
-  updateOwnerRental(rentalId, { depositStatus: "Paid" });
-
-  // Section 45: "Renter pays -> PM: Payment received -> Owner: Payment received."
-  const draft = readDrafts().find((d) => d.rentalId === rentalId);
-  if (draft) {
-    const propertyTitle = resolveAnyPropertyTitle(draft.propertyId);
-    if (draft.professionalId) {
-      pushProfessionalNotification({
-        professionalId: draft.professionalId,
-        category: "payment",
-        title: "Payment received",
-        body: `${draft.renterName} paid the deposit and first month's rent for ${propertyTitle}.`,
-        actionLabel: "View Payment",
-        actionHref: `/partner-dashboard/payments?propertyId=${encodeURIComponent(draft.propertyId)}`,
-      });
-    }
-    pushOwnerNotification({
-      category: "payment",
-      title: "Payment received",
-      body: `${draft.renterName} paid the deposit and first month's rent for ${propertyTitle}.`,
-      actionLabel: "View Payments",
-      actionHref: "/owner-dashboard/payments",
+export async function attachRentalAgreement(id: string, file: File) {
+  try {
+    const key = await uploadFile(`/rental-setups/${id}/agreement/upload-url`, file);
+    return await writeRentalSetup(`/rental-setups/${id}/agreement`, {
+      key,
+      fileName: file.name,
     });
+  } catch (error) {
+    reportWriteFailure(error);
+    return null;
   }
+}
+
+export async function rentalAgreementUrl(id: string) {
+  const { url } = await api<{ url: string }>(
+    `/rental-setups/${id}/agreement/url`,
+  );
+  return url;
+}
+
+/** Creates the rental and its first payment on the API. */
+export function sendRentalSetup(id: string) {
+  return writeRentalSetup(`/rental-setups/${id}/send`);
+}
+
+export function signRentalSetup(id: string, signature: string) {
+  return writeRentalSetup(`/rental-setups/${id}/sign`, { signature });
+}
+
+export async function payRentalSetup(draft: RentalSetupDraft) {
+  if (!draft.setupPayment) return null;
+  try {
+    await api(`/payments/${draft.setupPayment.id}/pay`, {
+      method: "POST",
+      body: { method: "mobile_money" },
+    });
+    return keepRentalSetup(
+      await api<ApiRentalSetup>(`/rental-setups/${draft.id}`),
+    );
+  } catch (error) {
+    reportWriteFailure(error);
+    return null;
+  }
+}
+
+export function completeRentalSetup(id: string) {
+  return writeRentalSetup(`/rental-setups/${id}/complete`);
+}
+
+export function declineRentalSetup(id: string) {
+  return writeRentalSetup(`/rental-setups/${id}/decline`);
 }

@@ -6,7 +6,7 @@ import { useEffect, useReducer, useState } from "react";
 import { Check, ChevronLeft } from "lucide-react";
 
 import { OwnerDashboardShell } from "@/components/owner/owner-dashboard-shell";
-import { OWNER, getOwnerApplication, propertyLocation, propertyTitle, subscribeToOwnerApplications } from "@/lib/owner-data";
+import { getOwnerApplication, propertyLocation, propertyTitle, subscribeToOwnerApplications } from "@/lib/owner-data";
 import { getRentalSetupManagerFor } from "@/lib/professional-work";
 import { getRentalSetupDraft, sendRentalSetup, startRentalSetup, subscribeToPmWork } from "@/lib/pm-work";
 import { AgreementStep, PaymentTermsStep, RENTAL_SETUP_STEPS as STEPS, RentalDetailsStep, ReviewStep } from "@/components/rental-setup/rental-setup-steps";
@@ -36,6 +36,12 @@ export default function OwnerRentalSetupPage() {
 
   const [step, setStep] = useState(0);
   const application = getOwnerApplication(params.applicationId);
+  const draft = application ? getRentalSetupDraft(application.id) : undefined;
+  const canStart = application?.status === "Approved" && !draft;
+
+  useEffect(() => {
+    if (canStart) void startRentalSetup(application.id);
+  }, [application?.id, canStart]);
 
   if (!application) {
     return (
@@ -69,17 +75,31 @@ export default function OwnerRentalSetupPage() {
     );
   }
 
-  const draft =
-    getRentalSetupDraft(application.id) ??
-    startRentalSetup({
-      applicationId: application.id,
-      propertyId: application.propertyId,
-      initiatedBy: OWNER.name,
-      initiatedByRole: OWNER.role,
-      renterName: application.applicant,
-      monthlyRent: application.proposedRent,
-      moveIn: application.moveIn,
-    });
+  if (!draft) {
+    return (
+      <OwnerDashboardShell>
+        <section className="px-5 pt-8 pb-24 sm:px-6 lg:px-10 lg:pt-10 xl:px-12">
+          <p className="text-carbon-500 mx-auto max-w-180 text-sm">Preparing rental setup…</p>
+        </section>
+      </OwnerDashboardShell>
+    );
+  }
+
+  if (draft.status === "Cancelled") {
+    return (
+      <OwnerDashboardShell>
+        <section className="px-5 pt-8 pb-24 sm:px-6 lg:px-10 lg:pt-10 xl:px-12">
+          <div className="mx-auto max-w-180 rounded-[1.5rem] border border-dashed border-black/15 bg-white px-6 py-16 text-center">
+            <h3 className="font-bricolage text-xl font-medium">Rental setup declined</h3>
+            <p className="text-carbon-500 mt-2 text-sm leading-6">{draft.renterName} declined this rental setup.</p>
+            <Link href={`/owner-dashboard/applications?open=${application.id}`} className="font-bricolage mt-6 inline-flex h-11 items-center rounded-full bg-black px-6 text-sm font-medium text-white">
+              Back to Applications
+            </Link>
+          </div>
+        </section>
+      </OwnerDashboardShell>
+    );
+  }
 
   if (draft.status === "Sent to Renter" || draft.status === "Completed") {
     return (
@@ -155,9 +175,9 @@ export default function OwnerRentalSetupPage() {
                   draft={draft}
                   propertyTitle={propertyTitle(application.propertyId)}
                   back={() => setStep(2)}
-                  onSend={() => {
-                    const rentalId = sendRentalSetup(application.id, propertyTitle(application.propertyId));
-                    if (rentalId) router.push(`/owner-dashboard/rentals?open=${rentalId}`);
+                  onSend={async () => {
+                    const sent = await sendRentalSetup(draft.id);
+                    if (sent?.rentalId) router.push(`/owner-dashboard/rentals?open=${sent.rentalId}`);
                   }}
                 />
               ) : null}

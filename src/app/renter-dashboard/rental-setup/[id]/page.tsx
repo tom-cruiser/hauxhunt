@@ -9,21 +9,13 @@ import managerAvatar from "@/assets/images/julien.jpg";
 import emptyIllustration from "@/assets/images/empty.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
 import { useTranslation } from "@/components/language/use-translation";
-import { RENTER_APPLICATIONS } from "@/data/renter-applications";
-import { DEMO_LISTINGS } from "@/data/hero-search-demo";
-import {
-  resolveAnyPropertyLocation,
-  resolveAnyPropertyTitle,
-} from "@/lib/professional-properties";
-import { getPaymentsForRentalId } from "@/lib/owner-data";
 import {
   completeRentalSetup,
   declineRentalSetup,
   getRentalSetupByAnyId,
-  markInitialSetupPaymentPaid,
-  saveRentalSetupDraft,
-  sendRentalSetup,
-  startRentalSetup,
+  payRentalSetup,
+  rentalAgreementUrl,
+  signRentalSetup,
   subscribeToPmWork,
   type RentalSetupDraft,
 } from "@/lib/pm-work";
@@ -65,84 +57,28 @@ export default function RentalSetupPage() {
   const [reviewed, setReviewed] = useState(false);
   const [read, setRead] = useState(false);
   const [understood, setUnderstood] = useState(false);
-  const [signed, setSigned] = useState(false);
-  const [signedAt, setSignedAt] = useState("");
-  const [paid, setPaid] = useState(false);
   const [modal, setModal] = useState<Modal>(null);
   const [signature, setSignature] = useState("");
-  const [declined, setDeclined] = useState(false);
 
   const draft = hydrated ? getRentalSetupByAnyId(params.id) : undefined;
-  const approvedApplication = RENTER_APPLICATIONS.find(
-    (application) =>
-      application.id === params.id && application.status === "Approved",
-  );
-
-  useEffect(() => {
-    if (!hydrated || draft || !approvedApplication) return;
-
-    const listing = DEMO_LISTINGS.find(
-      (item) => item.id === approvedApplication.propertyId,
-    );
-    // The currency-amount branch (listing found) is left untranslated,
-    // matching the app-wide rule that currency amounts/codes stay as-is;
-    // only the plain-text fallback below is translated.
-    const monthlyRent = listing
-      ? `${listing.currency} ${listing.price.toLocaleString()} / month`
-      : t("renterDashboard.rentalSetup.rentToBeConfirmed");
-
-    startRentalSetup({
-      applicationId: approvedApplication.id,
-      propertyId: approvedApplication.propertyId,
-      renterName: "Julien Mugisha",
-      monthlyRent,
-      // Note: this demo move-in/end date stay in English -- they flow into
-      // `draft.startDate` which `new Date(...)` parses elsewhere (e.g.
-      // rentals/page.tsx's `startsInFuture` check) to decide Upcoming vs.
-      // Active status; a translated date string would fail that parse.
-      moveIn: "1 September 2026",
-      initiatedBy: approvedApplication.representative,
-      initiatedByRole: approvedApplication.role.replace(/^Verified\s+/i, ""),
-    });
-    saveRentalSetupDraft(approvedApplication.id, {
-      endDate: "31 August 2027",
-      agreementAttached: true,
-    });
-    sendRentalSetup(approvedApplication.id, approvedApplication.title);
-  }, [approvedApplication, draft, hydrated, t]);
 
   function save(next = step) {
     setStep(next);
   }
 
-  if (declined)
+  if (draft?.status === "Cancelled")
     return (
       <State
         title={t("renterDashboard.rentalSetup.declined.title")}
         text={
-          draft
-            ? t("renterDashboard.rentalSetup.declined.textWithProperty", {
-                property: resolveAnyPropertyTitle(draft.propertyId),
-              })
-            : t("renterDashboard.rentalSetup.declined.text")
+          t("renterDashboard.rentalSetup.declined.textWithProperty", {
+            property: draft.propertyTitle,
+          })
         }
         href="/renter-dashboard/applications"
         action={t("renterDashboard.rentalSetup.declined.viewApplication")}
       />
     );
-
-  if (!draft && approvedApplication) {
-    return (
-      <>
-        <RenterCatalogueTopBar />
-        <main className="bg-carbon-50 flex min-h-svh items-center justify-center px-5 pt-16 text-center">
-          <p className="text-carbon-500 text-sm">
-            {t("renterDashboard.rentalSetup.preparing")}
-          </p>
-        </main>
-      </>
-    );
-  }
 
   if (!draft || draft.status === "Draft") {
     return (
@@ -171,24 +107,12 @@ export default function RentalSetupPage() {
     );
   }
 
-  const propertyTitle =
-    approvedApplication?.title ?? resolveAnyPropertyTitle(draft.propertyId);
-  const propertyLocation =
-    approvedApplication?.location ??
-    resolveAnyPropertyLocation(draft.propertyId);
-  // Owner Rental Setup Continuity phase -- previously resolved via
-  // getProfessional(draft.professionalId), which only exists for a
-  // PM-initiated draft and also hardcoded "Property Manager" as the
-  // fallback role label. initiatedBy/initiatedByRole is the one generic
-  // identity every draft carries regardless of who sent it (Property
-  // Manager or Property Owner), so this now works for both without a
-  // professional lookup at all.
+  const { propertyTitle, propertyLocation } = draft;
   const managerName = draft.initiatedBy;
   const managerRoleLabel = draft.initiatedByRole;
-  const payments = draft.rentalId ? getPaymentsForRentalId(draft.rentalId) : [];
-  const setupPayment = payments.find(
-    (p) => p.purpose === "Rental Setup — Deposit & First Month",
-  );
+  const { setupPayment, signedAt } = draft;
+  const paid = setupPayment?.status === "paid";
+  const charging = Boolean(setupPayment?.chargeStartedAt);
   const isCompleted = draft.status === "Completed";
   const stepLabels = STEP_KEYS.map((key) => t(key));
 
@@ -233,7 +157,7 @@ export default function RentalSetupPage() {
                   role: managerRoleLabel,
                 })}
               </p>
-              {!isCompleted ? (
+              {!isCompleted && !paid && !charging ? (
                 <button
                   type="button"
                   onClick={() => setModal("decline")}
@@ -295,7 +219,6 @@ export default function RentalSetupPage() {
                   understood={understood}
                   setRead={setRead}
                   setUnderstood={setUnderstood}
-                  signed={signed}
                   signedAt={signedAt}
                   preview={() => setModal("agreement")}
                   sign={() => setModal("sign")}
@@ -306,7 +229,7 @@ export default function RentalSetupPage() {
                 <Payments
                   draft={draft}
                   setupPayment={setupPayment}
-                  paid={paid || setupPayment?.status === "Paid"}
+                  paid={paid}
                   pay={() => setModal("payment")}
                   receipt={() => setModal("receipt")}
                   next={() => save(3)}
@@ -325,8 +248,7 @@ export default function RentalSetupPage() {
                   propertyTitle={propertyTitle}
                   managerName={managerName}
                   onComplete={() => {
-                    if (draft.rentalId)
-                      completeRentalSetup(draft.applicationId);
+                    if (!isCompleted) void completeRentalSetup(draft.id);
                   }}
                 />
               ) : null}
@@ -344,20 +266,10 @@ export default function RentalSetupPage() {
           close={() => setModal(null)}
           signature={signature}
           setSignature={setSignature}
-          confirm={() => {
-            if (modal === "sign") {
-              const signatureDate = new Date().toISOString();
-              setSigned(true);
-              setSignedAt(signatureDate);
-            }
-            if (modal === "payment") {
-              setPaid(true);
-              if (draft.rentalId) markInitialSetupPaymentPaid(draft.rentalId);
-            }
-            if (modal === "decline") {
-              declineRentalSetup(draft.applicationId);
-              setDeclined(true);
-            }
+          confirm={async () => {
+            if (modal === "sign") await signRentalSetup(draft.id, signature);
+            if (modal === "payment") await payRentalSetup(draft);
+            if (modal === "decline") await declineRentalSetup(draft.id);
             setModal(null);
           }}
         />
@@ -372,7 +284,7 @@ const Row = ({ a, b }: { a: string; b: string }) => (
   </div>
 );
 function formatSignedDate(
-  value: string,
+  value: string | null,
   t: (key: string, vars?: Record<string, string | number>) => string,
 ) {
   if (!value) return t("renterDashboard.rentalSetup.dateUnavailable");
@@ -381,16 +293,6 @@ function formatSignedDate(
     month: "long",
     year: "numeric",
   }).format(new Date(value));
-}
-function oneTimeAmount(value: string) {
-  return value.replace(/\s*\/\s*month\s*$/i, "");
-}
-function setupPaymentTotal(draft: RentalSetupDraft) {
-  const currency = draft.monthlyRent.match(/^[A-Z]{3}/)?.[0] ?? "RWF";
-  const monthlyValue = Number(draft.monthlyRent.replace(/[^0-9]/g, "")) || 0;
-  const depositValue =
-    Number(draft.securityDeposit.replace(/[^0-9]/g, "")) || 0;
-  return `${currency} ${(monthlyValue + depositValue).toLocaleString("en-US")}`;
 }
 function Details({
   draft,
@@ -426,7 +328,7 @@ function Details({
         />
         <Row
           a={t("renterDashboard.rentalSetup.details.rows.securityDeposit")}
-          b={oneTimeAmount(draft.securityDeposit)}
+          b={draft.securityDeposit}
         />
         <Row
           a={t("renterDashboard.rentalSetup.details.rows.rentalStart")}
@@ -490,7 +392,6 @@ function Agreement({
   understood,
   setRead,
   setUnderstood,
-  signed,
   signedAt,
   preview,
   sign,
@@ -503,13 +404,18 @@ function Agreement({
   understood: boolean;
   setRead: (v: boolean) => void;
   setUnderstood: (v: boolean) => void;
-  signed: boolean;
-  signedAt: string;
+  signedAt: string | null;
   preview: () => void;
   sign: () => void;
   next: () => void;
 }) {
   const { t } = useTranslation();
+  const signed = Boolean(signedAt);
+
+  async function openAgreement() {
+    window.open(await rentalAgreementUrl(draft.id), "_blank", "noopener");
+  }
+
   return (
     <>
       <h2 className="font-bricolage text-3xl font-medium">
@@ -546,7 +452,7 @@ function Agreement({
         />
         <Row
           a={t("renterDashboard.rentalSetup.agreement.rows.deposit")}
-          b={oneTimeAmount(draft.securityDeposit)}
+          b={draft.securityDeposit}
         />
         <Row
           a={t("renterDashboard.rentalSetup.agreement.rows.noticePeriod")}
@@ -557,6 +463,16 @@ function Agreement({
           b={draft.paymentDueDay}
         />
       </div>
+      {draft.agreementFileName ? (
+        <button
+          type="button"
+          onClick={openAgreement}
+          className="mt-6 inline-flex items-center gap-2 text-sm font-medium underline underline-offset-4"
+        >
+          <FileText aria-hidden="true" className="size-4" />
+          {draft.agreementFileName}
+        </button>
+      ) : null}
       {!signed ? (
         <div className="mt-6 space-y-3">
           <label className="flex gap-3 text-sm">
@@ -610,14 +526,14 @@ function Payments({
   next,
 }: {
   draft: RentalSetupDraft;
-  setupPayment: ReturnType<typeof getPaymentsForRentalId>[number] | undefined;
+  setupPayment: RentalSetupDraft["setupPayment"];
   paid: boolean;
   pay: () => void;
   receipt: () => void;
   next: () => void;
 }) {
   const { t } = useTranslation();
-  const totalDue = setupPaymentTotal(draft);
+  const totalDue = draft.totalDue;
   const paidLabel = t("renterDashboard.rentalSetup.payments.status.paid");
   const pendingLabel = t("renterDashboard.rentalSetup.payments.status.pending");
   return (
@@ -631,7 +547,7 @@ function Payments({
           b={
             paid
               ? paidLabel
-              : `${oneTimeAmount(draft.securityDeposit)} · ${pendingLabel}`
+              : `${draft.securityDeposit} · ${pendingLabel}`
           }
         />
         <Row
@@ -837,13 +753,14 @@ function SetupModal({
   draft: RentalSetupDraft;
   propertyTitle: string;
   managerName: string;
-  setupPayment: ReturnType<typeof getPaymentsForRentalId>[number] | undefined;
+  setupPayment: RentalSetupDraft["setupPayment"];
   close: () => void;
   signature: string;
   setSignature: (v: string) => void;
-  confirm: () => void;
+  confirm: () => Promise<void>;
 }) {
   const { t } = useTranslation();
+  const [busy, setBusy] = useState(false);
   const title = {
     question: t("renterDashboard.rentalSetup.modal.questionTitle"),
     agreement: t("renterDashboard.rentalSetup.agreement.documentTitle", {
@@ -883,11 +800,11 @@ function SetupModal({
               ? t("renterDashboard.rentalSetup.modal.questionBody")
               : type === "payment"
                 ? t("renterDashboard.rentalSetup.modal.paymentBody", {
-                    amount: setupPaymentTotal(draft),
+                    amount: draft.totalDue,
                   })
                 : type === "receipt"
                   ? t("renterDashboard.rentalSetup.modal.receiptBody", {
-                      amount: setupPaymentTotal(draft),
+                      amount: draft.totalDue,
                       reference: setupPayment?.reference ?? "—",
                     })
                   : t("renterDashboard.rentalSetup.modal.typeYourName")}
@@ -903,8 +820,12 @@ function SetupModal({
         ) : null}
         {["sign", "payment", "decline"].includes(type) ? (
           <button
-            disabled={type === "sign" && !signature.trim()}
-            onClick={confirm}
+            disabled={busy || (type === "sign" && !signature.trim())}
+            onClick={async () => {
+              setBusy(true);
+              await confirm();
+              setBusy(false);
+            }}
             className="mt-6 h-11 rounded-full bg-black px-5 text-sm text-white disabled:opacity-30"
           >
             {type === "sign"
@@ -948,7 +869,7 @@ function AgreementDocument({
             {t("renterDashboard.rentalSetup.agreementDocument.title")}
           </h3>
           <p className="text-carbon-500 mt-2 text-sm">
-            {propertyTitle} · {resolveAnyPropertyLocation(draft.propertyId)}
+            {propertyTitle} · {draft.propertyLocation}
           </p>
         </div>
         <div className="mt-6 grid gap-5 text-sm sm:grid-cols-2">
@@ -1009,7 +930,7 @@ function AgreementDocument({
                 {
                   rent: draft.monthlyRent,
                   dueDay: draft.paymentDueDay.toLowerCase(),
-                  deposit: oneTimeAmount(draft.securityDeposit),
+                  deposit: draft.securityDeposit,
                 },
               )}
             </p>

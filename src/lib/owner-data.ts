@@ -744,6 +744,10 @@ export function getOwnerFinancialSummary(): OwnerFinancialSummary {
   };
 }
 
+export function formatMoney(currency: string, amount: number): string {
+  return `${currency} ${amount.toLocaleString("en-US")}`;
+}
+
 export function formatRwf(amount: number): string {
-  return `RWF ${amount.toLocaleString("en-US")}`;
+  return formatMoney("RWF", amount);
 }

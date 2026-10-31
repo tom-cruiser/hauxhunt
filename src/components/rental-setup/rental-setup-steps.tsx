@@ -1,9 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import type { ChangeEvent } from "react";
 import { Check, ChevronRight, FileText } from "lucide-react";
 
-import { saveRentalSetupDraft, type RentalSetupDraft } from "@/lib/pm-work";
+import {
+  attachRentalAgreement,
+  saveRentalSetupDraft,
+  type RentalSetupDraft,
+} from "@/lib/pm-work";
 
 // Owner Rental Setup Continuity phase -- extracted from the Property
 // Manager Dashboard phase's rental setup wizard (partner-dashboard's
@@ -22,9 +27,6 @@ export const RENTAL_SETUP_STEPS = [
   "Payment Terms",
   "Review & Send",
 ];
-
-const oneTimeAmount = (value: string) =>
-  value.replace(/\s*\/\s*month\s*$/i, "");
 
 export function Row({ a, b }: { a: string; b: string }) {
   return (
@@ -79,10 +81,18 @@ export function RentalDetailsStep({
   propertyLocation: string;
   next: () => void;
 }) {
-  const [rent, setRent] = useState(draft.monthlyRent);
-  const [deposit, setDeposit] = useState(oneTimeAmount(draft.securityDeposit));
-  const [start, setStart] = useState(draft.startDate);
-  const [end, setEnd] = useState(draft.endDate);
+  const [rent, setRent] = useState(String(draft.terms.monthlyRent));
+  const [deposit, setDeposit] = useState(String(draft.terms.securityDeposit));
+  const [start, setStart] = useState(draft.terms.startDate);
+  const [end, setEnd] = useState(draft.terms.endDate);
+  const complete =
+    Number.isInteger(Number(rent)) &&
+    Number(rent) >= 1 &&
+    deposit !== "" &&
+    Number.isInteger(Number(deposit)) &&
+    Number(deposit) >= 0 &&
+    start !== "" &&
+    (end === "" || end > start);
 
   return (
     <div>
@@ -100,9 +110,11 @@ export function RentalDetailsStep({
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="text-carbon-600 text-xs font-medium">
-            Monthly rent
+            Monthly rent ({draft.currency})
           </span>
           <input
+            type="number"
+            min={1}
             value={rent}
             onChange={(e) => setRent(e.target.value)}
             className="mt-1.5 h-11 w-full rounded-xl bg-black/3 px-4 text-sm outline-none"
@@ -110,9 +122,11 @@ export function RentalDetailsStep({
         </label>
         <label className="block">
           <span className="text-carbon-600 text-xs font-medium">
-            Security deposit
+            Security deposit ({draft.currency})
           </span>
           <input
+            type="number"
+            min={0}
             value={deposit}
             onChange={(e) => setDeposit(e.target.value)}
             className="mt-1.5 h-11 w-full rounded-xl bg-black/3 px-4 text-sm outline-none"
@@ -123,6 +137,7 @@ export function RentalDetailsStep({
             Rental start
           </span>
           <input
+            type="date"
             value={start}
             onChange={(e) => setStart(e.target.value)}
             className="mt-1.5 h-11 w-full rounded-xl bg-black/3 px-4 text-sm outline-none"
@@ -133,22 +148,23 @@ export function RentalDetailsStep({
             Rental end
           </span>
           <input
+            type="date"
             value={end}
             onChange={(e) => setEnd(e.target.value)}
-            placeholder="e.g. 12 months later"
             className="mt-1.5 h-11 w-full rounded-xl bg-black/3 px-4 text-sm outline-none"
           />
         </label>
       </div>
       <StepFooter
-        next={() => {
-          saveRentalSetupDraft(draft.applicationId, {
-            monthlyRent: rent,
-            securityDeposit: deposit,
+        disabled={!complete}
+        next={async () => {
+          const saved = await saveRentalSetupDraft(draft.id, {
+            monthlyRent: Number(rent),
+            securityDeposit: Number(deposit),
             startDate: start,
             endDate: end,
           });
-          next();
+          if (saved) next();
         }}
         nextLabel="Continue to Agreement"
       />
@@ -165,7 +181,17 @@ export function AgreementStep({
   back: () => void;
   next: () => void;
 }) {
-  const [attached, setAttached] = useState(draft.agreementAttached);
+  const [uploading, setUploading] = useState(false);
+
+  async function attach(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setUploading(true);
+    await attachRentalAgreement(draft.id, file);
+    setUploading(false);
+  }
+
   return (
     <div>
       <h2 className="font-bricolage text-xl font-medium">Agreement</h2>
@@ -176,17 +202,24 @@ export function AgreementStep({
       <div className="mt-6 rounded-2xl bg-black/3 p-5">
         <p className="flex items-center gap-2 font-medium">
           <FileText aria-hidden="true" className="size-5" />
-          {attached
-            ? "Rental_Agreement.pdf attached"
+          {draft.agreementAttached
+            ? `${draft.agreementFileName} attached`
             : "No agreement attached yet"}
         </p>
-        <button
-          type="button"
-          onClick={() => setAttached(true)}
-          className="font-bricolage mt-4 inline-flex h-10 items-center rounded-full border border-black/15 px-4 text-sm font-medium hover:border-black"
-        >
-          {attached ? "Replace document" : "Attach Agreement"}
-        </button>
+        <label className="font-bricolage mt-4 inline-flex h-10 cursor-pointer items-center rounded-full border border-black/15 px-4 text-sm font-medium hover:border-black">
+          {uploading
+            ? "Uploading…"
+            : draft.agreementAttached
+              ? "Replace document"
+              : "Attach Agreement"}
+          <input
+            type="file"
+            accept="application/pdf,image/jpeg,image/png"
+            disabled={uploading}
+            onChange={attach}
+            className="sr-only"
+          />
+        </label>
       </div>
       <div className="mt-6 grid gap-4 border-t border-black/8 pt-5 sm:grid-cols-2">
         <div>
@@ -200,13 +233,8 @@ export function AgreementStep({
       </div>
       <StepFooter
         back={back}
-        disabled={!attached}
-        next={() => {
-          saveRentalSetupDraft(draft.applicationId, {
-            agreementAttached: attached,
-          });
-          next();
-        }}
+        disabled={!draft.agreementAttached || uploading}
+        next={next}
         nextLabel="Continue to Payment Terms"
       />
     </div>
@@ -222,7 +250,8 @@ export function PaymentTermsStep({
   back: () => void;
   next: () => void;
 }) {
-  const [dueDay, setDueDay] = useState(draft.paymentDueDay);
+  const [dueDay, setDueDay] = useState(String(draft.terms.paymentDueDay));
+  const day = Number(dueDay);
   return (
     <div>
       <h2 className="font-bricolage text-xl font-medium">Payment Terms</h2>
@@ -232,17 +261,20 @@ export function PaymentTermsStep({
       </p>
       <div className="mt-6 grid gap-x-8 sm:grid-cols-2">
         <Row a="Monthly rent" b={draft.monthlyRent} />
-        <Row a="Security deposit" b={oneTimeAmount(draft.securityDeposit)} />
+        <Row a="Security deposit" b={draft.securityDeposit} />
         <Row
           a="Initial payment due"
-          b={`${oneTimeAmount(draft.securityDeposit)} + first month's rent`}
+          b={`${draft.securityDeposit} + first month's rent`}
         />
       </div>
       <label className="mt-6 block max-w-xs">
         <span className="text-carbon-600 text-xs font-medium">
-          Payment due day
+          Payment due day (1–28)
         </span>
         <input
+          type="number"
+          min={1}
+          max={28}
           value={dueDay}
           onChange={(e) => setDueDay(e.target.value)}
           className="mt-1.5 h-11 w-full rounded-xl bg-black/3 px-4 text-sm outline-none"
@@ -250,9 +282,12 @@ export function PaymentTermsStep({
       </label>
       <StepFooter
         back={back}
-        next={() => {
-          saveRentalSetupDraft(draft.applicationId, { paymentDueDay: dueDay });
-          next();
+        disabled={!Number.isInteger(day) || day < 1 || day > 28}
+        next={async () => {
+          const saved = await saveRentalSetupDraft(draft.id, {
+            paymentDueDay: day,
+          });
+          if (saved) next();
         }}
         nextLabel="Continue to Review"
       />
@@ -282,13 +317,13 @@ export function ReviewStep({
         <Row a="Property" b={propertyTitle} />
         <Row a="Renter" b={draft.renterName} />
         <Row a="Monthly rent" b={draft.monthlyRent} />
-        <Row a="Security deposit" b={oneTimeAmount(draft.securityDeposit)} />
+        <Row a="Security deposit" b={draft.securityDeposit} />
         <Row a="Rental start" b={draft.startDate} />
         <Row a="Rental end" b={draft.endDate || "Not set"} />
         <Row a="Payment due day" b={draft.paymentDueDay} />
         <Row
           a="Agreement"
-          b={draft.agreementAttached ? "Attached" : "Not attached"}
+          b={draft.agreementFileName ?? "Not attached"}
         />
       </div>
       <div className="mt-6 flex items-center justify-between border-t border-black/10 pt-5">

@@ -551,16 +551,7 @@ function RentalSetupSection({ application }: { application: OwnerApplication }) 
           </Link>
         </>
       ) : draft.status === "Cancelled" ? (
-        <>
-          <p className="mt-1 text-sm leading-6">Rental setup was declined by {application.applicant}.</p>
-          <Link
-            href={setupHref}
-            className="font-bricolage mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-black px-4 text-sm font-medium text-white"
-          >
-            <KeyRound aria-hidden="true" className="size-4" />
-            Continue Rental Setup
-          </Link>
-        </>
+        <p className="mt-1 text-sm leading-6">Rental setup was declined by {application.applicant}.</p>
       ) : draft.status === "Sent to Renter" ? (
         <>
           <p className="mt-1 text-sm font-medium">Rental Setup Sent</p>
