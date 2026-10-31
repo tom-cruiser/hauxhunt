@@ -24,6 +24,7 @@
 // team-data.ts who is actively assigned — this file only owns the physical
 // facts (title, location, size, rent, occupancy, listing status).
 
+import { syncWrite, syncWrites } from "@/lib/api/client";
 import type { StaticImageData } from "next/image";
 
 import house1 from "@/assets/images/house1.jpg";
@@ -368,9 +369,27 @@ export function getOwnerApplication(id: string): OwnerApplication | undefined {
 }
 
 export function updateOwnerApplication(applicationId: string, patch: ApplicationOverride) {
+  const previousStatus = getOwnerApplication(applicationId)?.status;
   const overrides = readApplicationOverrides();
   overrides[applicationId] = { ...overrides[applicationId], ...patch };
   writeApplicationOverrides(overrides);
+  if (patch.recommendation) {
+    syncWrite(`/applications/${applicationId}/recommendation`, {
+      recommendation: patch.recommendation === "Approve" ? "approve" : "not_selected",
+    });
+  } else if (patch.status) {
+    const transition = (status: string) => ({
+      path: `/applications/${applicationId}/transition`,
+      body: { to: status.toLowerCase().replace(/ /g, "_") },
+    });
+    // A new application can only move into review, so deciding one straight
+    // away has to pass through that step first.
+    syncWrites(
+      previousStatus === "Submitted" && patch.status !== "Under Review"
+        ? [transition("Under Review"), transition(patch.status)]
+        : [transition(patch.status)],
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

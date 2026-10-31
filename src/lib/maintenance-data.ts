@@ -1,3 +1,4 @@
+import { syncWrite } from "@/lib/api/client";
 export type MaintenanceStatus =
   | "Submitted"
   | "Under Review"
@@ -104,6 +105,24 @@ export function updateMaintenanceRequest(requestId: string, patch: MaintenanceOv
   const overrides = readMaintenanceOverrides();
   overrides[requestId] = { ...overrides[requestId], ...patch };
   writeMaintenanceOverrides(overrides);
+  const isRenter = window.sessionStorage.getItem("hauxhunt-authenticated-role") === "renter";
+  if (isRenter && patch.status === "Cancelled") {
+    syncWrite(`/maintenance-requests/${requestId}/cancel`);
+  } else if (isRenter && patch.status === "Under Review") {
+    syncWrite(`/maintenance-requests/${requestId}/reopen`, { message: patch.latestUpdate ?? "Reopened by renter" });
+  } else if (!isRenter) {
+    syncWrite(
+      `/maintenance-requests/${requestId}`,
+      {
+        status: patch.status?.toLowerCase().replace(/ /g, "_"),
+        latestUpdate: patch.latestUpdate,
+        informationNeeded: patch.informationNeeded,
+        resolution: patch.resolution,
+        scheduledVisit: patch.scheduledVisit,
+      },
+      "PATCH",
+    );
+  }
 }
 
 // Cross-Role Lifecycle Synchronization phase -- Section 29: a renter's new
@@ -135,6 +154,15 @@ function writeMaintenanceAdditions(requests: MaintenanceRequest[]) {
 
 export function createMaintenanceRequest(request: MaintenanceRequest) {
   writeMaintenanceAdditions([request, ...readMaintenanceAdditions()]);
+  const rental = ACTIVE_RENTALS.find((item) => item.propertyId === request.propertyId);
+  syncWrite("/maintenance-requests", {
+    rentalId: rental?.id,
+    title: request.title,
+    category: request.category,
+    area: request.area,
+    urgency: request.urgency.toLowerCase(),
+    description: request.description,
+  });
 }
 
 // Maintenance-in-Messages phase -- the one status transition map for

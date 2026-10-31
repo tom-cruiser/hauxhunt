@@ -25,7 +25,13 @@ The product promise is **trust**: every partner is identity-verified, every list
 
 ## 2. Current state of the frontend — read this first
 
-**There is no backend.** The repo has no API routes, no middleware and no database. Every screen is real UI, but all data is fake and all actions stay in the browser:
+**The frontend now talks to the RentUp API** (`hauxhunt-backend`). Next rewrites `/v1/*` to `API_URL`, so the API must be running for the app to load. `src/lib/api/hydrate.ts` loads each user's records into the stores in `src/lib/*.ts` after sign-in.
+
+Connected: login, registration, password reset, sessions and role redirects; listings and search; saved homes and searches; enquiries; viewings; property requests; messaging; application submission and decisions; maintenance; plan changes; and reads for rentals, payments, teams and properties.
+
+Not connected yet, so these still act only in the browser: rental setup, property and listing create or edit, team invitations and assignments, independent properties, partner verification, payouts, and the "mark paid" action in Finance. FlatMat, reviews, notifications and performance wait on backend phases 11 and 12.
+
+The table below describes the original prototype and still applies to the areas not connected:
 
 | What you see                                                              | Where it actually comes from                                                                    |
 | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |

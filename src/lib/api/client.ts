@@ -107,3 +107,35 @@ export async function uploadFile(uploadUrlPath: string, file: File) {
   }
   return key;
 }
+
+export const DATA_CHANGED_EVENT = "rentup-data-changed";
+
+export const WRITE_FAILED_EVENT = "rentup-write-failed";
+
+/**
+ * Runs store writes against the API in order, then asks the stores to reload.
+ * Stores update optimistically, so a failure is announced to the user and the
+ * reload puts the screen back to what the server holds.
+ */
+export function syncWrites(
+  writes: { path: string; body?: unknown; method?: string }[],
+) {
+  void writes
+    .reduce<Promise<unknown>>(
+      (previous, { path, body, method = "POST" }) =>
+        previous.then(() => api(path, { method, body })),
+      Promise.resolve(),
+    )
+    .catch((error: unknown) => {
+      window.dispatchEvent(
+        new CustomEvent(WRITE_FAILED_EVENT, {
+          detail: error instanceof Error ? error.message : "Please try again.",
+        }),
+      );
+    })
+    .finally(() => window.dispatchEvent(new Event(DATA_CHANGED_EVENT)));
+}
+
+export function syncWrite(path: string, body?: unknown, method = "POST") {
+  syncWrites([{ path, body, method }]);
+}

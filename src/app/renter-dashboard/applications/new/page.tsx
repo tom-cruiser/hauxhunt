@@ -11,6 +11,8 @@ import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-
 import { useTranslation } from "@/components/language/use-translation";
 import { DEMO_LISTINGS } from "@/data/hero-search-demo";
 import { RENTER_APPLICATIONS } from "@/data/renter-applications";
+import { api, DATA_CHANGED_EVENT } from "@/lib/api/client";
+import { resolveListingId } from "@/lib/api/listings";
 
 // Wizard step labels stay translation keys, not literal text -- `steps` in
 // the reference renter-dashboard nav groups is the same pattern (`labelKey`
@@ -268,23 +270,25 @@ function NewApplicationPageInner() {
     setStep((current) => current + 1);
   }
 
-  function submitApplication() {
-    sessionStorage.setItem(
-      `hauxhunt-submission-${applicationId}`,
-      JSON.stringify({
-        propertyId: property.id,
-        title: property.title,
-        location: property.location,
-        values,
-        documents: documents
-          .filter((name) => applicationDocuments.includes(name))
-          .map((name) => ({
-            name,
-            url: documentUrls[name],
-            type: documentTypes[name],
-          })),
-      }),
+  async function submitApplication() {
+    const listingId = await resolveListingId(property.id);
+    const { id } = await api<{ id: string }>(
+      `/listings/${listingId}/applications`,
+      { method: "POST" },
     );
+    await api(`/applications/${id}/draft`, {
+      method: "PUT",
+      // The form holds one set of values, and the API tracks these sections.
+      body: {
+        about: values,
+        needs: values,
+        employment: values,
+        household: values,
+        references: values,
+      },
+    });
+    await api(`/applications/${id}/submit`, { method: "POST" });
+    window.dispatchEvent(new Event(DATA_CHANGED_EVENT));
     localStorage.removeItem(`hauxhunt-application-${property.id}`);
     setSubmitted(true);
   }

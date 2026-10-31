@@ -2,17 +2,15 @@
 
 import { Check } from "lucide-react";
 
-import { setTier, useTier } from "@/hooks/use-tier";
+import { useState } from "react";
+
+import { useTier, type Tier } from "@/hooks/use-tier";
+import { api, DATA_CHANGED_EVENT } from "@/lib/api/client";
+import { fetchMe, mirrorSession } from "@/lib/api/session";
 
 /**
- * The demo "Plan" toggle shown on every role's account/settings page. There
- * is no payment provider in this app (see `src/lib/access-control.ts`), so
- * this is how a demo session becomes "paid" — flipping it writes directly
- * to the `hauxhunt-tier` session flag `useTier()` reads everywhere else.
- *
- * `features` is the short "what's different" list for that role, purely
- * descriptive — it doesn't drive any gating itself, the individual
- * `LockedFeature`/`LockedPanel` call sites do that.
+ * The plan switch shown on every role's account/settings page. `features` is
+ * the short "what's different" list for that role, purely descriptive.
  */
 export function PlanToggleCard({
   features,
@@ -20,6 +18,26 @@ export function PlanToggleCard({
   features: readonly { label: string; free: string; paid: string }[];
 }) {
   const tier = useTier();
+  const [error, setError] = useState("");
+
+  async function choose(option: Tier) {
+    if (option === tier) return;
+    setError("");
+    try {
+      if (option === "paid") {
+        await api("/me/plan/upgrade", {
+          method: "POST",
+          body: { method: "mobile_money" },
+        });
+      } else {
+        await api("/me/plan/cancel", { method: "POST" });
+      }
+      window.dispatchEvent(new Event(DATA_CHANGED_EVENT));
+      mirrorSession(await fetchMe());
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Please try again.");
+    }
+  }
 
   return (
     <div className="rounded-2xl border border-black/10 bg-white p-5 sm:p-7">
@@ -27,9 +45,8 @@ export function PlanToggleCard({
         <div>
           <h3 className="font-bricolage text-lg font-medium">Plan</h3>
           <p className="text-carbon-500 mt-1 text-sm leading-6">
-            This is a demo toggle — RentUp has no payment provider yet, so
-            switching plans here is instant and free, purely to preview the
-            Paid experience.
+            RentUp uses a test payment provider for now, so no real money
+            moves.
           </p>
         </div>
         <div
@@ -42,7 +59,7 @@ export function PlanToggleCard({
               key={option}
               type="button"
               aria-pressed={tier === option}
-              onClick={() => setTier(option)}
+              onClick={() => void choose(option)}
               className={`font-bricolage inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-sm font-medium capitalize transition-colors ${
                 tier === option
                   ? "bg-black text-white"
@@ -55,6 +72,12 @@ export function PlanToggleCard({
           ))}
         </div>
       </div>
+
+      {error ? (
+        <p role="alert" className="mt-3 text-sm text-red-700">
+          {error}
+        </p>
+      ) : null}
 
       <div className="mt-6 divide-y divide-black/10 border-y border-black/10">
         {features.map((feature) => (

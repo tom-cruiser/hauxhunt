@@ -32,6 +32,11 @@ import {
   type OwnerRental,
 } from "@/lib/owner-data";
 import {
+  setRemoteProfessionalWork,
+  type Enquiry,
+  type Viewing,
+} from "@/lib/professional-work";
+import {
   REGISTERED_PROFESSIONALS,
   TEAM_ID,
   setRemoteTeam,
@@ -130,7 +135,7 @@ type ApiMaintenance = Omit<
 
 type ApiConversation = {
   id: string;
-  contextType: Conversation["context"] extends infer C ? string | null : never;
+  contextType: string | null;
   contextId: string | null;
   participant: {
     id: string;
@@ -195,6 +200,26 @@ const RESPONSIBILITY_LABELS: Record<string, string> = {
 
 const responsibilityLabels = (codes: string[]) =>
   codes.map((code) => RESPONSIBILITY_LABELS[code] ?? code);
+
+type ApiEnquiry = {
+  id: string;
+  propertyId: string;
+  renterName?: string;
+  name: string;
+  message: string;
+  status: string;
+  conversationId: string | null;
+  createdAt: string;
+};
+
+type ApiPartnerViewing = {
+  id: string;
+  propertyId: string;
+  enquiryId: string | null;
+  renterName: string;
+  startsAt: string;
+  status: string;
+};
 
 const titleCase = (value: string) =>
   value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -369,6 +394,34 @@ function toMaintenance(item: ApiMaintenance): MaintenanceRequest {
     informationNeeded: item.informationNeeded ?? undefined,
     resolution: item.resolution ?? undefined,
     scheduledVisit: item.scheduledVisit ?? undefined,
+  };
+}
+
+function toEnquiry(enquiry: ApiEnquiry, me: Me): Enquiry {
+  return {
+    id: enquiry.id,
+    propertyId: enquiry.propertyId,
+    professionalId: me.id,
+    renterName: enquiry.name,
+    message: enquiry.message,
+    receivedAt: longDate(enquiry.createdAt),
+    ts: Date.parse(enquiry.createdAt),
+    status: titleCase(enquiry.status) as Enquiry["status"],
+    conversationId: enquiry.conversationId ?? undefined,
+  };
+}
+
+function toPartnerViewing(viewing: ApiPartnerViewing, me: Me): Viewing {
+  const startsAt = new Date(viewing.startsAt);
+  return {
+    id: viewing.id,
+    propertyId: viewing.propertyId,
+    professionalId: me.id,
+    enquiryId: viewing.enquiryId ?? undefined,
+    renterName: viewing.renterName,
+    date: longDate(viewing.startsAt),
+    time: startsAt.toTimeString().slice(0, 5),
+    status: titleCase(viewing.status) as Viewing["status"],
   };
 }
 
@@ -630,7 +683,17 @@ export async function hydrateStores(me: Me) {
     replace(OWNER_APPLICATIONS, applications.data.map(toOwnerApplication));
   }
   hydrateTeam(team, me);
-  if (!isOwner && !isRenter) hydrateMyTeams(myTeams.data, me);
+  if (!isOwner && !isRenter) {
+    hydrateMyTeams(myTeams.data, me);
+    const [enquiries, viewings] = await Promise.all([
+      api<List<ApiEnquiry>>("/partner/enquiries", { query: { pageSize: 100 } }),
+      api<List<ApiPartnerViewing>>("/partner/viewings"),
+    ]);
+    setRemoteProfessionalWork(
+      enquiries.data.map((enquiry) => toEnquiry(enquiry, me)),
+      viewings.data.map((viewing) => toPartnerViewing(viewing, me)),
+    );
+  }
   await hydrateConversations(me);
 
   ready = true;

@@ -52,10 +52,14 @@ async function fetchSearches() {
 }
 
 export async function addSavedSearch(search: Omit<SavedSearch, "id">) {
-  const { name, alert, matches: _m, newMatches: _n, ...filters } = search;
+  const { location, type, price, bedrooms, bathrooms, extras } = search;
   await api("/me/saved-searches", {
     method: "POST",
-    body: { name, alert, filters },
+    body: {
+      name: search.name,
+      alert: search.alert,
+      filters: { location, type, price, bedrooms, bathrooms, extras },
+    },
   });
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }

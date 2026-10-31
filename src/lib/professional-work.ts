@@ -25,6 +25,7 @@
 // fresh names (Aline Mukamana, Grace Niyonsaba) exist only where a genuinely
 // new, not-yet-progressed enquiry is needed for the interactive demo.
 
+import { syncWrite } from "@/lib/api/client";
 import {
   getOwnerApplication,
   getOwnerApplications,
@@ -63,78 +64,7 @@ export type Enquiry = {
   conversationId?: string;
 };
 
-const SEED_ENQUIRIES: Enquiry[] = [
-  {
-    id: "enq-divine-kibagabaga",
-    propertyId: "kibagabaga-modern-family-home",
-    professionalId: "kevin-nshuti",
-    renterName: "Divine Keza",
-    message: "Hello, is the Modern Family Home still available? We'd like to come see it this week.",
-    receivedAt: "3 days ago",
-    ts: Date.now() - 3 * 86_400_000,
-    status: "Viewing Scheduled",
-    viewingId: "view-divine-kibagabaga",
-    conversationId: "conv-divine-kibagabaga",
-  },
-  {
-    id: "enq-aline-kibagabaga",
-    propertyId: "kibagabaga-modern-family-home",
-    professionalId: "kevin-nshuti",
-    renterName: "Aline Mukamana",
-    message: "Hi, does the rent include water and backup power? I'm relocating with my family next month.",
-    receivedAt: "20 min ago",
-    ts: Date.now() - 20 * 60_000,
-    status: "New",
-  },
-  {
-    id: "enq-julien-remera-house",
-    propertyId: "remera-house-independent",
-    professionalId: "kevin-nshuti",
-    renterName: "Julien Mugisha",
-    message: "Good afternoon, I saw Remera House listed. Is it still for rent, and can I arrange a viewing?",
-    receivedAt: "Yesterday",
-    ts: Date.now() - 1 * 86_400_000 - 3 * 3_600_000,
-    status: "Viewing Scheduled",
-    viewingId: "view-julien-remera-house",
-    conversationId: "conv-julien-remera-house",
-  },
-  {
-    id: "enq-julien-remera-3br",
-    propertyId: "remera-3br",
-    professionalId: "sarah-uwase",
-    renterName: "Julien Mugisha",
-    message: "Hello, I'm interested in renewing at Remera Family House. Could we schedule a walkthrough first?",
-    receivedAt: "2 days ago",
-    ts: Date.now() - 2 * 86_400_000,
-    status: "Viewing Scheduled",
-    viewingId: "view-julien-remera-3br",
-    conversationId: "conv-julien-remera-3br",
-  },
-  {
-    id: "enq-grace-remera-3br",
-    propertyId: "remera-3br",
-    professionalId: "sarah-uwase",
-    renterName: "Grace Niyonsaba",
-    message: "Hi, is Remera Family House pet friendly? We have one small dog.",
-    receivedAt: "1 hr ago",
-    ts: Date.now() - 1 * 3_600_000,
-    status: "New",
-  },
-  // Property Manager Dashboard phase -- Jean holds "Manage enquiries &
-  // viewings" on his Team-assigned properties (Section 19), so his Property
-  // Detail's Leasing Activity needs at least one real record to be
-  // genuinely testable, not just an empty shell.
-  {
-    id: "enq-emmanuel-kacyiru",
-    propertyId: "kacyiru-2br",
-    professionalId: "jean-mugisha",
-    renterName: "Emmanuel Nzeyimana",
-    message: "Hello, I heard Kacyiru Residence may become available soon. Could you let me know if a unit opens up?",
-    receivedAt: "4 hr ago",
-    ts: Date.now() - 4 * 3_600_000,
-    status: "New",
-  },
-];
+const SEED_ENQUIRIES: Enquiry[] = [];
 
 // ---------------------------------------------------------------------------
 // Viewings -- same status vocabulary the renter side already uses
@@ -167,38 +97,7 @@ export type Viewing = {
   status: ViewingStatus;
 };
 
-const SEED_VIEWINGS: Viewing[] = [
-  {
-    id: "view-divine-kibagabaga",
-    propertyId: "kibagabaga-modern-family-home",
-    professionalId: "kevin-nshuti",
-    enquiryId: "enq-divine-kibagabaga",
-    renterName: "Divine Keza",
-    date: "17 Aug 2026",
-    time: "11:00",
-    status: "Completed",
-  },
-  {
-    id: "view-julien-remera-house",
-    propertyId: "remera-house-independent",
-    professionalId: "kevin-nshuti",
-    enquiryId: "enq-julien-remera-house",
-    renterName: "Julien Mugisha",
-    date: "Today",
-    time: "14:30",
-    status: "Confirmed",
-  },
-  {
-    id: "view-julien-remera-3br",
-    propertyId: "remera-3br",
-    professionalId: "sarah-uwase",
-    enquiryId: "enq-julien-remera-3br",
-    renterName: "Julien Mugisha",
-    date: "Tomorrow",
-    time: "10:00",
-    status: "Confirmed",
-  },
-];
+const SEED_VIEWINGS: Viewing[] = [];
 
 // ---------------------------------------------------------------------------
 // Applications for INDEPENDENT properties -- the one genuinely new mock
@@ -285,6 +184,12 @@ export function subscribeToProfessionalWork(callback: () => void) {
     window.removeEventListener(WORK_EVENT, callback);
     window.removeEventListener("storage", callback);
   };
+}
+
+/** Replaces enquiries and viewings with what the API returned. */
+export function setRemoteProfessionalWork(enquiries: Enquiry[], viewings: Viewing[]) {
+  SEED_ENQUIRIES.splice(0, SEED_ENQUIRIES.length, ...enquiries);
+  SEED_VIEWINGS.splice(0, SEED_VIEWINGS.length, ...viewings);
 }
 
 function getEnquiries(): Enquiry[] {
@@ -579,6 +484,7 @@ function nextId(prefix: string) {
 export function replyToEnquiry(enquiryId: string, message: string): string | null {
   const enquiry = getEnquiry(enquiryId);
   if (!enquiry) return null;
+  syncWrite(`/partner/enquiries/${enquiryId}/reply`, { message });
 
   let conversationId: string | undefined = enquiry.conversationId;
   if (enquiry.renterName === RENTER_DEMO_NAME) {
@@ -600,6 +506,7 @@ export function replyToEnquiry(enquiryId: string, message: string): string | nul
 export function scheduleViewingFromEnquiry(enquiryId: string, date: string, time: string): string | null {
   const enquiry = getEnquiry(enquiryId);
   if (!enquiry) return null;
+  syncWrite("/partner/viewings", { enquiryId, startsAt: new Date(`${date} ${time}`).toISOString() });
   const viewingId = enquiry.viewingId ?? nextId("view");
   const viewings = getViewings();
   const existingIndex = viewings.findIndex((v) => v.id === viewingId);
@@ -619,10 +526,12 @@ export function scheduleViewingFromEnquiry(enquiryId: string, date: string, time
 }
 
 export function updateViewingStatus(viewingId: string, status: ViewingStatus) {
+  syncWrite(`/partner/viewings/${viewingId}`, { status: status.toLowerCase().replace(/ /g, "_") }, "PATCH");
   writeViewings(getViewings().map((v) => (v.id === viewingId ? { ...v, status } : v)));
 }
 
 export function closeEnquiry(enquiryId: string) {
+  syncWrite(`/partner/enquiries/${enquiryId}`, { status: "closed" }, "PATCH");
   writeEnquiries(getEnquiries().map((e) => (e.id === enquiryId ? { ...e, status: "Closed" } : e)));
 }
 

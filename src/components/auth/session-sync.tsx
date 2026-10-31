@@ -1,9 +1,13 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { ApiError } from "@/lib/api/client";
-import { hydrateStores } from "@/lib/api/hydrate";
+import { useEffect, useState } from "react";
+import {
+  ApiError,
+  DATA_CHANGED_EVENT,
+  WRITE_FAILED_EVENT,
+} from "@/lib/api/client";
+import { hydrateStores, refreshStores } from "@/lib/api/hydrate";
 import {
   clearSessionMirror,
   dashboardFor,
@@ -26,6 +30,7 @@ const DASHBOARDS: [prefix: string, roles: Me["role"][]][] = [
 export function SessionSync() {
   const pathname = usePathname();
   const router = useRouter();
+  const [failure, setFailure] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -55,5 +60,24 @@ export function SessionSync() {
     };
   }, [pathname, router]);
 
-  return null;
+  useEffect(() => {
+    const showFailure = (event: Event) => {
+      setFailure((event as CustomEvent<string>).detail);
+      window.setTimeout(() => setFailure(""), 5000);
+    };
+    window.addEventListener(WRITE_FAILED_EVENT, showFailure);
+    return () => window.removeEventListener(WRITE_FAILED_EVENT, showFailure);
+  }, []);
+
+  useEffect(() => {
+    const reload = () => void refreshStores().catch(() => {});
+    window.addEventListener(DATA_CHANGED_EVENT, reload);
+    return () => window.removeEventListener(DATA_CHANGED_EVENT, reload);
+  }, []);
+
+  return failure ? (
+    <div role="alert" className="feedback-toast">
+      {failure}
+    </div>
+  ) : null;
 }
