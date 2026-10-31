@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { api } from "@/lib/api/client";
 
 export type AlertFrequency = "instant" | "daily" | "weekly" | "paused";
 
@@ -18,101 +19,77 @@ export type SavedSearch = {
   alert: AlertFrequency;
 };
 
-const STORAGE_KEY = "hauxhunt-saved-searches";
 const CHANGE_EVENT = "hauxhunt-saved-searches-change";
 
-export const MOCK_SAVED_SEARCHES: SavedSearch[] = [
-  {
-    id: "kacyiru-two-bedroom",
-    name: "2-bedroom apartments in Kacyiru",
-    location: "Kacyiru, Kigali",
-    type: "Apartment",
-    price: "Up to RWF 900,000",
-    bedrooms: "2+ Beds",
-    bathrooms: "2+ Bathrooms",
-    extras: ["Furnished", "Verified"],
-    matches: 15,
-    newMatches: 3,
-    alert: "instant",
-  },
-  {
-    id: "nyarutarama-family-homes",
-    name: "Family homes in Nyarutarama",
-    location: "Nyarutarama, Kigali",
-    type: "House",
+type ApiSavedSearch = {
+  id: string;
+  name: string;
+  alert: AlertFrequency;
+  filters: Partial<SavedSearch>;
+};
+
+function toSearch({ id, name, alert, filters }: ApiSavedSearch): SavedSearch {
+  return {
+    location: "All locations",
+    type: "Any Home Type",
     price: "Any Price",
-    bedrooms: "3+ Beds",
-    bathrooms: "2+ Bathrooms",
-    extras: ["Parking", "Verified"],
-    matches: 8,
+    bedrooms: "Any Bedrooms",
+    bathrooms: "Any Bathrooms",
+    extras: [],
+    ...filters,
+    // The API doesn't compute match counts yet.
+    matches: 0,
     newMatches: 0,
-    alert: "daily",
-  },
-  {
-    id: "kigali-cbd-studios",
-    name: "Affordable studios near Kigali CBD",
-    location: "Kigali CBD / nearby",
-    type: "Studio apartment",
-    price: "Up to RWF 450,000",
-    bedrooms: "1 Bed",
-    bathrooms: "1 Bathroom",
-    extras: ["Furnished"],
-    matches: 6,
-    newMatches: 0,
-    alert: "paused",
-  },
-];
-
-function readSearches() {
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored === null) return MOCK_SAVED_SEARCHES;
-    const parsed: unknown = JSON.parse(stored);
-    return Array.isArray(parsed)
-      ? (parsed as SavedSearch[])
-      : MOCK_SAVED_SEARCHES;
-  } catch {
-    return MOCK_SAVED_SEARCHES;
-  }
+    id,
+    name,
+    alert,
+  };
 }
 
-function writeSearches(searches: SavedSearch[]) {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(searches));
+async function fetchSearches() {
+  const { data } = await api<{ data: ApiSavedSearch[] }>("/me/saved-searches");
+  return data.map(toSearch);
+}
+
+export async function addSavedSearch(search: Omit<SavedSearch, "id">) {
+  const { name, alert, matches: _m, newMatches: _n, ...filters } = search;
+  await api("/me/saved-searches", {
+    method: "POST",
+    body: { name, alert, filters },
+  });
   window.dispatchEvent(new Event(CHANGE_EVENT));
-}
-
-export function addSavedSearch(search: Omit<SavedSearch, "id">) {
-  const next = [{ ...search, id: `search-${Date.now()}` }, ...readSearches()];
-  writeSearches(next);
 }
 
 export function useSavedSearches() {
   const [searches, setSearches] = useState<SavedSearch[]>([]);
 
   useEffect(() => {
-    const sync = () => setSearches(readSearches());
+    const sync = () => void fetchSearches().then(setSearches, () => {});
     sync();
-    window.addEventListener("storage", sync);
     window.addEventListener(CHANGE_EVENT, sync);
-    return () => {
-      window.removeEventListener("storage", sync);
-      window.removeEventListener(CHANGE_EVENT, sync);
-    };
+    return () => window.removeEventListener(CHANGE_EVENT, sync);
   }, []);
 
   const updateSearch = useCallback(
-    (id: string, updates: Partial<SavedSearch>) => {
-      writeSearches(
-        readSearches().map((search) =>
+    async (id: string, updates: Partial<SavedSearch>) => {
+      setSearches((current) =>
+        current.map((search) =>
           search.id === id ? { ...search, ...updates } : search,
         ),
       );
+      if (updates.alert) {
+        await api(`/me/saved-searches/${id}`, {
+          method: "PATCH",
+          body: { alert: updates.alert },
+        });
+      }
     },
     [],
   );
 
-  const deleteSearch = useCallback((id: string) => {
-    writeSearches(readSearches().filter((search) => search.id !== id));
+  const deleteSearch = useCallback(async (id: string) => {
+    setSearches((current) => current.filter((search) => search.id !== id));
+    await api(`/me/saved-searches/${id}`, { method: "DELETE" });
   }, []);
 
   return { searches, updateSearch, deleteSearch };

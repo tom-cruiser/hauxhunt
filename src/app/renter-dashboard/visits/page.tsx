@@ -27,7 +27,10 @@ import scheduleIllustration from "@/assets/images/schedule.png";
 import cancelIllustration from "@/assets/images/cancel.png";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
 import { VoiceInputButton } from "@/components/listings/voice-input-button";
-import { useViewingRequests } from "@/hooks/use-viewing-requests";
+import {
+  updateViewingRequest,
+  useViewingRequests,
+} from "@/hooks/use-viewing-requests";
 import { useTranslation } from "@/components/language/use-translation";
 
 type Tab = "upcoming" | "pending" | "past";
@@ -116,110 +119,16 @@ const tabForStatus = (status: ViewingStatus): Tab =>
       ? "pending"
       : "past";
 
-const INITIAL_VIEWINGS: Viewing[] = [
-  {
-    id: "confirmed-kacyiru",
-    propertyId: "kacyiru-2br",
-    title: "Kacyiru Residence",
-    titleKey: "renterDashboard.visits.listings.kacyiruResidence",
-    location: "Kacyiru, Kigali",
-    date: "Saturday, 22 August",
-    time: "10:30 AM",
-    status: "Confirmed",
-    tab: "upcoming",
-    host: "Jean Mugisha",
-    roleKey: ROLES.propertyManager,
-    image: house1,
-    note: "Ask about parking and whether utilities are included.",
-    noteKey: "renterDashboard.visits.notes.parkingUtilities",
-  },
-  {
-    id: "confirmed-nyarutarama",
-    propertyId: "nyarutarama-2br",
-    title: "Nyarutarama Garden Apartment",
-    titleKey: "renterDashboard.visits.listings.nyarutaramaGardenApartment",
-    location: "Nyarutarama, Kigali",
-    date: "Wednesday, 26 August",
-    time: "3:30 PM",
-    status: "Confirmed",
-    tab: "upcoming",
-    host: "Aline Uwase",
-    roleKey: ROLES.verifiedAgent,
-    image: house2,
-  },
-  {
-    id: "pending-kimihurura",
-    propertyId: "remera-3br",
-    title: "Modern Apartment in Kimihurura",
-    titleKey: "renterDashboard.visits.listings.modernApartmentKimihurura",
-    location: "Kimihurura, Kigali",
-    date: "Monday, 24 August",
-    time: "2:00 PM",
-    status: "Awaiting Confirmation",
-    tab: "pending",
-    host: "Sarah Uwase",
-    roleKey: ROLES.verifiedAgent,
-    image: house3,
-  },
-  {
-    id: "suggested-kacyiru",
-    propertyId: "kibagabaga-modern-family-home",
-    title: "Kacyiru Heights",
-    titleKey: "renterDashboard.visits.listings.kacyiruHeights",
-    location: "Kacyiru, Kigali",
-    date: "Tuesday, 25 August",
-    time: "11:00 AM",
-    suggestedTime: "2:30 PM",
-    status: "New Time Suggested",
-    tab: "pending",
-    host: "Jean Mugisha",
-    roleKey: ROLES.propertyManager,
-    image: house4,
-  },
-  {
-    id: "completed-kibagabaga",
-    propertyId: "kibagabaga-modern-family-home",
-    title: "Kibagabaga Apartment",
-    titleKey: "renterDashboard.visits.listings.kibagabagaApartment",
-    location: "Kibagabaga, Kigali",
-    date: "12 August 2026",
-    time: "11:00 AM",
-    status: "Completed",
-    tab: "past",
-    host: "Julien Mugisha",
-    roleKey: ROLES.propertyManager,
-    image: house5,
-  },
-  {
-    id: "cancelled-nyarutarama",
-    propertyId: "nyarutarama-garden-penthouse",
-    title: "Nyarutarama Family Home",
-    titleKey: "renterDashboard.visits.listings.nyarutaramaFamilyHome",
-    location: "Nyarutarama, Kigali",
-    date: "9 August 2026",
-    time: "3:00 PM",
-    status: "Cancelled",
-    tab: "past",
-    host: "Aline Uwase",
-    roleKey: ROLES.agent,
-    image: house6,
-    cancelledBy: "Cancelled by you",
-  },
-  {
-    id: "declined-kimihurura",
-    propertyId: "remera-3br",
-    title: "Kimihurura Loft",
-    titleKey: "renterDashboard.visits.listings.kimihururaLoft",
-    location: "Kimihurura, Kigali",
-    date: "7 August 2026",
-    time: "1:00 PM",
-    status: "Viewing unavailable",
-    tab: "past",
-    host: "Sarah Uwase",
-    roleKey: ROLES.agent,
-    image: house3,
-  },
-];
+const STATUS_VIEW: Record<string, { label: ViewingStatus; tab: Tab }> = {
+  awaiting_confirmation: { label: "Awaiting Confirmation", tab: "pending" },
+  new_time_suggested: { label: "New Time Suggested", tab: "pending" },
+  reschedule_requested: { label: "Reschedule Requested", tab: "pending" },
+  confirmed: { label: "Confirmed", tab: "upcoming" },
+  completed: { label: "Completed", tab: "past" },
+  cancelled: { label: "Cancelled", tab: "past" },
+  viewing_unavailable: { label: "Viewing unavailable", tab: "past" },
+  not_interested: { label: "Not interested", tab: "past" },
+};
 
 type Dialog = {
   type: "details" | "reschedule" | "cancel" | "not-interested";
@@ -231,29 +140,31 @@ export default function MyViewingsPage() {
   const requests = useViewingRequests();
   const requestedViewings = useMemo<Viewing[]>(
     () =>
-      requests.map((request) => ({
-        ...request,
-        status: "Awaiting Confirmation",
-        tab: "pending",
-        host: "Julien Mugisha",
-        roleKey: ROLES.propertyManager,
-        image: house1,
-      })),
+      requests.map((request) => {
+        const { label, tab } = STATUS_VIEW[request.status] ?? STATUS_VIEW.cancelled;
+        return {
+          ...request,
+          status: label,
+          tab,
+          host: "",
+          roleKey: ROLES.propertyManager,
+          image: house1,
+        };
+      }),
     [requests],
   );
-  const [viewings, setViewings] = useState(INITIAL_VIEWINGS);
   const [tab, setTab] = useState<Tab>("upcoming");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [propertySearch, setPropertySearch] = useState("");
   const [dialog, setDialog] = useState<Dialog>(null);
-  const allViewings = [...requestedViewings, ...viewings];
+  const allViewings = requestedViewings;
 
   useEffect(() => {
     const openId = new URLSearchParams(window.location.search).get("open");
     if (!openId) return;
-    const target = INITIAL_VIEWINGS.find((v) => v.id === openId);
+    const target = allViewings.find((v) => v.id === openId);
     if (target) setDialog({ type: "details", viewing: target });
-  }, []);
+  }, [allViewings]);
   const normalizedSearch = propertySearch.trim().toLocaleLowerCase();
   const filtersActive = statusFilter !== "all" || normalizedSearch.length > 0;
   const shown = allViewings.filter(
@@ -270,9 +181,10 @@ export default function MyViewingsPage() {
   };
 
   function updateViewing(id: string, updates: Partial<Viewing>) {
-    setViewings((items) =>
-      items.map((item) => (item.id === id ? { ...item, ...updates } : item)),
-    );
+    const status = Object.entries(STATUS_VIEW).find(
+      ([, view]) => view.label === updates.status,
+    )?.[0];
+    if (status) void updateViewingRequest(id, status);
   }
 
   return (

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { api } from "@/lib/api/client";
 
 export type PropertyRequest = {
   id: string;
@@ -21,39 +22,98 @@ export type PropertyRequest = {
   notes?: string;
 };
 
-const KEY = "hauxhunt:property-requests";
+type ApiPropertyRequest = {
+  id: string;
+  createdAt: string;
+  country: string;
+  city: string;
+  neighbourhood: string | null;
+  propertyType: string;
+  bedrooms: number;
+  minBudgetUsd: number;
+  maxBudgetUsd: number;
+  moveInDate: string;
+  furnishing: string | null;
+  fullName: string;
+  phone: string;
+  email: string;
+  notes: string | null;
+};
 
-function load(): PropertyRequest[] {
-  try {
-    return JSON.parse(localStorage.getItem(KEY) ?? "[]");
-  } catch {
-    return [];
-  }
+const COUNTRIES: Record<string, string> = {
+  Rwanda: "RW",
+  Nigeria: "NG",
+  Kenya: "KE",
+};
+const COUNTRY_NAMES = Object.fromEntries(
+  Object.entries(COUNTRIES).map(([name, code]) => [code, name]),
+);
+
+function toPropertyType(label: string) {
+  return label.toLowerCase().replace(/ apartments$/, " apartment").replace(/[ -]/g, "_");
+}
+
+function fromApi(request: ApiPropertyRequest): PropertyRequest {
+  return {
+    id: request.id,
+    submittedAt: request.createdAt,
+    purpose: "Rent a house",
+    country: COUNTRY_NAMES[request.country] ?? request.country,
+    city: request.city,
+    neighbourhood: request.neighbourhood ?? undefined,
+    propertyType: request.propertyType.replace(/_/g, " "),
+    bedrooms: String(request.bedrooms),
+    minimumBudget: String(request.minBudgetUsd),
+    maximumBudget: String(request.maxBudgetUsd),
+    moveInDate: request.moveInDate.slice(0, 10),
+    furnishing: request.furnishing ?? undefined,
+    fullName: request.fullName,
+    phone: request.phone,
+    email: request.email,
+    notes: request.notes ?? undefined,
+  };
 }
 
 export function usePropertyRequests() {
   const [requests, setRequests] = useState<PropertyRequest[]>([]);
 
-  useEffect(() => {
-    setRequests(load());
+  const reload = useCallback(async () => {
+    const { data } = await api<{ data: ApiPropertyRequest[] }>(
+      "/me/property-requests",
+    );
+    setRequests(data.map(fromApi));
   }, []);
 
-  function addRequest(data: Omit<PropertyRequest, "id" | "submittedAt">) {
-    const next: PropertyRequest = {
-      ...data,
-      id: `HH-REQ-${Date.now()}`,
-      submittedAt: new Date().toISOString(),
-    };
-    const updated = [next, ...load()];
-    localStorage.setItem(KEY, JSON.stringify(updated));
-    setRequests(updated);
-    return next;
+  useEffect(() => {
+    void reload().catch(() => {});
+  }, [reload]);
+
+  async function addRequest(data: Omit<PropertyRequest, "id" | "submittedAt">) {
+    await api("/property-requests", {
+      method: "POST",
+      body: {
+        country: COUNTRIES[data.country] ?? data.country,
+        city: data.city,
+        neighbourhood: data.neighbourhood || undefined,
+        propertyType: toPropertyType(data.propertyType),
+        bedrooms: Number.parseInt(data.bedrooms, 10),
+        minBudgetUsd: Number(data.minimumBudget),
+        maxBudgetUsd: Number(data.maximumBudget),
+        moveInDate: data.moveInDate,
+        furnishing: data.furnishing || undefined,
+        fullName: data.fullName,
+        phone: data.phone,
+        email: data.email,
+        notes: data.notes || undefined,
+        consent: true,
+      },
+    });
+    await reload();
   }
 
-  function removeRequest(id: string) {
-    const updated = load().filter((r) => r.id !== id);
-    localStorage.setItem(KEY, JSON.stringify(updated));
-    setRequests(updated);
+  async function removeRequest(id: string) {
+    await api(`/property-requests/${id}`, { method: "DELETE" });
+    await reload();
   }
 
   return { requests, addRequest, removeRequest };

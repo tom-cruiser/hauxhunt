@@ -50,7 +50,9 @@ export function RequestViewingButton({
   const [open, setOpen] = useState(false);
   const [sent, setSent] = useState(false);
   const [duplicate, setDuplicate] = useState(false);
-  const [date, setDate] = useState("2026-08-24");
+  const [date, setDate] = useState(() =>
+    new Date(Date.now() + 2 * 86_400_000).toISOString().slice(0, 10),
+  );
   const [time, setTime] = useState("10:30 AM");
   const [note, setNote] = useState("");
   const [mounted, setMounted] = useState(false);
@@ -74,15 +76,8 @@ export function RequestViewingButton({
   const viewingFeeRwf = applyViewingFeeCap(marketFeeRwf, tier);
   const feeIsCapped = viewingFeeRwf < marketFeeRwf;
 
-  function submit() {
-    const result = addViewingRequest({
-      propertyId,
-      title,
-      location,
-      date,
-      time,
-      note,
-    });
+  async function submit() {
+    const result = await addViewingRequest({ propertyId, date, time, note });
     setDuplicate(!result.created);
     if (!result.created) {
       setDate(result.request.date);

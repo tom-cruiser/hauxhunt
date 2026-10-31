@@ -7,13 +7,8 @@ import Link from "next/link";
 import Image from "next/image";
 
 import loginIllustration from "@/assets/images/login.png";
-import { recordSentMessage, slugify } from "@/lib/message-threads";
-import { canMessageAgent } from "@/lib/access-control";
-import {
-  getAgentsMessagedThisMonth,
-  recordAgentMessaged,
-} from "@/lib/tenant-messaging-limit";
-import { useTier } from "@/hooks/use-tier";
+import { api, ApiError } from "@/lib/api/client";
+import { resolveListingId } from "@/lib/api/listings";
 import { UpgradeModal } from "@/components/tier/upgrade-modal";
 
 function subscribe(callback: () => void) {
@@ -31,13 +26,11 @@ export function ContactPropertyManagerForm({
   propertyId?: string;
 }) {
   const [sent, setSent] = useState(false);
-  const threadId = `landlord-${slugify(propertyTitle || managerName)}`;
   const [open, setOpen] = useState(false);
   const [limitOpen, setLimitOpen] = useState(false);
   const [country, setCountry] = useState<"UG" | "RW" | "NG">("UG");
   const [mounted, setMounted] = useState(false);
   const countryCodes = { UG: "+256", RW: "+250", NG: "+234" } as const;
-  const tier = useTier();
 
   useEffect(() => {
     setMounted(true);
@@ -54,40 +47,31 @@ export function ContactPropertyManagerForm({
     ? encodeURIComponent(window.location.pathname + window.location.search)
     : "";
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isGuest) {
       setOpen(true);
       return;
     }
-    // Tenant tier gate: free tenants may message up to 3 distinct
-    // agents/landlords per month (access-control.ts). Re-messaging one
-    // already on the list never counts twice.
-    const agentsMessaged = getAgentsMessagedThisMonth();
-    if (!canMessageAgent(tier, threadId, agentsMessaged)) {
-      setLimitOpen(true);
-      return;
-    }
     const form = event.currentTarget;
-    const message = String(new FormData(form).get("message") ?? "");
-    recordAgentMessaged(threadId);
-    recordSentMessage(
-      {
-        id: threadId,
-        name: managerName,
-        role: "Property Manager",
-        showPhone: true,
-        subtitle: propertyTitle ? `${propertyTitle} · Property Manager` : "Property Manager",
-        metaContext: "Listing Enquiry",
-        type: "manager",
-        context: {
-          type: "property-enquiry",
-          propertyName: propertyTitle,
-          propertyId,
+    const data = new FormData(form);
+    try {
+      const listingId = await resolveListingId(propertyId ?? "");
+      await api(`/listings/${listingId}/enquiries`, {
+        method: "POST",
+        body: {
+          name: data.get("name"),
+          phone: `${countryCodes[country]}${String(data.get("phone") ?? "").trim()}`,
+          message: data.get("message"),
         },
-      },
-      message
-    );
+      });
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 402) {
+        setLimitOpen(true);
+        return;
+      }
+      throw error;
+    }
     form.reset();
     setCountry("UG");
     setSent(true);
@@ -182,7 +166,7 @@ export function ContactPropertyManagerForm({
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             <Link
-              href={`/renter-dashboard/messages?chat=${threadId}`}
+              href="/renter-dashboard/messages"
               className="font-bricolage flex h-10 items-center justify-center rounded-full bg-black px-5 text-sm font-medium text-white"
             >
               View Conversation

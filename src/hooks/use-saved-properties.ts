@@ -1,63 +1,90 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { api } from "@/lib/api/client";
+import { resolveListingId, toListing, type ApiListing } from "@/lib/api/listings";
+import type { MockListing } from "@/data/hero-search-demo";
 
-export const SAVED_PROPERTIES_KEY = "hauxhunt-saved-properties";
 const SAVED_PROPERTIES_EVENT = "hauxhunt-saved-properties-change";
 
-function readSavedProperties() {
-  try {
-    const stored = window.localStorage.getItem(SAVED_PROPERTIES_KEY);
-    const parsed: unknown = stored ? JSON.parse(stored) : [];
-    return Array.isArray(parsed)
-      ? parsed.filter((value): value is string => typeof value === "string")
-      : [];
-  } catch {
-    return [];
-  }
-}
+let savedListings: MockListing[] = [];
+let savedIds: string[] = [];
 
-function writeSavedProperties(propertyIds: string[]) {
-  window.localStorage.setItem(
-    SAVED_PROPERTIES_KEY,
-    JSON.stringify(Array.from(new Set(propertyIds))),
-  );
+function publish() {
   window.dispatchEvent(new Event(SAVED_PROPERTIES_EVENT));
 }
 
+function isRenter() {
+  return (
+    window.sessionStorage.getItem("hauxhunt-authenticated-role") === "renter"
+  );
+}
+
+async function loadSaved() {
+  if (!isRenter()) {
+    savedListings = [];
+    savedIds = [];
+    publish();
+    return;
+  }
+  const { data } = await api<{ data: ApiListing[] }>("/me/saved-listings", {
+    query: { pageSize: 100 },
+  });
+  savedListings = data.map(toListing);
+  savedIds = savedListings.map((listing) => listing.id);
+  publish();
+}
+
+async function writeSaved(propertyId: string, saved: boolean) {
+  const listingId = await resolveListingId(propertyId);
+  await api(`/listings/${listingId}/save`, {
+    method: saved ? "PUT" : "DELETE",
+  });
+  await loadSaved();
+}
+
+function toggle(propertyId: string, saved: boolean) {
+  savedIds = saved
+    ? [...savedIds, propertyId]
+    : savedIds.filter((id) => id !== propertyId);
+  publish();
+  // A failed write reloads, which puts the heart back to the real state.
+  void writeSaved(propertyId, saved).catch(() => loadSaved().catch(() => {}));
+}
+
 export function saveProperty(propertyId: string) {
-  const current = readSavedProperties();
-  if (current.includes(propertyId)) return false;
-  writeSavedProperties([...current, propertyId]);
+  if (savedIds.includes(propertyId)) return false;
+  toggle(propertyId, true);
   return true;
 }
 
 export function useSavedProperties() {
   const [propertyIds, setPropertyIds] = useState<string[]>([]);
+  const [listings, setListings] = useState<MockListing[]>([]);
 
   useEffect(() => {
-    const sync = () => setPropertyIds(readSavedProperties());
+    const sync = () => {
+      setPropertyIds(savedIds);
+      setListings(savedListings);
+    };
+    const reload = () => void loadSaved().catch(() => {});
     sync();
-    window.addEventListener("storage", sync);
+    reload();
     window.addEventListener(SAVED_PROPERTIES_EVENT, sync);
+    window.addEventListener("rentup-session-changed", reload);
     return () => {
-      window.removeEventListener("storage", sync);
       window.removeEventListener(SAVED_PROPERTIES_EVENT, sync);
+      window.removeEventListener("rentup-session-changed", reload);
     };
   }, []);
 
   const toggleProperty = useCallback((propertyId: string) => {
-    const current = readSavedProperties();
-    const saved = current.includes(propertyId);
-    writeSavedProperties(
-      saved
-        ? current.filter((id) => id !== propertyId)
-        : [...current, propertyId],
-    );
-    return !saved;
+    const saved = !savedIds.includes(propertyId);
+    toggle(propertyId, saved);
+    return saved;
   }, []);
 
-  return { propertyIds, toggleProperty };
+  return { propertyIds, listings, toggleProperty };
 }
 
 export function useSavedProperty(propertyId: string) {

@@ -14,7 +14,6 @@ import house6 from "@/assets/images/house6.jpeg";
 import emptyIllustration from "@/assets/images/empty.png";
 import { ListingCard } from "@/components/sections/featured-listings/listing-card";
 import { RenterCatalogueTopBar } from "@/components/renter/renter-catalogue-top-bar";
-import { DEMO_LISTINGS } from "@/data/hero-search-demo";
 import { useSavedProperties } from "@/hooks/use-saved-properties";
 import { useTranslation } from "@/components/language/use-translation";
 
@@ -40,7 +39,7 @@ const LISTING_IMAGES: Record<string, StaticImageData> = {
 
 export default function SavedHomesPage() {
   const { t } = useTranslation();
-  const { propertyIds } = useSavedProperties();
+  const { propertyIds, listings } = useSavedProperties();
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [saveFeedback, setSaveFeedback] = useState("");
 
@@ -72,7 +71,7 @@ export default function SavedHomesPage() {
   const orderedPropertyIds =
     sortOrder === "newest" ? [...propertyIds].reverse() : propertyIds;
   const savedListings = orderedPropertyIds.flatMap((id) => {
-    const listing = DEMO_LISTINGS.find((property) => property.id === id);
+    const listing = listings.find((property) => property.id === id);
     return listing ? [listing] : [];
   });
 
