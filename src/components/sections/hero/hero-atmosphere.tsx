@@ -39,7 +39,7 @@ export function HeroAtmosphere() {
           preload="metadata"
           className="hero-photo absolute inset-0 h-full w-full object-cover object-center"
         >
-          <source src="/videos/hauxhunt-hero.mp4" type="video/mp4" />
+          <source src="/videos/landingvideo.mp4" type="video/mp4" />
         </video>
       </motion.div>
 
