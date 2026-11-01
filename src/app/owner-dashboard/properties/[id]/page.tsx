@@ -467,6 +467,7 @@ function ListingTab({
             ) : (
               <LockedFeature feature="owner.verifiedBadge" variant="badge" label="Verified listing" />
             )}
+            <BoostListingButton feature="owner.propertyBoost" propertyId={property.id} />
           </div>
         </div>
         <dl className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -500,7 +501,6 @@ function ListingTab({
               <h2 className="font-bricolage text-carbon-900 text-lg font-medium">Listing performance</h2>
               <p className="text-carbon-500 mt-1 text-sm">How property seekers are responding to this listing.</p>
             </div>
-            <BoostListingButton feature="owner.propertyBoost" />
           </div>
           <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
             <Metric label="Views" value={listing.views} />

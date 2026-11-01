@@ -23,10 +23,12 @@ import {
   BASE_OWNER_PROPERTIES,
   OWNER,
   OWNER_APPLICATIONS,
+  OWNER_LISTINGS,
   OWNER_PAYMENTS,
   OWNER_RENTALS,
   formatMoney,
   type OwnerApplication,
+  type OwnerListing,
   type OwnerPayment,
   type OwnerPropertyFacts,
   type OwnerRental,
@@ -112,7 +114,16 @@ type ApiProperty = {
   amenities: string[];
 };
 
-type ApiListing = { propertyId?: string; status?: string; priceUsd: number };
+type ApiListing = {
+  id: string;
+  propertyId?: string;
+  status?: string;
+  priceUsd: number;
+  boosted: boolean;
+};
+
+/** The signed-in owner or partner's real listings, as `/me/listings` returns them. */
+const MANAGED_LISTINGS: ApiListing[] = [];
 
 type ApiMaintenance = Omit<
   MaintenanceRequest,
@@ -657,6 +668,24 @@ export async function hydrateStores(me: Me) {
         location: rental.propertyLocation,
       })),
   );
+  replace(MANAGED_LISTINGS, listings.data);
+  replace(
+    OWNER_LISTINGS,
+    listings.data.flatMap((listing) =>
+      listing.propertyId && listing.status
+        ? [
+            {
+              propertyId: listing.propertyId,
+              status: titleCase(listing.status) as OwnerListing["status"],
+              views: null,
+              saves: null,
+              enquiries: null,
+              applications: 0,
+            },
+          ]
+        : [],
+    ),
+  );
   replace(
     BASE_OWNER_PROPERTIES,
     properties.data.map((property) =>
@@ -722,6 +751,15 @@ export async function hydrateStores(me: Me) {
 function subscribeReady(callback: () => void) {
   window.addEventListener(HYDRATED_EVENT, callback);
   return () => window.removeEventListener(HYDRATED_EVENT, callback);
+}
+
+/** The real listing on a property, once records have loaded. */
+export function useManagedListing(propertyId: string) {
+  return useSyncExternalStore(
+    subscribeReady,
+    () => MANAGED_LISTINGS.find((listing) => listing.propertyId === propertyId),
+    () => undefined,
+  );
 }
 
 /** False until real records have loaded, so detail pages don't show a 404 first. */

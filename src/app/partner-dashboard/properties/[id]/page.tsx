@@ -302,7 +302,7 @@ function ListingSection({ card }: { card: ProfessionalPropertyCard }) {
                     <button type="button" onClick={() => setViewOpen((v) => !v)} className="font-bricolage inline-flex h-10 items-center rounded-full border border-black/15 px-4 text-sm font-medium hover:border-black">
                       View Public Listing
                     </button>
-                    <BoostListingButton feature="agent.propertyBoost" />
+                    <BoostListingButton feature="agent.propertyBoost" propertyId={card.propertyId} />
                   </>
                 ) : (
                   <button type="button" onClick={() => setViewOpen((v) => !v)} className="font-bricolage inline-flex h-10 items-center rounded-full border border-black/15 px-4 text-sm font-medium hover:border-black">

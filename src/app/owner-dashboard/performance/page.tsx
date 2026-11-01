@@ -191,7 +191,7 @@ export default function OwnerPerformancePage() {
                 // Keyed by propertyId so switching the filter to a
                 // different property resets this back to "not boosted"
                 // instead of carrying over a stale badge from the last one.
-                <BoostListingButton key={propertyId} feature="owner.propertyBoost" />
+                <BoostListingButton key={propertyId} feature="owner.propertyBoost" propertyId={propertyId} />
               ) : null}
             </div>
           </header>

@@ -160,7 +160,7 @@ function ListingRow({ card }: { card: TrackedCard }) {
         <Metric label="Enquiries" value={card.listing.enquiries} />
       </div>
       <StatusPill status={card.listing.status} />
-      <BoostListingButton feature="agent.propertyBoost" />
+      <BoostListingButton feature="agent.propertyBoost" propertyId={card.propertyId} />
       <ArrowUpRight aria-hidden="true" className="text-carbon-400 size-4 shrink-0" />
     </div>
   );
